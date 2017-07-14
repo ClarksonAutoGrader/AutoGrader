@@ -1,0 +1,131 @@
+/* Autograder.css */
+/* Colors: yellow #F0CA0C; green #015847; */
+/* Formatting for static content */
+html, body {
+	margin: 0 !important;
+	padding: 0;
+	height: 100%; /* needed for container min-height */
+	background: #015847 !important;
+	font-family: Raleway, sans-serif;
+}
+
+h1 {
+	color: #fff;
+}
+
+div#container {
+	position: relative; /* needed for footer positioning*/
+	margin: 0 auto; /* center, not in IE5 */
+	width: 100%;
+	background: #fff;
+	height: auto !important; /* real browsers */
+	height: 100%; /* IE6: treaded as min-height*/
+	min-height: 100%; /* real browsers */
+}
+
+div#header {
+	color: #fff;
+	font-size: 1vw;
+	background: #015847;
+	border-bottom: 0.3vw double gray;
+	text-align: center;
+}
+
+div#content {
+	padding-bottom: 6em; /* prevent footer overlap */
+	
+	/* accept right overflow due to vscrollbar width on Windows */
+	overflow: hidden;
+}
+
+div#footer {
+	position: absolute !important;
+	width: 100% !important;
+	bottom: 0; /* stick to bottom */
+	background: black;
+	color: #fff;
+}
+
+div#footer p {
+	text-align: center;
+	padding: 1em;
+	margin: 0;
+}
+
+div#footer a:link {	color: #F0CA0C; }
+div#footer a:visited { color: #F0CA0C; }
+div#footer a:hover { color: #F0CA0C; }
+div#footer a:active { color: #F0CA0C; }
+
+/* pace loading */
+.pace {
+  -webkit-pointer-events: none;
+  pointer-events: none;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+/* Formatting for dynamic content */
+
+.courseSelectionPage {
+	margin-top: 1vw;
+	/* center page content */
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.coursePage {
+/* 	padding: 0px 2em 0px; */
+/* 	margin-top: 2em; */
+}
+
+.pageTitle {
+	font-size: 150%;
+	text-align: center;
+}
+
+.pageSubTitle {
+	font-size: 110%;
+	text-align: center;
+}
+
+.listingStyle {
+	border: 2px solid gray;
+	padding: 2px 6px 2px;
+}
+
+.listingHighlight, .listingSelected {
+	background: #F0CA0C;
+}
+
+.gwt-Label-listingTitle {
+	font-size: 110%;
+	font-weight: bold;
+}
+
+.gwt-Label-listingDescrption {
+}
+
+.coursePageHeader {
+	margin: 1vw auto;
+}
+
+.assignmentPageContentPane {
+	float: left;
+	width: 100vw;
+}
+
+.assignmentsTable {
+	width: 15vw;
+}
+
+.assignmentsTableHeader {
+	font-size: 120%;
+	font-weight: bold;
+}
+
+.assignmentContent {
+	margin-left: 1vw;
+}
