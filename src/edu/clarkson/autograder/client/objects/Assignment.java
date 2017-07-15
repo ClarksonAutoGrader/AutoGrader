@@ -1,6 +1,6 @@
 package edu.clarkson.autograder.client.objects;
 
-import java.sql.Date;
+import java.util.Date;
 
 import edu.clarkson.autograder.client.Data;
 import edu.clarkson.autograder.client.widgets.Listable;
@@ -93,7 +93,7 @@ public class Assignment implements Listable {
         StringBuilder builder = new StringBuilder(60);
         builder.append("Due: ");
         // builder.append(closeTime.getDay()).append(", ");
-        builder.append(closeTime.getMonth()).append("/");
+        builder.append(closeTime.getMonth() + 1).append("/");
         builder.append(closeTime.getDate()).append("/");
         builder.append(closeTime.getYear() % 100);
 

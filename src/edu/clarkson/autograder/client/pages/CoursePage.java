@@ -3,6 +3,7 @@ package edu.clarkson.autograder.client.pages;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -38,7 +39,7 @@ public class CoursePage extends Content {
      * Load CoursePage with specified assignment selection.
      */
     public CoursePage(Course course, int initialSelectedAssignmentId) {
-        
+
         this.course = course;
         loadAssignments();
         int selectedAssignmentId = initialSelectedAssignmentId;
@@ -47,15 +48,23 @@ public class CoursePage extends Content {
         }
 
         // create assignment listings and set selected listing
-        // TODO: split listings into currentListings and pastListings
-        List<Listing> listings = new ArrayList<>();
+        List<Listing> currentListings = new ArrayList<>();
+        List<Listing> pastListings = new ArrayList<>();
+        Date date = new Date();
         for (Assignment assignment : assignments) {
             Listing listing = new Listing(assignment);
+            // set selected assignment
             if (assignment.getId() == selectedAssignmentId) {
                 activeAssignmentListing = listing;
                 activeAssignmentListing.setSelected(true);
             }
-            listings.add(listing);
+
+            // add listing to either "current" or "past" list
+            if (date.before(assignment.getCloseTime())) {
+                currentListings.add(listing);
+            } else {
+                pastListings.add(listing);
+            }
         }
 
         // Create page header
@@ -72,9 +81,17 @@ public class CoursePage extends Content {
         // Create assignments table
         // TODO: collapse assignment table to the left (using nifty chevrons)
         assignmentsTable.setCellSpacing(6);
-        assignmentsTable.setHTML(0, 0, "Course Assignments:");
-        assignmentsTable.getCellFormatter().setStyleName(0, 0, "assignmentsTableHeader");
-        for (Listing listing : listings) {
+        // current assignments
+        assignmentsTable.setHTML(0, 0, "Current Assignments:   (" + currentListings.size() + ")");
+        assignmentsTable.getCellFormatter().setStyleName(assignmentsTable.getRowCount(), 0, "assignmentsTableHeader");
+        for (Listing listing : currentListings) {
+            assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
+        }
+        // past assignments
+        assignmentsTable.setHTML(assignmentsTable.getRowCount(), 0,
+                "Past Assignments:   (" + pastListings.size() + ")");
+        assignmentsTable.getCellFormatter().setStyleName(assignmentsTable.getRowCount(), 0, "assignmentsTableHeader");
+        for (Listing listing : pastListings) {
             assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
         }
 
@@ -100,8 +117,8 @@ public class CoursePage extends Content {
         for (int i = 0; i < 200; ++i) {
             contentString += "line " + (i + 1) + " Assignment ID=" + selectedAssignmentId + " Content<br>";
             if (i == 10)
-            for (int j = 0; j < 50; ++j)
-                contentString += "Assignment Content ";
+                for (int j = 0; j < 50; ++j)
+                    contentString += "Assignment Content ";
         }
         contentString += "</p>";
         HTML assignmentContent = new HTML(contentString);

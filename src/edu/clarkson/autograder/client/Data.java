@@ -1,6 +1,6 @@
 package edu.clarkson.autograder.client;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +51,8 @@ public class Data {
     }
 
     /**
-     * List of accissible assignments
-     */
+	 * List of accessible assignments
+	 */
     private static final List<Assignment> assignments = new ArrayList<>();
     static {
         /*
@@ -61,15 +61,14 @@ public class Data {
         int number_of_assignments = 12;
         for (Course c : courses) {
             for (int a_num = 0; a_num < number_of_assignments; a_num++) {
-                // open date 1498795200000 is 06/30/2017 12:00 AM
-                // open date 1498881600000 is 07/01/2017 12:00 AM
+                // open date 1498795200000 is 06/30/2017 04:00 AM GMT
                 // One day increment: 86400000
-                // close date is a multiple of seven day increments after
-                // 07/01/2017
+                // close date is between -10 and +2 days from current date
                 assignments.add(new Assignment(a_num, c.getId(), true,
                         "Assignment Title "
                                 + (a_num + 1),
-                        new Date(1498795200000L), new Date((7 * 86400000L) * a_num + 1498881600000L)));
+                        new Date(1498795200000L),
+                        new Date(10000 + (new Date()).getTime() - (86400000L * (number_of_assignments - 2 - a_num)))));
             }
         }
     }
