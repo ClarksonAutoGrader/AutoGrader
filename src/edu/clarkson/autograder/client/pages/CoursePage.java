@@ -13,7 +13,6 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLTable.Cell;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -32,7 +31,6 @@ public class CoursePage extends Content {
 	private List<Assignment> assignments = null;
 
 	private FlexTable assignmentsTable = new FlexTable();
-	// TODO make persistance selection of listing
 	private Listing activeAssignmentListing;
 
 	/**
@@ -98,15 +96,21 @@ public class CoursePage extends Content {
 		// current assignments
 		assignmentsTable.setHTML(0, 0, "Current Assignments:   (" + currentListings.size() + ")");
 		assignmentsTable.getCellFormatter().setStyleName(0, 0, "assignmentsTableHeader");
-		for (Listing listing : currentListings) {
-			assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
+		if (currentListings.isEmpty()) {
+			assignmentsTable.setHTML(1, 0, "<div style=\"line-height:2;padding:6px;\">No assignments</div>");
+		} else {
+			for (Listing listing : currentListings) {
+				assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
+			}
 		}
-		// past assignments
-		int labelRow = assignmentsTable.getRowCount();
-		assignmentsTable.setHTML(labelRow, 0, "Past Assignments:   (" + pastListings.size() + ")");
-		assignmentsTable.getCellFormatter().addStyleName(labelRow, 0, "assignmentsTableHeader");
-		for (Listing listing : pastListings) {
-			assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
+		// past assignments (if any)
+		if (!pastListings.isEmpty()) {
+			int labelRow = assignmentsTable.getRowCount();
+			assignmentsTable.setHTML(labelRow, 0, "Past Assignments:   (" + pastListings.size() + ")");
+			assignmentsTable.getCellFormatter().addStyleName(labelRow, 0, "assignmentsTableHeader");
+			for (Listing listing : pastListings) {
+				assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
+			}
 		}
 
 		assignmentsTable.addClickHandler(new ClickHandler() {
@@ -126,27 +130,31 @@ public class CoursePage extends Content {
 
 		// TODO put assignment view template in question layout pane
 		// TODO populate assignment view template with question data from DB
-		// TODO if no current assignments display special assignment content
 		// Question layout pane
-		String contentString = "<p>";
-		for (int i = 0; i < 200; ++i) {
-			contentString += "line " + (i + 1) + " Assignment ID=" + activeAssignmentListing.getContent().getId()
-			        + " Content<br>";
-			if (i == 10)
-				for (int j = 0; j < 50; ++j)
-					contentString += "Assignment Content ";
+		String contentString = "";
+		if (activeAssignmentListing != null) {
+			contentString += "<p>";
+			for (int i = 0; i < 20 * course.getId(); ++i) {
+				contentString += "line " + (i + 1) + " Assignment ID=" + activeAssignmentListing.getContent().getId()
+				        + " Content<br>";
+				if (i == 20)
+					for (int j = 0; j < 50; ++j)
+						contentString += "Assignment Content ";
+			}
+			contentString += "</p>";
+		} else {
+			contentString = "<div style=\"padding:6px;\">There are no open assignments to display. Past assignments may be viewed from the panel on the left.</div>";
 		}
-		contentString += "</p>";
 		HTML assignmentContent = new HTML(contentString);
-		ScrollPanel scroller = new ScrollPanel(assignmentContent);
-		scroller.setSize("400px", "100px");
 
+		// arrange assignments table and assignment content
 		HorizontalPanel pageContentPane = new HorizontalPanel();
 		pageContentPane.add(assignmentsTable);
 		pageContentPane.add(assignmentContent);
 		assignmentContent.addStyleName("assignmentContent");
 		pageContentPane.addStyleName("assignmentPageContentPane");
 
+		// arrange page header and page content
 		VerticalPanel pageTopLayout = new VerticalPanel();
 		pageTopLayout.add(pageHeader);
 		pageTopLayout.add(pageContentPane);
