@@ -109,6 +109,7 @@ div#footer a:active { color: #F0CA0C; }
 
 .assignmentsTable {
 	width: 15vw;
+	min-width: 15em;
 }
 
 .assignmentsTableHeader {
@@ -118,5 +119,7 @@ div#footer a:active { color: #F0CA0C; }
 }
 
 .assignmentContent {
-	margin-left: 1vw;
+	margin: 2vw 1vw 0;
+	width: 83vw;
+	min-height: 75vh;
 }
