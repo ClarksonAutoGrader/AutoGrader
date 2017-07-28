@@ -4,21 +4,36 @@
 ]>
 <ivy-module version="2.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd">
+    xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd"
+    xmlns:m="http://ant.apache.org/ivy/maven">
     
     <info organisation="edu.clarkson" module="autograder"/>
    
     <configurations>
+      <conf name="optional" description="Any optional dependencies"/>
       <conf name="runtime"  description="needed in servlet container"/>
       <conf name="compile"  description="needed for compilation (other GWT libraries)"/>
-      <conf name="sdk"  description="GWT SDK (compile time, seperated for Eclipse GWT IDE Integration)"/>        
+      <conf name="sdk"  description="GWT SDK (compile time, seperated for Eclipse GWT IDE Integration)"/>
     </configurations>
+    
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/com.google.gwt -->
-        <dependency org="com.google.gwt" name="gwt-servlet" rev="&gwt.version;" conf="runtime->default"/>
+        <!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-user -->
         <dependency org="com.google.gwt" name="gwt-user" rev="&gwt.version;" conf="sdk->default"/>
-        <dependency org="com.google.gwt" name="gwt-dev" rev="&gwt.version;" conf="sdk->default"/>
+        <dependency org="javax.validation" name="validation-api" rev="1.0.0.GA" conf="sdk->default"> 
+			<artifact name="validation-api"/> 
+			<artifact name="validation-api" m:classifier="sources"/> 
+		</dependency>
+        <dependency org="com.google.jsinterop" name="jsinterop-annotations" rev="1.0.1" conf="sdk->default"> 
+			<artifact name="jsinterop-annotations"/> 
+			<artifact name="jsinterop-annotations" m:classifier="sources"/> 
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-servlet -->
+        <dependency org="com.google.gwt" name="gwt-servlet" rev="&gwt.version;" conf="runtime->default;sdk->optional"/>
         
-        <dependency org="org.slf4j" name="slf4j-simple" rev="1.6.2" conf="*"/>
+        <!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-dev/ -->
+		<dependency org="com.google.gwt" name="gwt-dev" rev="&gwt.version;" conf="sdk->default"/>
+		
+		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.2" conf="sdk->default"/>
     </dependencies>
 </ivy-module>
