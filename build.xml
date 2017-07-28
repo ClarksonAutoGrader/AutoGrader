@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <!DOCTYPE project [
     <!ENTITY appname "Autograder">
-    <!ENTITY mainclass "edu.clarkson.autograder.client.Autograder">
+    <!ENTITY gwtmodule "edu.clarkson.autograder.Autograder">
     <!ENTITY ivyversion "2.4.0">
 ]>
 <project name="&appname;" default="build" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
@@ -14,8 +14,8 @@
   </scriptdef>
   <lower string="&appname;" to="lowerappname" />
 
-  <!-- Arguments to gwtc and devmode targets -->
-  <property name="gwt.args" value="" />
+  <!-- Arguments to gwtc target -->
+  <property name="gwt.args" value="-logLevel INFO  -style OBFUSCATED" />
 
   <!-- Configure Ivy -->
   <property name="ivy.install.version" value="&ivyversion;"/>
@@ -81,7 +81,7 @@
       <arg value="war"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
       <arg line="${gwt.args}"/>
-      <arg value="&mainclass;"/>
+      <arg value="&gwtmodule;"/>
     </java>
   </target>
 
