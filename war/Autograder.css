@@ -57,16 +57,6 @@ div#footer a:visited { color: #F0CA0C; }
 div#footer a:hover { color: #F0CA0C; }
 div#footer a:active { color: #F0CA0C; }
 
-/* pace loading */
-.pace {
-  -webkit-pointer-events: none;
-  pointer-events: none;
-
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-}
-
 /* Formatting for dynamic content */
 
 .courseSelectionPage {
@@ -119,13 +109,17 @@ div#footer a:active { color: #F0CA0C; }
 
 .assignmentsTable {
 	width: 15vw;
+	min-width: 15em;
 }
 
 .assignmentsTableHeader {
-	font-size: 120%;
+	font-size: 110%;
 	font-weight: bold;
+	padding: 20px 0 0;
 }
 
 .assignmentContent {
-	margin-left: 1vw;
+	margin: 2vw 1vw 0;
+	width: 83vw;
+	min-height: 75vh;
 }
