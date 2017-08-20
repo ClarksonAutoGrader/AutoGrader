@@ -1,6 +1,6 @@
 ### autograder-gwt
 
-Autograder is developed for Clarkson University.
+Autograder is an online homework tool used by Clarkson University.
 
 ---
 
