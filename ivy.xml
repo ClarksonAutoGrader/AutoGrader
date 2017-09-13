@@ -38,7 +38,7 @@
 		
 		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.2" conf="sdk->default"/>
     	
-    	<!-- https://github.com/apereo/java-cas-client (Not working, added locally) -->
+    	<!-- https://github.com/apereo/java-cas-client -->
         <dependency org="org.jasig.cas.client" name="cas-client-core" rev="3.4.1"/>
     	 
     	 
