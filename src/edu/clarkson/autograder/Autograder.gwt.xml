@@ -11,6 +11,7 @@
   <inherits name='com.google.gwt.user.theme.clean.Clean'/>
 
   <!-- Other module inherits                                      -->
+  <inherits name="org.fusesource.restygwt.RestyGWT"/>
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='edu.clarkson.autograder.client.Autograder'/>
