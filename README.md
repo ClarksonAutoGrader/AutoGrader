@@ -12,9 +12,7 @@ We recommend following the [Getting Started with GWT Eclipse Tutorial](http://ww
 
 2. Then follow instructions to download and install the [Google Plugin for Eclipse 4.6 (Neon)](https://developers.google.com/eclipse/docs/install-eclipse-4.6).
 
-3. In Eclipse, Help > Eclise Marketplace, install Apache IvyDE.
-
-4. Clone this Git repository in Eclipse.
+3. Clone this Git repository in Eclipse.
 
 ### Contributing
 
