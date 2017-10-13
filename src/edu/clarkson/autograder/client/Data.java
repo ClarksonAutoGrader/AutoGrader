@@ -17,8 +17,6 @@ public class Data {
 
 	public static final int ID_TOKEN_WIDTH = 6;
 	
-	public static final String USER_ID = AssertionHolder.getAssertion().getPrincipal().getName();
-	
 	public static String formatIdToken(int id) {
 		// Attempts to provide identical functionality as:
 		// String.format("%0" + ID_TOKEN_WIDTH + "d", id);
