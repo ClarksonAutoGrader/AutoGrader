@@ -35,5 +35,8 @@
 		<dependency org="com.google.gwt" name="gwt-dev" rev="&gwt.version;" conf="sdk->default"/>
 		
 		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.2" conf="sdk->default"/>
+    
+		<!-- https://github.com/apereo/java-cas-client -->
+        <dependency org="org.jasig.cas.client" name="cas-client-core" rev="3.4.1"/>    
     </dependencies>
 </ivy-module>
