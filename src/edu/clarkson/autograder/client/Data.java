@@ -4,8 +4,13 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
+import edu.clarkson.autograder.client.services.CoursesService;
+import edu.clarkson.autograder.client.services.CoursesServiceAsync;
 
 /**
  * Temporary hard-coded database for autograder
@@ -25,6 +30,8 @@ public class Data {
 		return padding + id;
 	}
 
+	private static List<Course> courseList = new ArrayList<Course>();
+	
 	/**
 	 * List of courses accessible by user
 	 * 
@@ -39,9 +46,9 @@ public class Data {
 		/*
 		 * Create courses
 		 */
-		courses.add(new Course(1, "ME310", "Thermodynamics - course description", true));
-		courses.add(new Course(2, "ES436", "Climate Change - course description", true));
-		courses.add(new Course(3, "AA100", "Generic Course - course description", true));
+		courses.add(new Course(1, "ME68746546876857985416876514654", "Thermodynamics - course description", true));
+		courses.add(new Course(2, "ES654621032", "Climate Change - course description", true));
+		courses.add(new Course(3, "AA200", "Generic Course - course description", true));
 		courses.add(new Course(4, "Course A", "Generic Course - course description", false));
 		courses.add(new Course(5, "Course B",
 		        "Generic Course - course description is especially long in this case."
@@ -81,8 +88,26 @@ public class Data {
 	 * 
 	 */
 
+	
 	public static List<Course> getCourses() {
-		return courses;
+		
+		CoursesServiceAsync courseService = GWT.create(CoursesService.class);
+		
+		courseService.fetchCourses(new AsyncCallback<List<Course>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void onSuccess(List<Course> result) {
+				courseList = result;
+			}
+			
+		});
+		
+		return courseList;	
 	}
 
 	/**
