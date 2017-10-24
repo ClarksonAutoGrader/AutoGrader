@@ -16,6 +16,16 @@
     <url-pattern>/autograder/courses</url-pattern>
   </servlet-mapping>
   
+  <servlet>
+      <servlet-name>assignmentList</servlet-name>
+      <servlet-class>edu.clarkson.autograder.server.AssignmentServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+      <servlet-name>assignmentList</servlet-name>
+      <url-pattern>/autograder/assignment</url-pattern>
+  </servlet-mapping>
+  
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
