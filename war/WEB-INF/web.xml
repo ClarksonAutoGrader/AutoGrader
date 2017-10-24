@@ -10,10 +10,18 @@
     <servlet-name>courseList</servlet-name>
     <servlet-class>edu.clarkson.autograder.server.CoursesServiceImpl</servlet-class>
   </servlet>
-  
   <servlet-mapping>
     <servlet-name>courseList</servlet-name>
     <url-pattern>/autograder/courses</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>remoteLogging</servlet-name>
+    <servlet-class>com.google.gwt.logging.server.RemoteLoggingServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>remoteLogging</servlet-name>
+    <url-pattern>/autograder/remote_logging</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->

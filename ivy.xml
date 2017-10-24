@@ -17,8 +17,23 @@
     </configurations>
     
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-user -->
+        <dependency org="com.google.gwt" name="gwt-user" rev="&gwt.version;" conf="sdk->default"/>
+        <dependency org="javax.validation" name="validation-api" rev="1.0.0.GA" conf="sdk->default"> 
+			<artifact name="validation-api"/> 
+			<artifact name="validation-api" m:classifier="sources"/> 
+		</dependency>
+        <dependency org="com.google.jsinterop" name="jsinterop-annotations" rev="1.0.1" conf="sdk->default"> 
+			<artifact name="jsinterop-annotations"/> 
+			<artifact name="jsinterop-annotations" m:classifier="sources"/> 
+		</dependency>
 		
-		<!-- Conf may need to change if we need RestyGWT as a runtime dependency -->
-		<dependency org="org.fusesource.restygwt" name="restygwt" rev="2.2.1" conf="compile->default"/>
+		<!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-servlet -->
+        <dependency org="com.google.gwt" name="gwt-servlet" rev="&gwt.version;" conf="runtime->default;sdk->optional"/>
+        
+        <!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-dev/ -->
+		<dependency org="com.google.gwt" name="gwt-dev" rev="&gwt.version;" conf="sdk->default"/>
+		
+		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.2" conf="sdk->default"/>
     </dependencies>
 </ivy-module>

@@ -7,9 +7,9 @@ import java.util.List;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.clarkson.autograder.client.objects.Assignment;
-import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.services.AssignmentService;
 
+@SuppressWarnings("serial")
 public class AssignmentServiceImpl extends RemoteServiceServlet implements AssignmentService{
 
 	private static List<Assignment> assignments = new ArrayList<Assignment>();

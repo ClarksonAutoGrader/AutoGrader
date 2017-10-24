@@ -11,9 +11,8 @@ import edu.clarkson.autograder.client.services.CoursesService;
 @SuppressWarnings("serial")
 public class CoursesServiceImpl extends RemoteServiceServlet implements CoursesService {
 	
-	
-	
 	public List<Course> fetchCourses(){
+
 		final List<Course> courses = new ArrayList<>();
 		{
 			/*

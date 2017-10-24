@@ -9,9 +9,9 @@
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.gwt.user.theme.clean.Clean'/>
-
+  <inherits name="com.google.gwt.logging.Logging"/>
+  
   <!-- Other module inherits                                      -->
-  <inherits name="org.fusesource.restygwt.RestyGWT"/>
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='edu.clarkson.autograder.client.Autograder'/>
@@ -19,6 +19,13 @@
   <!-- Specify the paths for translatable code                    -->
   <source path='client'/>
   <source path='shared'/>
+  
+  <!-- Configure Logging -->
+  <set-property name="gwt.logging.simpleRemoteHandler" value="ENABLED" />
+  <set-property name="gwt.logging.logLevel" value="FINE"/>
+  <set-property name="gwt.logging.enabled" value="TRUE"/>
+  <set-property name="gwt.logging.consoleHandler" value="ENABLED" />
+  <set-property name="gwt.logging.popupHandler" value="DISABLED" />
 
   <!-- allow Super Dev Mode -->
   <add-linker name="xsiframe"/>
