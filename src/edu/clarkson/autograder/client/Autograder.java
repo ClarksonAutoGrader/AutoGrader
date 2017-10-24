@@ -12,8 +12,6 @@ import com.google.gwt.user.client.History;
  */
 public class Autograder implements EntryPoint {
 
-
-
     /**
      * This is the entry point method.
      */
