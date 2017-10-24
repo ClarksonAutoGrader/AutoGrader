@@ -9,6 +9,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
+import edu.clarkson.autograder.client.services.AssignmentService;
+import edu.clarkson.autograder.client.services.AssignmentServiceAsync;
 import edu.clarkson.autograder.client.services.CoursesService;
 import edu.clarkson.autograder.client.services.CoursesServiceAsync;
 
@@ -31,6 +33,7 @@ public class Data {
 	}
 
 	private static List<Course> courseList = new ArrayList<Course>();
+	private static List<Assignment> assignmentList = new ArrayList<Assignment>();
 	
 	/**
 	 * List of courses accessible by user
@@ -90,23 +93,17 @@ public class Data {
 
 	
 	public static List<Course> getCourses() {
-		
 		CoursesServiceAsync courseService = GWT.create(CoursesService.class);
-		
 		courseService.fetchCourses(new AsyncCallback<List<Course>>() {
-
 			@Override
 			public void onFailure(Throwable caught) {
 				// TODO Auto-generated method stub
 			}
-
 			@Override
 			public void onSuccess(List<Course> result) {
 				courseList = result;
-			}
-			
+			}	
 		});
-		
 		return courseList;	
 	}
 
@@ -126,7 +123,25 @@ public class Data {
 
 	public static List<Assignment> getAssignmentsFor(int courseId) {
 		List<Assignment> sublist = new ArrayList<>();
-		for (Assignment a : assignments) {
+		
+		AssignmentServiceAsync assignService = GWT.create(AssignmentService.class);
+		assignService.fetchAssignments(courseId, new AsyncCallback<List<Assignment>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onSuccess(List<Assignment> result) {
+				// TODO Auto-generated method stub
+				assignmentList = result;
+			}
+			
+		});
+		
+		for (Assignment a : assignmentList) {
 			if (a.getcId() == courseId) {
 				sublist.add(a);
 			}
