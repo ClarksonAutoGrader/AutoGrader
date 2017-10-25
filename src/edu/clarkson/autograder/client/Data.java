@@ -3,13 +3,7 @@ package edu.clarkson.autograder.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
-import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
-import edu.clarkson.autograder.client.services.AssignmentService;
-import edu.clarkson.autograder.client.services.AssignmentServiceAsync;
 
 /**
  * Temporary hard-coded database for autograder
@@ -28,8 +22,6 @@ public class Data {
 			padding += "0";
 		return padding + id;
 	}
-
-	private static List<Assignment> assignmentList = new ArrayList<Assignment>();
 	
 	 /**
 	 * List of courses accessible by user
@@ -103,33 +95,5 @@ public class Data {
 			}
 		}
 		return null;
-	}
-
-	public static List<Assignment> getAssignmentsFor(int courseId) {
-		List<Assignment> sublist = new ArrayList<>();
-		
-		AssignmentServiceAsync assignService = GWT.create(AssignmentService.class);
-		assignService.fetchAssignments(courseId, new AsyncCallback<List<Assignment>>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onSuccess(List<Assignment> result) {
-				// TODO Auto-generated method stub
-				assignmentList = result;
-			}
-			
-		});
-		
-		for (Assignment a : assignmentList) {
-			if (a.getcId() == courseId) {
-				sublist.add(a);
-			}
-		}
-		return sublist;
 	}
 }

@@ -1,11 +1,13 @@
 package edu.clarkson.autograder.client.objects;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import edu.clarkson.autograder.client.Data;
 import edu.clarkson.autograder.client.widgets.Listable;
 
-public class Assignment implements Listable {
+@SuppressWarnings("serial")
+public class Assignment implements Listable, Serializable {
     private int id;
     private int cId;
     private boolean visible;

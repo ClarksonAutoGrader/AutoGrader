@@ -3,6 +3,9 @@ package edu.clarkson.autograder.server;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -12,15 +15,16 @@ import edu.clarkson.autograder.client.services.AssignmentService;
 @SuppressWarnings("serial")
 public class AssignmentServiceImpl extends RemoteServiceServlet implements AssignmentService{
 
-	private static List<Assignment> assignments = new ArrayList<Assignment>();
-	int numCourses = 5;
+	private static ConsoleHandler LOG = new ConsoleHandler();
 	
 	@Override
 	public List<Assignment> fetchAssignments(int courseId) throws IllegalArgumentException{
-		
+		LOG.publish(new LogRecord(Level.INFO, "fetchAssinments for courseId=" + courseId));
+
+		List<Assignment> assignments = null;
 		try {
 			//temp method call until db hook in
-			createAssignments(courseId);
+			assignments = createAssignments(courseId);
 		} 
 		catch (IllegalArgumentException e){
 			//TODO: handle IllegalArgumentException to allow for application to fail gracefully
@@ -31,7 +35,8 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	}
 	
 	//Temp method until db hook in
-	public void createAssignments(int courseId){
+	public List<Assignment> createAssignments(int courseId) {
+		List<Assignment> assignments = new ArrayList<Assignment>();
 		
 		int number_of_assignments = 12;
 		int num_current_assignments = 0;
@@ -44,5 +49,6 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 			        new Date(120000 + (86400000L * (courseId - 2)) + (new Date()).getTime()
 			                - (86400000L * (number_of_assignments - num_current_assignments - a_num)))));
 		}
+		return assignments;
 	}
 }
