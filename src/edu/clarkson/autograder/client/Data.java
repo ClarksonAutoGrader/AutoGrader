@@ -4,8 +4,6 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jasig.cas.client.util.AssertionHolder;
-
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
 
