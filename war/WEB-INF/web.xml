@@ -31,7 +31,7 @@
         </init-param>
         <init-param>
             <param-name>serverName</param-name>
-            <param-value>http://airlab.clarkson.edu/auth_testing</param-value>
+            <param-value>http://autograder.clarkson.edu/beta</param-value>
         </init-param>
     </filter>
 	
@@ -44,7 +44,7 @@
         </init-param>
         <init-param>
             <param-name>serverName</param-name>
-            <param-value>http://airlab.clarkson.edu</param-value>
+            <param-value>http://autograder.clarkson.edu</param-value>
         </init-param>
         <init-param>
             <param-name>exceptionOnValidationFailure</param-name>
