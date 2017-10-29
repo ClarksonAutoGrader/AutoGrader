@@ -29,7 +29,8 @@ public class DatabaseQuery {
     private String password = "";
     
     private String getUsername(){
-    	return AssertionHolder.getAssertion().getPrincipal().getName();
+    	LOG.publish(new LogRecord(Level.INFO, "user is: " + (String) AssertionHolder.getAssertion().getAttributes().get("user")));
+    	return (String) AssertionHolder.getAssertion().getAttributes().get("user");
     }
 	
 	public List<Course> queryCourses(){
@@ -54,7 +55,9 @@ public class DatabaseQuery {
 				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: DB Connection Successful"));
 				
 				//Temp course selection
-				String sql = "SELECT course_id, course_title, course_num, course_descr FROM courses;";
+				String sql = "SELECT c.course_id, c.course_title, c.course_num, c.course_descr "
+						+ "FROM enrollment e LEFT JOIN courses c "
+						+ "ON e.enr_cid = c.course_id WHERE e.enr_uid = ;" + getUsername();
 				
 				Statement stmt;
 				stmt = conn.createStatement();
