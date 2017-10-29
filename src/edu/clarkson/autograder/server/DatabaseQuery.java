@@ -11,6 +11,8 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import org.jasig.cas.client.util.AssertionHolder;
+
 import edu.clarkson.autograder.client.objects.Course;
 
 public class DatabaseQuery {
@@ -27,8 +29,7 @@ public class DatabaseQuery {
     private String password = "";
     
     private String getUsername(){
-    	//return AssertionHolder.getAssertion().getPrincipal().getName();
-    	return null;
+    	return AssertionHolder.getAssertion().getPrincipal().getName();
     }
 	
 	public List<Course> queryCourses(){
