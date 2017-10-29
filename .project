@@ -28,12 +28,8 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-<<<<<<< HEAD
 		<nature>com.gwtplugins.gwt.eclipse.core.gwtNature</nature>
-=======
->>>>>>> refs/remotes/origin/develop
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 		<nature>org.apache.ivyde.eclipse.ivynature</nature>
-		<nature>com.google.gwt.eclipse.core.gwtNature</nature>
 	</natures>
 </projectDescription>
