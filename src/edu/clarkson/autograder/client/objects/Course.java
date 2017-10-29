@@ -1,9 +1,11 @@
 package edu.clarkson.autograder.client.objects;
 
+import java.io.Serializable;
+
 import edu.clarkson.autograder.client.Data;
 import edu.clarkson.autograder.client.widgets.Listable;
 
-public class Course implements Listable {
+public class Course implements Listable, Serializable{
     private int id;
     private String title;
     private String description;
