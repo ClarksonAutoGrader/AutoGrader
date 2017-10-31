@@ -29,8 +29,9 @@ public class DatabaseQuery {
     private String password = "";
     
     private String getUsername(){
-    	LOG.publish(new LogRecord(Level.INFO, "user is: " + (AssertionHolder.getAssertion().getPrincipal().getName())));
-    	return AssertionHolder.getAssertion().getPrincipal().getName();
+    	//LOG.publish(new LogRecord(Level.INFO, "user is: " + (AssertionHolder.getAssertion().getPrincipal().getName())));
+    	//return AssertionHolder.getAssertion().getPrincipal().getName();
+    	return "clappdj";
     }
 	
 	public List<Course> queryCourses(){
