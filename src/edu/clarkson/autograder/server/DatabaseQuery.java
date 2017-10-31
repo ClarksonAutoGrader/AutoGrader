@@ -60,9 +60,11 @@ public class DatabaseQuery {
 						+ "FROM enrollment e LEFT JOIN courses c "
 						+ "ON e.enr_cid = c.course_id WHERE e.enr_username = \"clappdj\";";
 				
+				String sql2 = "SELECT c.course_id, c.course_title, c.course_num, c.course descr FROM courses c;";
+				
 				Statement stmt;
 				stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery(sql);
+				ResultSet rs = stmt.executeQuery(sql2);
 				
 				while(rs.next()){
 					courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_num"), rs.getString("course_title"), true));
