@@ -24,7 +24,7 @@ public class DatabaseQuery {
 	private static Connection conn;
 	
 	//Database parameters
-	private String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
+	private String url = "jdbc:mysql://localhost:3306/autograder_db";
     private String localdevuser = "autograder_dev";
     private String user = "autograder_local";
     private String password = "292.2K16";
