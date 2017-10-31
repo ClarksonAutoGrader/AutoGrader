@@ -57,7 +57,7 @@ public class DatabaseQuery {
 				//Temp course selection
 				String sql = "SELECT c.course_id, c.course_title, c.course_num, c.course_descr "
 						+ "FROM enrollment e LEFT JOIN courses c "
-						+ "ON e.enr_cid = c.course_id WHERE e.enr_uid = ;" + getUsername();
+						+ "ON e.enr_cid = c.course_id WHERE e.enr_uid = " + getUsername() + ";";
 				
 				Statement stmt;
 				stmt = conn.createStatement();
