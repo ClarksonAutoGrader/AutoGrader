@@ -26,7 +26,8 @@ public class DatabaseQuery {
 	//Database parameters
 	private String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
     private String user = "autograder_dev";
-    private String password = "292.2K16";
+    private String password = "";
+    private String passwordLocal = "292.2K16";
     
     private String getUsername(){
     	//LOG.publish(new LogRecord(Level.INFO, "user is: " + (AssertionHolder.getAssertion().getPrincipal().getName())));
@@ -44,7 +45,7 @@ public class DatabaseQuery {
 		
 		try{			
 			//create connection to database
-			conn = DriverManager.getConnection(url, user, password);
+			conn = DriverManager.getConnection(url, user, passwordLocal);
 			LOG.publish(new LogRecord(Level.INFO, "Conn = " + conn));
 		} 
 		catch (SQLException e){
