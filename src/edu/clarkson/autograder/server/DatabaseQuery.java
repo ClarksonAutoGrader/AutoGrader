@@ -53,32 +53,34 @@ public class DatabaseQuery {
 		}
 		finally {
 			try{
-				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: DB Connection Successful"));
-				
-				//Temp course selection
-				String sql = "SELECT c.course_id, c.course_title, c.course_num, c.course_descr "
-						+ "FROM enrollment e LEFT JOIN courses c "
-						+ "ON e.enr_cid = c.course_id WHERE e.enr_username = \"clappdj\";";
-				
-				//String sql2 = "SELECT course_id, course_title, course_num, course_descr FROM courses;";
-				
-				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: String entered"));
-				
-				Statement stmt;
-				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: stmt"));
-				stmt = conn.createStatement();
-				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: conn.createStatement()"));
-				ResultSet rs = stmt.executeQuery(sql);
-				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: RS"));
-				
-				while(rs.next()){
-					courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_num"), rs.getString("course_title"), true));
-					LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
+				if(conn == null){
+					LOG.publish(new LogRecord(Level.INFO, "#establishConnection: DB Connection Successful"));
+					
+					//Temp course selection
+					String sql = "SELECT c.course_id, c.course_title, c.course_num, c.course_descr "
+							+ "FROM enrollment e LEFT JOIN courses c "
+							+ "ON e.enr_cid = c.course_id WHERE e.enr_username = \"clappdj\";";
+					
+					//String sql2 = "SELECT course_id, course_title, course_num, course_descr FROM courses;";
+					
+					LOG.publish(new LogRecord(Level.INFO, "#establishConnection: String entered"));
+					
+					Statement stmt;
+					LOG.publish(new LogRecord(Level.INFO, "#establishConnection: stmt"));
+					stmt = conn.createStatement();
+					LOG.publish(new LogRecord(Level.INFO, "#establishConnection: conn.createStatement()"));
+					ResultSet rs = stmt.executeQuery(sql);
+					LOG.publish(new LogRecord(Level.INFO, "#establishConnection: RS"));
+					
+					while(rs.next()){
+						courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_num"), rs.getString("course_title"), true));
+						LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
+					}
+					
+					LOG.publish(new LogRecord(Level.INFO, "#establishConnection: Statement run"));
+					
+					return courseList;
 				}
-				
-				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: Statement run"));
-				
-				return courseList;
 			} 
 			catch (SQLException ex){	
 			}
