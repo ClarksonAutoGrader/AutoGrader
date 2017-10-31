@@ -53,7 +53,7 @@ public class DatabaseQuery {
 		}
 		finally {
 			try{
-				if(conn == null){
+				if(conn != null){
 					LOG.publish(new LogRecord(Level.INFO, "#establishConnection: DB Connection Successful"));
 					
 					//Temp course selection
