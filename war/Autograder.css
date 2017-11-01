@@ -5,7 +5,7 @@ html, body {
 	margin: 0 !important;
 	padding: 0;
  	height: 100%; /* needed for container min-height */
-/* 	background: #015847 !important; */
+	background: #015847 !important; 
 	font-family: Raleway, sans-serif;
 }
 
