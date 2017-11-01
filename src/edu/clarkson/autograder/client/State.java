@@ -47,31 +47,11 @@ public final class State implements ValueChangeHandler<String> {
         // Check for: specific course page
         int courseId = -1;
         try {
-            courseId = Integer.parseInt(historyToken.substring(0, Data.ID_TOKEN_WIDTH));
+			courseId = Integer.parseInt(historyToken.substring(0, Autograder.ID_TOKEN_WIDTH));
         } catch (NumberFormatException e) {
             History.replaceItem("courses");
             return;
         }
-        Course course = Data.getCourseFor(courseId);
-        if (course == null) {
-            // no such course exists
-            History.replaceItem("courses");
-            return;
-        }
-
-        // check for assignment token
-        int selectedAssignmentId = -1;
-        if (historyToken.length() > Data.ID_TOKEN_WIDTH) {
-            try {
-                selectedAssignmentId = Integer
-                        .parseInt(historyToken.substring(Data.ID_TOKEN_WIDTH, 2 * Data.ID_TOKEN_WIDTH));
-            } catch (NumberFormatException e) {
-                // invalid assignment token
-                History.replaceItem(course.getToken());
-                return;
-            }
-        }
-        // let CoursePage determine the default assignment selection
-        ContentContainer.setContent(new CoursePage(course, selectedAssignmentId));
+		ContentContainer.setContent(new CoursePage(courseId));
     }
 }

@@ -3,7 +3,7 @@ package edu.clarkson.autograder.client.objects;
 import java.io.Serializable;
 import java.util.Date;
 
-import edu.clarkson.autograder.client.Data;
+import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.widgets.Listable;
 
 @SuppressWarnings("serial")
@@ -104,6 +104,6 @@ public class Assignment implements Listable, Serializable {
 
     @Override
     public String getToken() {
-        return Data.formatIdToken(cId) + Data.formatIdToken(id);
+		return Autograder.formatIdToken(cId) + Autograder.formatIdToken(id);
     }
 }

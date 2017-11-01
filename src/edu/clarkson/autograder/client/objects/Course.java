@@ -2,13 +2,12 @@ package edu.clarkson.autograder.client.objects;
 
 import java.io.Serializable;
 
-import edu.clarkson.autograder.client.Data;
-import edu.clarkson.autograder.client.widgets.Listable;
+import edu.clarkson.autograder.client.Autograder;
 
-public class Course implements Listable, Serializable{
+@SuppressWarnings("serial")
+public class Course implements Serializable {
     private int id;
     private String title;
-    private String description;
     private boolean visible;
 
     /**
@@ -18,17 +17,15 @@ public class Course implements Listable, Serializable{
     }
 
     /**
-     * Convenience constructor (temporary)
-     * 
-     * @param id
-     * @param title
-     * @param description
-     * @param visible
-     */
-    public Course(int id, String title, String description, boolean visible) {
+	 * Constructor
+	 * 
+	 * @param id
+	 * @param title
+	 * @param visible
+	 */
+	public Course(int id, String title, boolean visible) {
         this.setId(id);
         this.title = title;
-        this.description = description;
         this.visible = visible;
     }
 
@@ -48,14 +45,6 @@ public class Course implements Listable, Serializable{
         this.title = title;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public boolean isVisible() {
         return visible;
     }
@@ -64,8 +53,7 @@ public class Course implements Listable, Serializable{
         this.visible = visible;
     }
 
-    @Override
     public String getToken() {
-        return Data.formatIdToken(id);
+		return Autograder.formatIdToken(id);
     }
 }

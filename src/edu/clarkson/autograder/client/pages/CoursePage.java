@@ -1,230 +1,83 @@
 package edu.clarkson.autograder.client.pages;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HTMLTable.Cell;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
-import edu.clarkson.autograder.client.objects.Assignment;
-import edu.clarkson.autograder.client.objects.Course;
-import edu.clarkson.autograder.client.services.AssignmentService;
-import edu.clarkson.autograder.client.services.AssignmentServiceAsync;
+import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.widgets.Content;
-import edu.clarkson.autograder.client.widgets.Listing;
 
 /**
  * Generate a page listing all assignments in the specified course.
  */
 public class CoursePage extends Content {
 
+	// interface CoursePageUiBinder extends UiBinder<Widget, CoursePage> {
+	// }
+	//
+	// private static final CoursePageUiBinder uiBinder =
+	// GWT.create(CoursePageUiBinder.class);
+
 	private static SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 
-	private Course course;
-	private int preselectedAssignmentId;
-
-	private FlexTable assignmentsTable = new FlexTable();
-	private Listing activeAssignmentListing;
-
-	private VerticalPanel topLevelPageLayout = new VerticalPanel();
+	private int courseId;
 
 	/**
-	 * Load CoursePage with specified assignment selection.
+	 * The html used to show a loading icon.
 	 */
-	public CoursePage(Course course, int preselectedAssignmentId) {
+	private final String loadingHtml;
 
-		this.course = course;
-		this.preselectedAssignmentId = preselectedAssignmentId;
-		requestAssignments();
+	/**
+	 * Attempt to create CoursePage with specified course ID. The course ID
+	 * possibly does not exist, or the user cannot access it.
+	 */
+	public CoursePage(int courseId) {
+		AbstractImagePrototype proto = AbstractImagePrototype.create(Autograder.images.loading());
+		loadingHtml = proto.getHTML();
 
-		// Create page header
-		Label pageTitle = new Label(course.getTitle());
-		pageTitle.addStyleName("pageTitle");
-		Label subTitle = new Label(course.getDescription());
-		subTitle.addStyleName("pageSubTitle");
-		VerticalPanel pageHeader = new VerticalPanel();
-		pageHeader.add(pageTitle);
-		pageHeader.add(subTitle);
-		// TODO center page header
-		pageHeader.addStyleName("coursePageHeader");
+		this.courseId = courseId;
+		LOG.publish(new LogRecord(Level.INFO, "Attempt to create course page with coureId=" + courseId));
 
-		// arrange page header, page content will load asynchronously from
-		// #loadAssignments
-		topLevelPageLayout.add(pageHeader);
+		Label pageTitle = new Label("Course Title (ID = " + courseId + ")");
+		pageTitle.getElement().getStyle().setFontSize(50, Unit.PX);
+		pageTitle.getElement().getStyle().setBackgroundColor("#3CF");
+
+		VerticalPanel sideBar = new VerticalPanel();
+		for (int i = 0; i < 10; ++i) {
+			sideBar.add(new Label("SideBar content line=" + (i + 1)));
+		}
+		sideBar.getElement().getStyle().setFontSize(50, Unit.PX);
+		sideBar.getElement().getStyle().setBackgroundColor("#6F6");
+
+		String content = "";
+		for(int i=0; i<500; ++i) content += "Problem ";
+		Label problemContent = new Label(content);
+		problemContent.getElement().getStyle().setFontSize(15, Unit.PX);
+		
+		// DockPanel topLevel = new DockPanel();
+		// topLevel.add(sideBar, DockPanel.WEST);
+		// topLevel.add(pageTitle, DockPanel.NORTH);
+		// topLevel.add(problemContent, DockPanel.CENTER);
+
+		DockLayoutPanel topLevel = new DockLayoutPanel(Unit.PX);
+		topLevel.addWest(sideBar, 50);
+		topLevel.addNorth(pageTitle, 50);
+		topLevel.add(problemContent);
 
 		// Add page to app
-		initWidget(topLevelPageLayout);
-	}
-
-	public void setSelectedAssignment(Listing selection) {
-		// ignore selecting same listing twice in a row
-		if (selection == activeAssignmentListing) {
-
-			// remove previous selection
-			activeAssignmentListing.setSelected(false);
-
-			// set current selection
-			activeAssignmentListing = selection;
-			activeAssignmentListing.setSelected(true);
-
-			// TODO update assignment content
-		}
+		// initWidget(uiBinder.createAndBindUi(this));
+		initWidget(topLevel);
 	}
 
 	@Override
 	public String getPrimaryStyleName() {
 		return "coursePage";
-	}
-
-	public void requestAssignments() {
-
-		AssignmentServiceAsync assignService = GWT.create(AssignmentService.class);
-		assignService.fetchAssignments(course.getId(), new AsyncCallback<List<Assignment>>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-				LOG.publish(new LogRecord(Level.INFO, "#requestAssignments failed: " + caught.toString()));
-			}
-
-			@Override
-			public void onSuccess(List<Assignment> result) {
-				loadAssignments(result);
-			}
-
-		});
-	}
-
-	/**
-	 * Initialize page with assignment data
-	 */
-	private void loadAssignments(List<Assignment> assignments) {
-
-		// sort assignments by date, future to past
-		Collections.sort(assignments, new Comparator<Assignment>() {
-			@Override
-			public int compare(Assignment a1, Assignment a2) {
-				return a2.getCloseTime().compareTo(a1.getCloseTime());
-			}
-		});
-
-		// create assignment listings and highlight one
-		List<Listing> currentListings = new ArrayList<>();
-		List<Listing> pastListings = new ArrayList<>();
-		Date date = new Date();
-		for (Assignment assignment : assignments) {
-			Listing listing = new Listing(assignment);
-			// set selected assignment
-			if (assignment.getId() == preselectedAssignmentId) {
-				activeAssignmentListing = listing;
-				activeAssignmentListing.setSelected(true);
-			}
-			// add listing to either "current" or "past" list
-			if (date.before(assignment.getCloseTime())) {
-				currentListings.add(listing);
-			} else {
-				pastListings.add(listing);
-			}
-		}
-		if (!currentListings.isEmpty()) {
-			// reorder currentListings chronologically by reversing order
-			Listing temp;
-			int start = 0, end = currentListings.size() - 1;
-			while (start < end) {
-				temp = currentListings.get(start);
-				currentListings.set(start, currentListings.get(end));
-				currentListings.set(end, temp);
-				start++;
-				end--;
-			}
-
-			// select assignment with closest future due date, if none selected
-			if (activeAssignmentListing == null) {
-				// in chronological order, first listing is closest to present
-				activeAssignmentListing = currentListings.get(0);
-				activeAssignmentListing.setSelected(true);
-			}
-		}
-
-		// Create assignments table
-		// TODO: collapse assignment table to the left (using nifty chevrons)
-		assignmentsTable.setCellSpacing(6);
-		// current assignments
-		assignmentsTable.setHTML(0, 0, "Current Assignments:   (" + currentListings.size() + ")");
-		assignmentsTable.getCellFormatter().setStyleName(0, 0, "assignmentsTableHeader");
-		if (currentListings.isEmpty()) {
-			assignmentsTable.setHTML(1, 0, "<div style=\"line-height:2;padding:6px;\">No assignments</div>");
-		} else {
-			for (Listing listing : currentListings) {
-				assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
-			}
-		}
-		// past assignments (if any)
-		if (!pastListings.isEmpty()) {
-			int labelRow = assignmentsTable.getRowCount();
-			assignmentsTable.setHTML(labelRow, 0, "Past Assignments:   (" + pastListings.size() + ")");
-			assignmentsTable.getCellFormatter().addStyleName(labelRow, 0, "assignmentsTableHeader");
-			for (Listing listing : pastListings) {
-				assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
-			}
-		}
-
-		assignmentsTable.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				Cell c = assignmentsTable.getCellForEvent(event);
-				if (c != null) {
-					Widget widget = assignmentsTable.getWidget(c.getRowIndex(), 0);
-					if (widget instanceof Listing) {
-						setSelectedAssignment((Listing) widget);
-					}
-				}
-			}
-		});
-
-		assignmentsTable.addStyleName("assignmentsTable");
-
-		// TODO put assignment view template in question layout pane
-		// TODO populate assignment view template with question data from DB
-		// Question layout pane
-		String contentString = "";
-		if (activeAssignmentListing != null) {
-			contentString += "<p>";
-			for (int i = 0; i < 20 * course.getId(); ++i) {
-				contentString += "line " + (i + 1) + " Assignment ID=" + activeAssignmentListing.getContent().getId()
-				        + " Content<br>";
-				if (i == 20)
-					for (int j = 0; j < 50; ++j)
-						contentString += "Assignment Content ";
-			}
-			contentString += "</p>";
-		} else {
-			contentString = "<div style=\"padding:6px;\">There are no open assignments to display. Past assignments may be viewed from the panel on the left.</div>";
-		}
-		HTML assignmentContent = new HTML(contentString);
-
-		// arrange assignments table and assignment content
-		HorizontalPanel pageContentPane = new HorizontalPanel();
-		pageContentPane.add(assignmentsTable);
-		pageContentPane.add(assignmentContent);
-		assignmentContent.addStyleName("assignmentContent");
-		pageContentPane.addStyleName("assignmentPageContentPane");
-
-		// add content to top level layout
-		topLevelPageLayout.add(pageContentPane);
-	}
+	};
 }
