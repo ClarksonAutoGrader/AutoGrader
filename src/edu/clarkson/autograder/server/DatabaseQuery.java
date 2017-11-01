@@ -21,12 +21,11 @@ public class DatabaseQuery {
 	private static ConsoleHandler LOG = new ConsoleHandler();
 	
 	//Connection for database
-	private static Connection conn;
+	//private static Connection conn;
 	
 	//Database parameters
-	private String url = "jdbc:mysql://localhost:3306/autograder_db";
-    private String localdevuser = "autograder_dev";
-    private String user = "autograder_local";
+	private String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
+    private String user = "autograder_dev";
     private String password = "292.2K16";
     
     private String getUsername(){
