@@ -1,15 +1,27 @@
 /* Autograder.css */
 /* Colors: yellow #F0CA0C; green #015847; */
 /* Formatting for static content */
-html, body {
+html {
 	margin: 0 !important;
 	padding: 0;
  	height: 100%; /* needed for container min-height */
+ 	min-height: 100%;
+	background: #FFFFFF !important; 
+	font-family: Raleway, sans-serif;
+}
+
+body{
+	margin: 0 !important;
+	padding: 0;
+	height:100%;
+	min-height: 100%;
 	background: #015847 !important; 
 	font-family: Raleway, sans-serif;
 }
 
 h1 {
+	margin:0;
+	padding:1vw;
 	color: #fff;
 }
 
