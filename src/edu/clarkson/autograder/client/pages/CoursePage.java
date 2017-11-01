@@ -6,7 +6,6 @@ import java.util.logging.LogRecord;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -45,10 +44,12 @@ public class CoursePage extends Content {
 		this.courseId = courseId;
 		LOG.publish(new LogRecord(Level.INFO, "Attempt to create course page with coureId=" + courseId));
 
+		// Page title
 		Label pageTitle = new Label("Course Title (ID = " + courseId + ")");
 		pageTitle.getElement().getStyle().setFontSize(50, Unit.PX);
 		pageTitle.getElement().getStyle().setBackgroundColor("#3CF");
 
+		// Side-bar assignment selection
 		VerticalPanel sideBar = new VerticalPanel();
 		for (int i = 0; i < 10; ++i) {
 			sideBar.add(new Label("SideBar content line=" + (i + 1)));
@@ -56,20 +57,17 @@ public class CoursePage extends Content {
 		sideBar.getElement().getStyle().setFontSize(50, Unit.PX);
 		sideBar.getElement().getStyle().setBackgroundColor("#6F6");
 
+		// Problem content
 		String content = "";
 		for(int i=0; i<500; ++i) content += "Problem ";
 		Label problemContent = new Label(content);
 		problemContent.getElement().getStyle().setFontSize(15, Unit.PX);
 		
-		// DockPanel topLevel = new DockPanel();
-		// topLevel.add(sideBar, DockPanel.WEST);
-		// topLevel.add(pageTitle, DockPanel.NORTH);
-		// topLevel.add(problemContent, DockPanel.CENTER);
-
-		DockLayoutPanel topLevel = new DockLayoutPanel(Unit.PX);
-		topLevel.addWest(sideBar, 50);
-		topLevel.addNorth(pageTitle, 50);
-		topLevel.add(problemContent);
+		// Assemble page layout
+		DockPanel topLevel = new DockPanel();
+		topLevel.add(sideBar, DockPanel.WEST);
+		topLevel.add(pageTitle, DockPanel.NORTH);
+		topLevel.add(problemContent, DockPanel.CENTER);
 
 		// Add page to app
 		// initWidget(uiBinder.createAndBindUi(this));
