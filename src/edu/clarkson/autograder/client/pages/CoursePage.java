@@ -5,11 +5,18 @@ import java.util.logging.LogRecord;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
+import com.google.gwt.sample.showcase.client.ContentWidget;
+import com.google.gwt.sample.showcase.client.MainMenuTreeViewModel;
+import com.google.gwt.user.cellview.client.CellTree;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.SingleSelectionModel;
+import com.google.gwt.view.client.TreeViewModel;
 
+import edu.clarkson.autograder.client.AssignmentTreeViewModel;
 import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.widgets.Content;
 
@@ -38,24 +45,24 @@ public class CoursePage extends Content {
 	 * possibly does not exist, or the user cannot access it.
 	 */
 	public CoursePage(int courseId) {
+		LOG.publish(new LogRecord(Level.INFO, "Attempt to create course page with coureId=" + courseId));
+		this.courseId = courseId;
+
 		AbstractImagePrototype proto = AbstractImagePrototype.create(Autograder.images.loading());
 		loadingHtml = proto.getHTML();
-
-		this.courseId = courseId;
-		LOG.publish(new LogRecord(Level.INFO, "Attempt to create course page with coureId=" + courseId));
 
 		// Page title
 		Label pageTitle = new Label("Course Title (ID = " + courseId + ")");
 		pageTitle.getElement().getStyle().setFontSize(50, Unit.PX);
 		pageTitle.getElement().getStyle().setBackgroundColor("#3CF");
 
-		// Side-bar assignment selection
-		VerticalPanel sideBar = new VerticalPanel();
-		for (int i = 0; i < 10; ++i) {
-			sideBar.add(new Label("SideBar content line=" + (i + 1)));
-		}
-		sideBar.getElement().getStyle().setFontSize(50, Unit.PX);
-		sideBar.getElement().getStyle().setBackgroundColor("#6F6");
+		// Create a side bar for assignment selection.
+		final SingleSelectionModel<ProblemListing> selectionModel = new SingleSelectionModel<ProblemListing>();
+		final AssignmentTreeViewModel treeModel = new AssignmentTreeViewModel(selectionModel);
+		CellTree sideBar = new CellTree(treeModel, null);
+		sideBar.setAnimationEnabled(true);
+		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
 
 		// Problem content
 		String content = "";
