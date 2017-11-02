@@ -52,7 +52,7 @@ public class CoursePage extends Content {
 		Label pageTitle = new Label("Course Title (ID = " + courseId + ")");
 		pageTitle.getElement().getStyle().setFontSize(50, Unit.PX);
 		pageTitle.getElement().getStyle().setBackgroundColor("#3CF");
-	
+
 		// Create a side bar for assignment selection.
 		final SingleSelectionModel<ProblemContent> selectionModel = new SingleSelectionModel<ProblemContent>();
 		final AssignmentTreeViewModel treeModel = new AssignmentTreeViewModel(selectionModel);
