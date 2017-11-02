@@ -131,11 +131,19 @@ div#notSubmitted {
 	font-size: 130%;
 }
 
+.gwt-TextBox {
+	width: 100px;
+}
+
 .problemFlowPanel div {
 	float: left;
 	padding-right: 1em;
 	padding-bottom: 0.5em;
 	font-size: 22px;
+}
+
+.problemBodyText div {
+	float: left;
 }
 
 .buttons {
