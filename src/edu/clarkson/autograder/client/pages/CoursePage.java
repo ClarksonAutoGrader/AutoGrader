@@ -5,20 +5,17 @@ import java.util.logging.LogRecord;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
-import com.google.gwt.sample.showcase.client.ContentWidget;
-import com.google.gwt.sample.showcase.client.MainMenuTreeViewModel;
 import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.SingleSelectionModel;
-import com.google.gwt.view.client.TreeViewModel;
 
 import edu.clarkson.autograder.client.AssignmentTreeViewModel;
 import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.widgets.Content;
+import edu.clarkson.autograder.client.widgets.ProblemContent;
 
 /**
  * Generate a page listing all assignments in the specified course.
@@ -57,7 +54,7 @@ public class CoursePage extends Content {
 		pageTitle.getElement().getStyle().setBackgroundColor("#3CF");
 
 		// Create a side bar for assignment selection.
-		final SingleSelectionModel<ProblemListing> selectionModel = new SingleSelectionModel<ProblemListing>();
+		final SingleSelectionModel<ProblemContent> selectionModel = new SingleSelectionModel<ProblemContent>();
 		final AssignmentTreeViewModel treeModel = new AssignmentTreeViewModel(selectionModel);
 		CellTree sideBar = new CellTree(treeModel, null);
 		sideBar.setAnimationEnabled(true);

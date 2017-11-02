@@ -8,6 +8,8 @@ import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
 
+import edu.clarkson.autograder.client.widgets.ProblemContent;
+
 public class AssignmentTreeViewModel implements TreeViewModel {
 
 	/**
@@ -72,11 +74,11 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 
 	/**
 	 * A mid-level node of the {@link AssignmentTreeViewModel} containing
-	 * {@link AssignmentTreeViewModel#ProblemListing}s and appearing under
+	 * {@link AssignmentTreeViewModel#ProblemContent}s and appearing under
 	 * {@link AssignmentTreeViewModel#Category} nodes. The constructor argument
 	 * is the Assignment node name which will be displayed to the user.
 	 */
-	private class Assignment extends SideBarNode<ProblemListing> {
+	private class Assignment extends SideBarNode<ProblemContent> {
 
 		public Assignment(String name) {
 			super(name);
@@ -88,30 +90,12 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 		 * @return the node info
 		 */
 		@Override
-		public NodeInfo<ProblemListing> getNodeInfo() {
+		public NodeInfo<ProblemContent> getNodeInfo() {
 			if (nodeInfo == null) {
-				nodeInfo = new DefaultNodeInfo<ProblemListing>(children, problemListingCell, selectionModel,
+				nodeInfo = new DefaultNodeInfo<ProblemContent>(children, problemContentCell, selectionModel,
 				        null);
 			}
 			return nodeInfo;
-		}
-	}
-
-	/**
-	 * A bottom-level leaf of the {@link AssignmentTreeViewModel} appearing
-	 * under {@link AssignmentTreeViewModel#Assignment} nodes. The constructor
-	 * argument is the ProblemListing name which will be displayed to the user.
-	 */
-	private class ProblemListing {
-
-		final String name;
-
-		public ProblemListing(String name) {
-			this.name = name;
-		}
-
-		public String getName() {
-			return name;
 		}
 	}
 
@@ -150,11 +134,11 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	}
 
 	/**
-	 * The cell used to render ProblemListings.
+	 * The cell used to render ProblemContents.
 	 */
-	private static class ProblemListingCell extends AbstractCell<ProblemListing> {
+	private static class ProblemContentCell extends AbstractCell<ProblemContent> {
 		@Override
-		public void render(Context context, ProblemListing value, SafeHtmlBuilder sb) {
+		public void render(Context context, ProblemContent value, SafeHtmlBuilder sb) {
 			if (value != null) {
 				sb.appendEscaped(value.getName());
 			}
@@ -169,14 +153,14 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	/**
 	 * The cell used to render problem listings.
 	 */
-	private final ProblemListingCell problemListingCell = new ProblemListingCell();
+	private final ProblemContentCell problemContentCell = new ProblemContentCell();
 
 	/**
 	 * The selection model used to select examples.
 	 */
-	private final SelectionModel<ProblemListing> selectionModel;
+	private final SelectionModel<ProblemContent> selectionModel;
 
-	public AssignmentTreeViewModel(SelectionModel<ProblemListing> selectionModel) {
+	public AssignmentTreeViewModel(SelectionModel<ProblemContent> selectionModel) {
 		this.selectionModel = selectionModel;
 		initializeTree();
 	}
@@ -206,7 +190,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	 */
 	@Override
 	public boolean isLeaf(Object value) {
-		return value != null && (value instanceof ProblemListing);
+		return value != null && (value instanceof ProblemContent);
 	}
 
 	/**
@@ -222,7 +206,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 
 			// TODO temporary: need async load of assignments
 			Assignment assignment = new Assignment("First Assignment");
-			assignment.addChild(new ProblemListing("First Problem"));
+			assignment.addChild(new ProblemContent());
 
 			category.addChild(assignment);
 		}
@@ -233,7 +217,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 			catList.add(category);
 
 			Assignment assignment = new Assignment("Assignment 1");
-			assignment.addChild(new ProblemListing("Problem 1"));
+			assignment.addChild(new ProblemContent());
 
 			category.addChild(assignment);
 		}
