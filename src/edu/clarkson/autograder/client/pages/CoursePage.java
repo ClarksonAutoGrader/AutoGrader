@@ -62,12 +62,22 @@ public class CoursePage extends Content {
 		}
 		sideBar.getElement().getStyle().setFontSize(50, Unit.PX);
 		sideBar.getElement().getStyle().setBackgroundColor("#6F6");		
+		// Create a side bar for assignment selection.
+		final SingleSelectionModel<ProblemContent> selectionModel = new SingleSelectionModel<ProblemContent>();
+		final AssignmentTreeViewModel treeModel = new AssignmentTreeViewModel(selectionModel);
+		CellTree sideBar = new CellTree(treeModel, null);
+		sideBar.setAnimationEnabled(true);
+		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
+
+		// Problem content
+		ProblemContent problemContent = new ProblemContent();
 		
 		// Assemble page layout
 		DockPanel topLevel = new DockPanel();
 		topLevel.add(sideBar, DockPanel.WEST);
 		topLevel.add(pageTitle, DockPanel.NORTH);
-		topLevel.add(new ProblemContent(), DockPanel.CENTER);
+		topLevel.add(problemContent, DockPanel.CENTER);
 
 		// Add page to app
 		// initWidget(uiBinder.createAndBindUi(this));
