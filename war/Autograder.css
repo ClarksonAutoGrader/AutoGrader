@@ -117,8 +117,13 @@ div#notSubmitted {
 }
 
 .com-google-gwt-user-cellview-client-CellTree-Style-cellTreeWidget-assignmentSideBar {
+<<<<<<< HEAD
 	width: 20vw;
 	max-width: 14em;
+=======
+	width: 15vw;
+	max-width: 15em;
+>>>>>>> branch '23-as-a-user-i-want-to-see-assignment-problem-navigation-bar' of git@gitlab.com:ClarksonUniversity/autograder/autograder-gwt.git
 	font-size: 150%;
 	padding-bottom: 2em;
 }
