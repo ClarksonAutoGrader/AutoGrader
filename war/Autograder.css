@@ -125,6 +125,7 @@ div#notSubmitted {
 .assignmentTitleAndContent {
 	min-height: 100%;
 	border-left: 0.3vw double gray;
+	background: #666;
 }
 
 .com-google-gwt-user-cellview-client-CellTree-Style-cellTreeWidget-assignmentSideBar {
@@ -137,12 +138,9 @@ div#notSubmitted {
 .problemContent {
 	font-size: 15px;
 	padding: 1em;
-	min-height: 100vh;
 }
 
 .problemFlowPanel div {
 	float: left;
-	margin-left:10px;
-	display: inline-block;
-	padding-right:18vw;
+	padding-right: 1em;
 }
