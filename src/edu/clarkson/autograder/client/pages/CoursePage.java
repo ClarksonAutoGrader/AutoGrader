@@ -3,15 +3,21 @@ package edu.clarkson.autograder.client.pages;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.widgets.Content;
+import edu.clarkson.autograder.client.widgets.ProblemContent;
 
 /**
  * Generate a page listing all assignments in the specified course.
@@ -55,19 +61,13 @@ public class CoursePage extends Content {
 			sideBar.add(new Label("SideBar content line=" + (i + 1)));
 		}
 		sideBar.getElement().getStyle().setFontSize(50, Unit.PX);
-		sideBar.getElement().getStyle().setBackgroundColor("#6F6");
-
-		// Problem content
-		String content = "";
-		for(int i=0; i<500; ++i) content += "Problem ";
-		Label problemContent = new Label(content);
-		problemContent.getElement().getStyle().setFontSize(15, Unit.PX);
+		sideBar.getElement().getStyle().setBackgroundColor("#6F6");		
 		
 		// Assemble page layout
 		DockPanel topLevel = new DockPanel();
 		topLevel.add(sideBar, DockPanel.WEST);
 		topLevel.add(pageTitle, DockPanel.NORTH);
-		topLevel.add(problemContent, DockPanel.CENTER);
+		topLevel.add(new ProblemContent(), DockPanel.CENTER);
 
 		// Add page to app
 		// initWidget(uiBinder.createAndBindUi(this));

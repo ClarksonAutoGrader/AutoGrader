@@ -139,3 +139,10 @@ div#footer a:active { color: #F0CA0C; }
 	width: 83vw;
 	min-height: 75vh;
 }
+
+.problemFlowPanel div {
+	float: left;
+	margin-left:10px;
+	display: inline-block;
+	padding-right:18vw;
+}
