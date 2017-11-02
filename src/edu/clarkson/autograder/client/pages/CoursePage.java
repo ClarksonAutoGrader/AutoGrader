@@ -61,15 +61,10 @@ public class CoursePage extends Content {
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
-		LOG.publish(new LogRecord(Level.INFO, "Ur style nom is " + sideBar.getStylePrimaryName()));
 		sideBar.addStyleDependentName("assignmentSideBar");
 
 		// Problem content
-		String content = "";
-		for(int i=0; i<500; ++i) content += "Problem ";
-		Label problemContent = new Label(content);
-		problemContent.getElement().getStyle().setFontSize(15, Unit.PX);
-		problemContent.getElement().getStyle().setPadding(1.0, Unit.EM);
+		ProblemContent problemContent = new ProblemContent();
 		problemContent.addStyleName("problemContent");
 		
 		// Assemble page layout

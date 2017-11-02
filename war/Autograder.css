@@ -133,3 +133,16 @@ div#notSubmitted {
 	font-size: 150%;
 	padding-bottom: 2em;
 }
+
+.problemContent {
+	font-size: 15px;
+	padding: 1em;
+	min-height: 100vh;
+}
+
+.problemFlowPanel div {
+	float: left;
+	margin-left:10px;
+	display: inline-block;
+	padding-right:18vw;
+}
