@@ -50,9 +50,8 @@ public class CoursePage extends Content {
 		loadingHtml = proto.getHTML();
 
 		// Page title
-		Label pageTitle = new Label("Course Title (ID = " + courseId + ")");
-		pageTitle.getElement().getStyle().setFontSize(50, Unit.PX);
-		pageTitle.getElement().getStyle().setBackgroundColor("#3CF");
+		Label pageTitle = new Label(edu.clarkson.autograder.client.Autograder.tempDebugCourseNameSelected);
+		pageTitle.addStyleName("coursePageHeader");
 
 		// Create a side bar for assignment selection.
 		final SingleSelectionModel<ProblemContent> selectionModel = new SingleSelectionModel<ProblemContent>();
@@ -62,19 +61,19 @@ public class CoursePage extends Content {
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
 		sideBar.addStyleDependentName("assignmentSideBar");
+		sideBar.getRootTreeNode().setChildOpen(0, true);
 
 		// Problem content
 		ProblemContent problemContent = new ProblemContent();
 		problemContent.addStyleName("problemContent");
-		
-		// Assemble page layout
-		VerticalPanel titleAndContent = new VerticalPanel();
-		titleAndContent.addStyleName("assignmentTitleAndContent");
-		titleAndContent.add(pageTitle);
-		titleAndContent.add(problemContent);
-		HorizontalPanel topLevel = new HorizontalPanel();
-		topLevel.add(sideBar);
-		topLevel.add(titleAndContent);
+
+		HorizontalPanel sideBarAndContent = new HorizontalPanel();
+		sideBarAndContent.addStyleName("sideBarAndContent");
+		sideBarAndContent.add(sideBar);
+		sideBarAndContent.add(problemContent);
+		VerticalPanel topLevel = new VerticalPanel();
+		topLevel.add(pageTitle);
+		topLevel.add(sideBarAndContent);
 
 		// Add page to app
 		initWidget(topLevel);

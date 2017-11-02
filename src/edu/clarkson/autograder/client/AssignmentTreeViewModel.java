@@ -133,7 +133,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 				// TODO add information to Assignment Cell...
 				// such as at-a-glance progress (% pts. earned / total
 				// assignment pts.)
-				int percentComplete = 25 * ((int) (Math.random() * 5));
+				int percentComplete = Math.min(100, 25 * ((int) (Math.random() * 6)));
 				String cssTag = "";
 				String submissionDiv = "";
 				if (percentComplete == 100) {
@@ -148,7 +148,6 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 				sb.appendEscaped(percentComplete + "% Complete");
 				sb.appendHtmlConstant("<br><div id=\"").appendEscaped(cssTag).appendHtmlConstant("\">")
 				        .appendEscaped(submissionDiv).appendHtmlConstant("</div>");
-				Autograder.LOG.publish(new LogRecord(Level.INFO, sb.toSafeHtml().asString().intern()));
 			}
 		}
 	}
