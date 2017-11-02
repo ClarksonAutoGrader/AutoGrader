@@ -60,8 +60,7 @@ public class CoursePage extends Content {
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
-		sideBar.addStyleDependentName("assignmentSideBar");
-		pageTitle.setText(sideBar.getStyleName());
+		sideBar.addStyleName("assignmentSideBar");
 		sideBar.getRootTreeNode().setChildOpen(0, true);
 
 		// Problem content

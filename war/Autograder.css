@@ -116,7 +116,7 @@ div#notSubmitted {
 	color: red;
 }
 
-.com-google-gwt-user-cellview-client-CellTree-Style-cellTreeWidget-assignmentSideBar {
+.assignmentSideBar {
 	width: 20vw;
 	max-width: 280px;
 	font-size: 150%;
