@@ -8,8 +8,9 @@ import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
-import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.SingleSelectionModel;
 
 import edu.clarkson.autograder.client.AssignmentTreeViewModel;
@@ -60,21 +61,27 @@ public class CoursePage extends Content {
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
+		LOG.publish(new LogRecord(Level.INFO, "Ur style nom is " + sideBar.getStylePrimaryName()));
+		sideBar.addStyleDependentName("assignmentSideBar");
 
 		// Problem content
 		String content = "";
 		for(int i=0; i<500; ++i) content += "Problem ";
 		Label problemContent = new Label(content);
 		problemContent.getElement().getStyle().setFontSize(15, Unit.PX);
+		problemContent.getElement().getStyle().setPadding(1.0, Unit.EM);
+		problemContent.addStyleName("problemContent");
 		
 		// Assemble page layout
-		DockPanel topLevel = new DockPanel();
-		topLevel.add(sideBar, DockPanel.WEST);
-		topLevel.add(pageTitle, DockPanel.NORTH);
-		topLevel.add(problemContent, DockPanel.CENTER);
+		VerticalPanel titleAndContent = new VerticalPanel();
+		titleAndContent.addStyleName("assignmentTitleAndContent");
+		titleAndContent.add(pageTitle);
+		titleAndContent.add(problemContent);
+		HorizontalPanel topLevel = new HorizontalPanel();
+		topLevel.add(sideBar);
+		topLevel.add(titleAndContent);
 
 		// Add page to app
-		// initWidget(uiBinder.createAndBindUi(this));
 		initWidget(topLevel);
 	}
 

@@ -44,7 +44,7 @@ div#header {
 }
 
 div#content {
- 	padding-bottom: 6em; /* prevent footer overlap */
+ 	padding-bottom: 4.5em; /* prevent footer overlap */
 	
 	overflow: hidden;
 }
@@ -84,17 +84,6 @@ div#footer a:active { color: #F0CA0C; }
 	font-weight: bold;
 }
 
-.coursePage {
-/* 	padding: 0px 2em 0px; */
-/* 	margin-top: 2em; */
-}
-
-
-.pageSubTitle {
-	font-size: 200%;
-	text-align: center;
-}
-
 .errorLabel {
 	color: red;
 	text-align: center;
@@ -118,24 +107,29 @@ div#footer a:active { color: #F0CA0C; }
 	margin: 1vw auto;
 }
 
-.assignmentPageContentPane {
-	float: left;
-	width: 100vw;
-}
-
-.assignmentsTable {
-	width: 15vw;
-	min-width: 15em;
-}
-
-.assignmentsTableHeader {
-	font-size: 110%;
-	font-weight: bold;
-	padding: 20px 0 0;
-}
 
 .assignmentContent {
 	margin: 2vw 1vw 0;
 	width: 83vw;
 	min-height: 75vh;
+}
+
+div#submitted {
+	color: green;
+}
+
+div#notSubmitted {
+	color: red;
+}
+
+.assignmentTitleAndContent {
+	min-height: 100%;
+	border-left: 0.3vw double gray;
+}
+
+.com-google-gwt-user-cellview-client-CellTree-Style-cellTreeWidget-assignmentSideBar {
+	width: 15vw;
+	min-width: 15em;
+	font-size: 150%;
+	padding-bottom: 2em;
 }

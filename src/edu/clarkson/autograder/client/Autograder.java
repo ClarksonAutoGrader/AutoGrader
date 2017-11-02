@@ -20,6 +20,8 @@ public class Autograder implements EntryPoint {
 
 	public static final int ID_TOKEN_WIDTH = 6;
 
+	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
+
 	public static String formatIdToken(int id) {
 		// Attempts to provide identical functionality as:
 		// String.format("%0" + ID_TOKEN_WIDTH + "d", id);
@@ -34,8 +36,7 @@ public class Autograder implements EntryPoint {
      * This is the entry point method.
      */
     public void onModuleLoad() {
-		SimpleRemoteLogHandler remoteLog = new SimpleRemoteLogHandler();
-		remoteLog.publish(new LogRecord(Level.INFO, "EntryPoint"));
+		LOG.publish(new LogRecord(Level.INFO, "EntryPoint"));
 
         History.addValueChangeHandler(State.getInstance());
         if (History.getToken().isEmpty()) {

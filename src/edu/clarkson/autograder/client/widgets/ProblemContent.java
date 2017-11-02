@@ -9,6 +9,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class ProblemContent extends Composite {
 
+	private String name;
+
 	public ProblemContent(){
 		VerticalPanel problemContent = new VerticalPanel();
 		//Container for the problem header information (question #, points, previous answers)
@@ -44,7 +46,17 @@ public class ProblemContent extends Composite {
 		initWidget(problemContent);
 	}
 	
+	/**
+	 * TODO TEMPORARY constructor
+	 */
+	public ProblemContent(String name) {
+		this();
+		this.name = name;
+	}
+
 	public String getName(){
-		return "Problem 1";
+		if (name == null)
+			return "Problem 1";
+		return name;
 	}
 }

@@ -1,6 +1,8 @@
 package edu.clarkson.autograder.client;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -107,8 +109,14 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 		public void render(Context context, Category value, SafeHtmlBuilder sb) {
 			if (value != null) {
 				sb.appendEscaped(value.getName());
+
 				// TODO get number of assignments in this category.
 				int numberOfChildren = 0;
+				if (value.getName() == "Current Assignments")
+					numberOfChildren = 2;
+				else
+					numberOfChildren = 5;
+
 				sb.appendEscaped(" (" + numberOfChildren + ")");
 			}
 		}
@@ -126,9 +134,21 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 				// such as at-a-glance progress (% pts. earned / total
 				// assignment pts.)
 				int percentComplete = 25 * ((int) (Math.random() * 5));
-				sb.appendEscaped(" (" + percentComplete + " % Complete)");
+				String cssTag = "";
+				String submissionDiv = "";
+				if (percentComplete == 100) {
+					cssTag = "submitted";
+					submissionDiv = "Submitted";
+				} else {
+					cssTag = "notSubmitted";
+					submissionDiv = "Not Submitted";
+				}
+
 				sb.appendHtmlConstant("<br>");
-				sb.appendEscaped("Not Submitted");
+				sb.appendEscaped(percentComplete + "% Complete");
+				sb.appendHtmlConstant("<br><div id=\"").appendEscaped(cssTag).appendHtmlConstant("\">")
+				        .appendEscaped(submissionDiv).appendHtmlConstant("</div>");
+				Autograder.LOG.publish(new LogRecord(Level.INFO, sb.toSafeHtml().asString().intern()));
 			}
 		}
 	}
@@ -205,10 +225,24 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 			catList.add(category);
 
 			// TODO temporary: need async load of assignments
-			Assignment assignment = new Assignment("First Assignment");
-			assignment.addChild(new ProblemContent());
+			Assignment a1 = new Assignment("Assignment 4");
+			a1.addChild(new ProblemContent("Question 4.7"));
+			a1.addChild(new ProblemContent("Question 4.8"));
+			a1.addChild(new ProblemContent("Question 4.15"));
+			a1.addChild(new ProblemContent("Question 4.16"));
+			a1.addChild(new ProblemContent("Question 4.22"));
+			a1.addChild(new ProblemContent("Question 5.1"));
+			a1.addChild(new ProblemContent("Question 5.3"));
+			category.addChild(a1);
 
-			category.addChild(assignment);
+			Assignment a3 = new Assignment("Take Home Exam II");
+			a3.addChild(new ProblemContent("Question 1"));
+			a3.addChild(new ProblemContent("Question 2"));
+			a3.addChild(new ProblemContent("Question 3"));
+			a3.addChild(new ProblemContent("Question 4"));
+			a3.addChild(new ProblemContent("Question 5"));
+			a3.addChild(new ProblemContent("Bonus!!"));
+			category.addChild(a3);
 		}
 
 		// Past Assignments
@@ -216,10 +250,40 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 			Category category = new Category("Past Assignments");
 			catList.add(category);
 
-			Assignment assignment = new Assignment("Assignment 1");
-			assignment.addChild(new ProblemContent());
+			Assignment a0 = new Assignment("Pre-test (Quiz) Due 9/31");
+			a0.addChild(new ProblemContent("Problem 1"));
+			a0.addChild(new ProblemContent("Problem 2"));
+			a0.addChild(new ProblemContent("Problem 3"));
+			a0.addChild(new ProblemContent("Problem 4"));
+			category.addChild(a0);
 
-			category.addChild(assignment);
+			Assignment a1 = new Assignment("Assignment 1");
+			a1.addChild(new ProblemContent("Problem 1"));
+			a1.addChild(new ProblemContent("Problem 2"));
+			a1.addChild(new ProblemContent("Problem 3"));
+			a1.addChild(new ProblemContent("Problem 4"));
+			category.addChild(a1);
+
+			Assignment a2 = new Assignment("Assignment 2");
+			a2.addChild(new ProblemContent("Problem 1"));
+			a2.addChild(new ProblemContent("Problem 2"));
+			a2.addChild(new ProblemContent("Problem 3"));
+			category.addChild(a2);
+
+			Assignment a3 = new Assignment("Take Home Exam");
+			a3.addChild(new ProblemContent("Question 1"));
+			a3.addChild(new ProblemContent("Question 2"));
+			a3.addChild(new ProblemContent("Question 3"));
+			a3.addChild(new ProblemContent("Question 4"));
+			a3.addChild(new ProblemContent("Question 5"));
+			a3.addChild(new ProblemContent("Bonus!!"));
+			category.addChild(a3);
+
+			Assignment a4 = new Assignment("Assignment 3");
+			a4.addChild(new ProblemContent("One"));
+			a4.addChild(new ProblemContent("Two"));
+			a4.addChild(new ProblemContent("Three"));
+			category.addChild(a4);
 		}
 	}
 }
