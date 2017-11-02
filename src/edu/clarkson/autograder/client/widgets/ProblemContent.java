@@ -10,6 +10,8 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.Hyperlink;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -75,12 +77,16 @@ public class ProblemContent extends Composite {
 	}
 	
 	private void createFooter(){
-		problemFooter.setStyleName("problemFlowPanel");
-		problemFooter.add(new Button("Submit"));
+		problemFooter.setStylePrimaryName("problemFlowPanel");
+		problemFooter.setStyleDependentName("footer", true);
+		Button submit = new Button("Submit");
+		submit.addStyleName("buttons");
+		problemFooter.add(submit);
 		int resets = 3;
-		String resetsRemaining = "<div id=problemFooterResets> Resets Remaining: " + resets + "</div>";
-		problemFooter.add(new HTML(resetsRemaining));
-		problemFooter.add(new Button("New Question"));
+		Button newQuestion = new Button("New Question");
+		newQuestion.addStyleName("buttons");
+		problemFooter.add(newQuestion);
+		problemFooter.add(new InlineLabel("Resets Remaining: " + resets));
 		
 	}
 	
