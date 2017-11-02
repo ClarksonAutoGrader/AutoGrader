@@ -125,7 +125,6 @@ div#notSubmitted {
 .assignmentTitleAndContent {
 	min-height: 100%;
 	border-left: 0.3vw double gray;
-	background: #666;
 }
 
 .com-google-gwt-user-cellview-client-CellTree-Style-cellTreeWidget-assignmentSideBar {
