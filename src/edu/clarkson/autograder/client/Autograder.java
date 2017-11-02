@@ -13,6 +13,8 @@ import com.google.gwt.user.client.History;
  */
 public class Autograder implements EntryPoint {
 
+	public static String tempDebugCourseNameSelected = "ME310 - Thermodynamics";
+
 	/**
 	 * The static images used throughout the Autograder.
 	 */

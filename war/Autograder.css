@@ -15,8 +15,7 @@ body{
 	padding: 0;
 	height:100%;
 	min-height: 100%;
-	background: #015847 !important; 
-	font-family: Raleway, sans-serif;
+	background: #015847 !important;
 }
 
 h1 {
@@ -105,13 +104,8 @@ div#footer a:active { color: #F0CA0C; }
 
 .coursePageHeader {
 	margin: 1vw auto;
-}
-
-
-.assignmentContent {
-	margin: 2vw 1vw 0;
-	width: 83vw;
-	min-height: 75vh;
+	font-size: 200%;
+	padding-left: 1em;
 }
 
 div#submitted {
@@ -122,28 +116,26 @@ div#notSubmitted {
 	color: red;
 }
 
-.assignmentTitleAndContent {
-	min-height: 100%;
-	border-left: 0.3vw double gray;
-}
-
 .com-google-gwt-user-cellview-client-CellTree-Style-cellTreeWidget-assignmentSideBar {
 	width: 15vw;
-	min-width: 15em;
+	max-width: 15em;
 	font-size: 150%;
 	padding-bottom: 2em;
 }
 
 .problemContent {
-	font-size: 15px;
-	padding: 1em;
+	padding: 2em 2em 0;
+}
+
+.problemBodyText {
+	font-size: 130%;
 }
 
 .problemFlowPanel div {
 	float: left;
 	padding-right: 1em;
-	padding-bottom: 1em;
-	font-size: 20px;
+	padding-bottom: 0.5em;
+	font-size: 22px;
 }
 
 .buttons {

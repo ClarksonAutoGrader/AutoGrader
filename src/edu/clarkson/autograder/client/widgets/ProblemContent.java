@@ -27,7 +27,7 @@ public class ProblemContent extends Composite {
 	private VerticalPanel problemContent = new VerticalPanel();
 	private FlowPanel problemHeader = new FlowPanel();
 	private FlowPanel problemFooter = new FlowPanel();
-	private Label problemText = new Label();
+	private Label problemBody = new Label();
 
 	private String name;
 
@@ -40,7 +40,7 @@ public class ProblemContent extends Composite {
 		
 		//Add content to problem container
 		problemContent.add(problemHeader);
-		problemContent.add(problemText);
+		problemContent.add(problemBody);
 		problemContent.add(problemFooter);
 		
 		initWidget(problemContent);
@@ -55,9 +55,11 @@ public class ProblemContent extends Composite {
 		
 		double pointsReceived = (int) (25*Math.random());
 		double pointsTotal = (int) (50*Math.random()+25);
-		int problemNumber = (int) (100*Math.random());
-		String problemHeaderHTML = "<div id=problemHeaderQuestionNumber>Question " + problemNumber + "</div>";
-		String nextString = "<div id=problemHeaderPoints>" + Math.round(pointsReceived) + "/" + Math.round(pointsTotal) + " (" + Math.round((pointsReceived / pointsTotal)*100) + "%)</div>";
+		int problemNumber = 1 + (int) (10 * Math.random());
+		String problemHeaderHTML = "<div id=problemHeaderQuestionNumber>Problem " + problemNumber + "</div>";
+		String nextString = "<div id=problemHeaderPoints>" + (double) Math.round(pointsReceived) + "/"
+		        + ((double) Math.round(pointsTotal)) + " (" + Math.round((pointsReceived / pointsTotal) * 100)
+		        + "%)</div>";
 		problemHeader.add(new HTML(problemHeaderHTML));
 		problemHeader.add(new HTML(nextString));
 		
@@ -129,7 +131,8 @@ public class ProblemContent extends Composite {
 				+ " quam. In hac habitasse platea dictumst. Integer augue ligula, gravida eu enim nec, aliquet rhoncus tortor. Duis vel lacus euismod, facilisis "
 				+ "ipsum id, dignissim erat. Proin id aliquet eros. Aenean sed risus ex. Nunc eget ultrices nisi, eu luctus nisi. Nulla facilisi. Vivamus "
 				+ "eleifend efficitur risus. Nunc finibus iaculis ultricies.";
-		problemText.setText(text);
+		problemBody.setText(text);
+		problemBody.addStyleName("problemBodyText");
 	}
 	
 	//Private DialogBox class to hold previous answers
