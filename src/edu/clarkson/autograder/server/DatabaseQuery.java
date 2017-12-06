@@ -29,9 +29,8 @@ public class DatabaseQuery {
     private String password = "292.2K16";
     
     private String getUsername(){
-    	//LOG.publish(new LogRecord(Level.INFO, "user is: " + (AssertionHolder.getAssertion().getPrincipal().getName())));
-    	//return AssertionHolder.getAssertion().getPrincipal().getName();
-    	return "woodrj";
+    	//return "woodrj";
+    	return AssertionHolder.getAssertion().getPrincipal().getName();
     }
 	
 	public List<Course> queryCourses(){
@@ -47,6 +46,7 @@ public class DatabaseQuery {
 			//create connection to database
 			conn = DriverManager.getConnection(url, user, password);
 			LOG.publish(new LogRecord(Level.INFO, "#establishConnection: DB Connection Successful"));
+	    	LOG.publish(new LogRecord(Level.INFO, "user is: " + (AssertionHolder.getAssertion().getPrincipal().getName())));
 			LOG.publish(new LogRecord(Level.INFO, "Conn = " + conn));
 		} 
 		catch (SQLException | ClassNotFoundException e){
