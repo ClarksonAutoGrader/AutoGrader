@@ -42,19 +42,19 @@ public class DatabaseQuery {
 		Connection conn = null;
 		List<Course> courseList = new ArrayList<Course>();
 		
-		try{			
+		try{
+			Class.forName("com.mysql.jdbc.Driver");
 			//create connection to database
 			conn = DriverManager.getConnection(url, user, password);
+			LOG.publish(new LogRecord(Level.INFO, "#establishConnection: DB Connection Successful"));
 			LOG.publish(new LogRecord(Level.INFO, "Conn = " + conn));
 		} 
-		catch (SQLException e){
+		catch (SQLException | ClassNotFoundException e){
 			//Handle exception here
 			LOG.publish(new LogRecord(Level.INFO, "#DatabaseQuery Failed: " + e.toString()));
 		}
 		finally {
 			try{
-				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: DB Connection Successful"));
-				
 				//Temp course selection
 				String sql = "SELECT c.course_id, c.course_title, c.course_num, c.course_descr "
 						+ "FROM enrollment e LEFT JOIN courses c "
