@@ -63,6 +63,8 @@
     <javac srcdir="src" includes="**" encoding="utf-8"
         destdir="war/WEB-INF/classes"
         source="1.7" target="1.7" nowarn="true"
+    	fork="yes" executable="/usr/bin/javac"
+    	includeantruntime="false"
         debug="true" debuglevel="lines,vars,source">
       <classpath refid="project.class.path"/>
     </javac>
@@ -84,8 +86,16 @@
       <arg value="&gwtmodule;"/>
     </java>
   </target>
+	
+  <target name="custom-package" depends="gwtc" description="Custom library and jar packaging (final build step)">
+    <jar jarfile="war/WEB-INF/lib/gwt-cache-filter.jar">
+      <fileset dir="war/WEB-INF/classes/edu/clarkson/autograder/client/validator">
+        <include name="GWTCacheControlFilter.class"/>
+      </fileset>
+    </jar>
+  </target>
 
-  <target name="build" depends="gwtc" description="Build this project" />
+  <target name="build" depends="custom-package" description="Build this project" />
 
   <target name="war" depends="build" description="Create a war file">
     <zip destfile="${lowerappname}.war" basedir="war"/>
