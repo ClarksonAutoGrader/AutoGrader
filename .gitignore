@@ -30,3 +30,7 @@ www-test/
 
 #old GWT (1.5) created this dir
 .gwt-tmp/
+
+# Exceptions (must come last)
+# GWT Eclipse Plugin needs this for sanity check
+!war/WEB-INF/lib/gwt-servlet.jar
