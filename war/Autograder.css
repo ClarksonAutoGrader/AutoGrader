@@ -1,15 +1,26 @@
 /* Autograder.css */
 /* Colors: yellow #F0CA0C; green #015847; */
 /* Formatting for static content */
-html, body {
+html {
 	margin: 0 !important;
 	padding: 0;
-	height: 100%; /* needed for container min-height */
-	background: #015847 !important;
+ 	height: 100%; /* needed for container min-height */
+ 	min-height: 100%;
+	background: #FFFFFF !important; 
 	font-family: Raleway, sans-serif;
 }
 
+body{
+	margin: 0 !important;
+	padding: 0;
+	height:100%;
+	min-height: 100%;
+	background: #015847 !important;
+}
+
 h1 {
+	margin:0;
+	padding:1vw;
 	color: #fff;
 }
 
@@ -19,7 +30,7 @@ div#container {
 	width: 100%;
 	background: #fff;
 	height: auto !important; /* real browsers */
-	height: 100%; /* IE6: treaded as min-height*/
+	height: 100%; /* IE6: treaded as min-height */
 	min-height: 100%; /* real browsers */
 }
 
@@ -32,9 +43,8 @@ div#header {
 }
 
 div#content {
-	padding-bottom: 6em; /* prevent footer overlap */
+ 	padding-bottom: 4.5em; /* prevent footer overlap */
 	
-	/* accept right overflow due to vscrollbar width on Windows */
 	overflow: hidden;
 }
 
@@ -60,30 +70,27 @@ div#footer a:active { color: #F0CA0C; }
 /* Formatting for dynamic content */
 
 .courseSelectionPage {
-	margin-top: 1vw;
+	margin-top: 2vw;
 	/* center page content */
 	margin-left: auto;
 	margin-right: auto;
 }
 
-.coursePage {
-/* 	padding: 0px 2em 0px; */
-/* 	margin-top: 2em; */
-}
-
-.pageTitle {
-	font-size: 150%;
+.courseSelectionPageTitle, .coursePageTitle {
+	margin-bottom: 1vw;
+	font-size: 200%;
 	text-align: center;
+	font-weight: bold;
 }
 
-.pageSubTitle {
-	font-size: 110%;
+.errorLabel {
+	color: red;
 	text-align: center;
 }
 
 .listingStyle {
 	border: 2px solid gray;
-	padding: 2px 6px 2px;
+	margin: 0.5em 4em 0.5em;
 }
 
 .listingHighlight, .listingSelected {
@@ -91,35 +98,58 @@ div#footer a:active { color: #F0CA0C; }
 }
 
 .gwt-Label-listingTitle {
-	font-size: 110%;
-	font-weight: bold;
-}
-
-.gwt-Label-listingDescrption {
+	padding: 1em;
+	font-size: 180%;
 }
 
 .coursePageHeader {
 	margin: 1vw auto;
+	font-size: 200%;
+	padding-left: 1em;
 }
 
-.assignmentPageContentPane {
+div#submitted {
+	color: green;
+}
+
+div#notSubmitted {
+	color: red;
+}
+
+.assignmentSideBar {
+	width: 20vw;
+	max-width: 280px;
+	font-size: 150%;
+	padding-bottom: 2em;
+}
+
+.problemContent {
+	padding: 2em 2em 0;
+}
+
+.problemBodyText {
+	font-size: 130%;
+}
+
+.gwt-TextBox {
+	width: 100px;
+}
+
+.problemFlowPanel div {
 	float: left;
-	width: 100vw;
+	padding-right: 1em;
+	padding-bottom: 0.5em;
+	font-size: 22px;
 }
 
-.assignmentsTable {
-	width: 15vw;
-	min-width: 15em;
+.problemBodyText div {
+	float: left;
 }
 
-.assignmentsTableHeader {
-	font-size: 110%;
-	font-weight: bold;
-	padding: 20px 0 0;
+.buttons {
+	margin-right: 1em !important;
 }
 
-.assignmentContent {
-	margin: 2vw 1vw 0;
-	width: 83vw;
-	min-height: 75vh;
+.problemFlowPanel-footer {
+	padding-top: 1em;
 }
