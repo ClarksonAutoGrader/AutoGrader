@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author See Wah Cheng
  * @created 24 Feb 2009
  */
+@SuppressWarnings("unused")
 public class GWTCacheControlFilter implements Filter {
 
  public void destroy() {
