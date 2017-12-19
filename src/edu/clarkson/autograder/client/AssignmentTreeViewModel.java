@@ -1,24 +1,13 @@
 package edu.clarkson.autograder.client;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionModel;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
-
-import edu.clarkson.autograder.client.objects.Course;
-import edu.clarkson.autograder.client.pages.CourseSelectionPage.Listing;
-import edu.clarkson.autograder.client.services.CoursesService;
-import edu.clarkson.autograder.client.services.CoursesServiceAsync;
-import edu.clarkson.autograder.client.widgets.ProblemContent;
 
 public class AssignmentTreeViewModel implements TreeViewModel {
 
@@ -188,7 +177,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	/**
 	 * The top level categories.
 	 */
-	private final ListDataProvider<Category> categories = new ListDataProvider<Category>();
+	private final ListDataProvider<Category> topLevelTreeData = new ListDataProvider<Category>();
 
 	/**
 	 * The cell used to render problem listings.
@@ -201,23 +190,26 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	private final SelectionModel<ProblemListing> selectionModel = new SingleSelectionModel<ProblemListing>();
 
 	public AssignmentTreeViewModel() {
-		initializeTree();
+		initializeTree(); // temp, replace with async request (next line)
+		requestAssignmentProblemTreeDataAsync();
 	}
 
 	private void requestAssignmentProblemTreeDataAsync() {
 		// This is a stub...it doesn't really exist or make sense yet
+		/*
 		AssignmentProblemTreeDataAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
-		treeDataService.fetchTreeData(new AsyncCallback<SomeDataTypeThing>() {
+		treeDataService.fetchTreeData(new AsyncCallback<ListDataProvider<Category>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				// TODO this
+				throw new AsyncCallbackException("Server error: failed to retrieve course assignments.");
 			}
 
 			@Override
-			public void onSuccess(List<Course> courseList) {
-				initializeTree(/* pass data here? or make class variable? */);
+			public void onSuccess(ListDataProvider<Category> treeData) {
+				topLevelTreeData = treeData;
 			}
 		});
+		*/
 	}
 
 	/**
@@ -228,7 +220,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	public <T> NodeInfo<?> getNodeInfo(T value) {
 		if (value == null) {
 			// Return the top-level categories
-			return new DefaultNodeInfo<Category>(categories, new CategoryCell());
+			return new DefaultNodeInfo<Category>(topLevelTreeData, new CategoryCell());
 		} else if (value instanceof Category) {
 			Category category = (Category) value;
 			return category.getNodeInfo();
@@ -252,7 +244,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	 * Initialize the top level categories in the tree.
 	 */
 	private void initializeTree() {
-		List<Category> catList = categories.getList();
+		List<Category> catList = topLevelTreeData.getList();
 
 		// Current Assignments
 		{
