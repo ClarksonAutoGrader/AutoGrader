@@ -10,11 +10,15 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import edu.clarkson.autograder.client.services.UsernameService;
+import edu.clarkson.autograder.client.services.UsernameServiceAsync;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -31,6 +35,8 @@ public class Autograder implements EntryPoint {
 	public static final int ID_TOKEN_WIDTH = 6;
 
 	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
+	
+	public static String CURRENT_USER = "";
 
 	public static String formatIdToken(int id) {
 		// Attempts to provide identical functionality as:
@@ -49,7 +55,7 @@ public class Autograder implements EntryPoint {
 		SimpleRemoteLogHandler remoteLog = new SimpleRemoteLogHandler();
 		remoteLog.publish(new LogRecord(Level.INFO, "EntryPoint"));
 		
-		RootPanel.get("header").add(getInfo());
+		RootPanel.get("header").add(getInfoWidget());
 
         History.addValueChangeHandler(State.getInstance());
         if (History.getToken().isEmpty()) {
@@ -58,19 +64,35 @@ public class Autograder implements EntryPoint {
         History.fireCurrentHistoryState();
     }
     
-    private Widget getInfo() {
+    private Widget getInfoWidget() {
+    	requestUserAsync();
+    	
     	HorizontalPanel infoPanel = new HorizontalPanel();
-    	infoPanel.add(new InlineLabel("Ryan Wood"));
+    	infoPanel.add(new InlineLabel(CURRENT_USER));
     	
     	Button logoutButton = new Button("Test", new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				// TODO Auto-generated method stub
 				Window.Location.replace("https://cas.clarkson.edu/cas/logout");
 				}	
     		});
     	infoPanel.add(logoutButton);
     	
     	return infoPanel;
+    }
+    
+    private void requestUserAsync() {
+    	UsernameServiceAsync userService = GWT.create(UsernameService.class);
+    	AsyncCallback<String> callback = new AsyncCallback<String>() {
+    		public void onFailure(Throwable caught) {
+    			//TODO: graceful error handling
+    		}
+    		
+    		public void onSuccess(String username) {
+    			CURRENT_USER = username;
+    		}
+    	};
+    	userService.getCurrentUsername(callback);
+    	
     }
 }
