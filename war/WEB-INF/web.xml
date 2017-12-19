@@ -79,12 +79,10 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
-  <!--
   <filter-mapping>
     <filter-name>CAS Authentication Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-  -->
 
   <filter-mapping>
     <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
@@ -122,6 +120,15 @@
   <servlet-mapping>
       <servlet-name>assignmentList</servlet-name>
       <url-pattern>/autograder/assignment</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>username</servlet-name>
+    <servlet-class>edu.clarkson.autograder.server.UsernameServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>username</servlet-name>
+      <url-pattern>/autograder/username</url-pattern>
   </servlet-mapping>
   
   <servlet>
