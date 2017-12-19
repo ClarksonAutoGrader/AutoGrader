@@ -3,11 +3,17 @@ package edu.clarkson.autograder.client;
 import java.util.List;
 
 import com.google.gwt.cell.client.AbstractCell;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionModel;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
+
+import Exceptions.AsyncCallbackException;
+import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
+import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
 
 public class AssignmentTreeViewModel implements TreeViewModel {
 
@@ -51,7 +57,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	 * {@link AssignmentTreeViewModel#Assignment}s. The constructor argument is
 	 * the Category node name which will be displayed to the user.
 	 */
-	private class Category extends SideBarNode<Assignment> {
+	public class Category extends SideBarNode<Assignment> {
 
 		public Category(String name) {
 			super(name);
@@ -177,7 +183,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	/**
 	 * The top level categories.
 	 */
-	private final ListDataProvider<Category> topLevelTreeData = new ListDataProvider<Category>();
+	private ListDataProvider<Category> topLevelTreeData = new ListDataProvider<Category>();
 
 	/**
 	 * The cell used to render problem listings.
@@ -190,14 +196,13 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	private final SelectionModel<ProblemListing> selectionModel = new SingleSelectionModel<ProblemListing>();
 
 	public AssignmentTreeViewModel() {
-		initializeTree(); // temp, replace with async request (next line)
+		//initializeTree(); // temp, replace with async request (next line)
 		requestAssignmentProblemTreeDataAsync();
 	}
 
 	private void requestAssignmentProblemTreeDataAsync() {
-		// This is a stub...it doesn't really exist or make sense yet
-		/*
-		AssignmentProblemTreeDataAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
+		
+		AssignmentProblemTreeDataServiceAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
 		treeDataService.fetchTreeData(new AsyncCallback<ListDataProvider<Category>>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -209,7 +214,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 				topLevelTreeData = treeData;
 			}
 		});
-		*/
+		
 	}
 
 	/**

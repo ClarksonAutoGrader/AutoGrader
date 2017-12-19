@@ -123,6 +123,15 @@
   </servlet-mapping>
   
   <servlet>
+      <servlet-name>dataTree</servlet-name>
+      <servlet-class>edu.clarkson.autograder.server.AssignmentProblemTreeDataImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>dataTree</servlet-name>
+      <url-pattern>/autograder/dataTree</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>remoteLogging</servlet-name>
     <servlet-class>com.google.gwt.logging.server.RemoteLoggingServiceImpl</servlet-class>
   </servlet>
