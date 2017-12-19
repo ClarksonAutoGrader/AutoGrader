@@ -54,8 +54,7 @@ public class CoursePage extends Content {
 		pageTitle.addStyleName("coursePageHeader");
 
 		// Create a side bar for assignment selection.
-		final SingleSelectionModel<ProblemContent> selectionModel = new SingleSelectionModel<ProblemContent>();
-		final AssignmentTreeViewModel treeModel = new AssignmentTreeViewModel(selectionModel);
+		final AssignmentTreeViewModel treeModel = new AssignmentTreeViewModel();
 		CellTree sideBar = new CellTree(treeModel, null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
