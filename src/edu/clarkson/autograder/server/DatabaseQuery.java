@@ -70,7 +70,7 @@ public class DatabaseQuery {
 				LOG.publish(new LogRecord(Level.INFO, "#establishConnection: RS"));
 				
 				while(rs.next()){
-					courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_num"), rs.getString("course_title"), true));
+					courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_title"), true));
 					LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
 				}
 				
