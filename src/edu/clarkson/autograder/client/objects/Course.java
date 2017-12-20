@@ -22,6 +22,12 @@ public class Course implements Serializable {
 		this.title = title;
 	}
 
+	/**
+	 * Default constructor required for serialization
+	 */
+	public Course() {
+	}
+
 	public int getId() {
 		return id;
 	}

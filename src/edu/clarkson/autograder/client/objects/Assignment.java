@@ -28,6 +28,12 @@ public class Assignment implements Serializable {
 		this.dueDate = dueDate;
     }
 
+	/**
+	 * Default constructor required for serialization
+	 */
+	public Assignment() {
+	}
+
     public int getId() {
         return id;
     }
