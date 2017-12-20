@@ -7,7 +7,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import edu.clarkson.autograder.client.AssignmentTreeViewModel.Category;
 
-@RemoteServiceRelativePath("treedata")
-public interface AssignmentProblemTreeDataService extends RemoteService{
+@RemoteServiceRelativePath("tree_data")
+public interface AssignmentProblemTreeDataService extends RemoteService {
 	List<Category> fetchTreeData() throws IllegalArgumentException;
 }

@@ -13,6 +13,7 @@ import java.util.logging.LogRecord;
 
 import org.jasig.cas.client.util.AssertionHolder;
 
+import edu.clarkson.autograder.client.AssignmentTreeViewModel.Category;
 import edu.clarkson.autograder.client.objects.Course;
 
 public class Database {
@@ -54,6 +55,15 @@ public class Database {
 		return conn;
 	}
 
+	public static List<Category> queryAssignmentProblemTreeData() {
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - begin"));
+
+		// query database
+
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
+		return null;
+	}
+
 	public static List<Course> queryCourses() {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - begin"));
 
@@ -89,6 +99,5 @@ public class Database {
 
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
 		return courseList;
-
 	}
 }
