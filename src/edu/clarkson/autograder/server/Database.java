@@ -15,7 +15,7 @@ import org.jasig.cas.client.util.AssertionHolder;
 
 import edu.clarkson.autograder.client.objects.Course;
 
-public class DatabaseQuery {
+public class Database {
 
 	// Console logging for debugging
 	private static ConsoleHandler LOG = new ConsoleHandler();
@@ -24,16 +24,16 @@ public class DatabaseQuery {
 	private static Connection conn = null;
 
 	// Database parameters
-	private String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
-	private String user = "autograder_dev";
-	private String password = "292.2K16";
+	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
+	private static final String user = "autograder_dev";
+	private static final String password = "292.2K16";
 
-	private String getUsername() {
+	private static String getUsername() {
 		return AssertionHolder.getAssertion().getPrincipal().getName().toLowerCase();
 	}
 
-	public Connection establishConnection() {
-		LOG.publish(new LogRecord(Level.INFO, "DatabaseQuery#establishConn - begin"));
+	private static Connection establishConnection() {
+		LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - begin"));
 
 		conn = null;
 		try {
@@ -42,27 +42,28 @@ public class DatabaseQuery {
 			conn = DriverManager.getConnection(url, user, password);
 			LOG.publish(new LogRecord(Level.INFO, "#establishConnection: DB Connection Successful"));
 		} catch (SQLException | ClassNotFoundException e) {
-			LOG.publish(new LogRecord(Level.INFO, "#DatabaseQuery Failed: " + e.toString()));
+			LOG.publish(new LogRecord(Level.INFO, "#Database Failed: " + e.toString()));
 		}
 
-		LOG.publish(new LogRecord(Level.INFO, "DatabaseQuery#establishConn - end"));
+		LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - end"));
 		return conn;
 	}
 
-	public List<Course> queryCourses() {
-		LOG.publish(new LogRecord(Level.INFO, "DatabaseQuery#queryCourses - begin"));
+	public static List<Course> queryCourses() {
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - begin"));
 
 		conn = establishConnection();
 
 		List<Course> courseList = new ArrayList<Course>();
 
 		String sql = "SELECT c.course_id, c.course_title " + "FROM enrollment e LEFT JOIN courses c "
-		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\" AND e.active = true;";
+		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\";";
 		try {
 			Statement stmt;
 			stmt = conn.createStatement();
+			LOG.publish(new LogRecord(Level.INFO, "#queryCourses: statement created"));
 			ResultSet rs = stmt.executeQuery(sql);
-			LOG.publish(new LogRecord(Level.INFO, "#queryCourses: RS"));
+			LOG.publish(new LogRecord(Level.INFO, "#queryCourses: RS returned"));
 
 			while (rs.next()) {
 				courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_title")));
@@ -73,12 +74,14 @@ public class DatabaseQuery {
 		}
 
 		try {
-			conn.close();
+			if (!conn.isClosed()) {
+				conn.close();
+			}
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "#queryCourses: failed to close connection " + exception));
 		}
 
-		LOG.publish(new LogRecord(Level.INFO, "DatabaseQuery#queryCourses - end"));
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
 		return courseList;
 
 	}

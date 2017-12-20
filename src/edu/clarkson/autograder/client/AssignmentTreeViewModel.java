@@ -11,7 +11,6 @@ import com.google.gwt.view.client.SelectionModel;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
 
-import Exceptions.AsyncCallbackException;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
 
@@ -203,15 +202,15 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	private void requestAssignmentProblemTreeDataAsync() {
 		
 		AssignmentProblemTreeDataServiceAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
-		treeDataService.fetchTreeData(new AsyncCallback<ListDataProvider<Category>>() {
+		treeDataService.fetchTreeData(new AsyncCallback<List<Category>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				throw new AsyncCallbackException("Server error: failed to retrieve course assignments.");
+				//throw new AsyncCallbackException("Server error: failed to retrieve course assignments.");
 			}
 
 			@Override
-			public void onSuccess(ListDataProvider<Category> treeData) {
-				topLevelTreeData = treeData;
+			public void onSuccess(List<Category> treeData) {
+				topLevelTreeData.setList(treeData);
 			}
 		});
 		
