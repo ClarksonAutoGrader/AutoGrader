@@ -52,11 +52,15 @@ div#header span {
 	display: inline-block;
 	float: right;
     padding-right: 10px;
+    font-size: 1.2vw;
 }
 
 div#header button {
 	display: inline-block;
 	float: right;
+	font-size: 1vw;
+	padding: 0.4vw 0.5vw;
+	margin-bottom: 0.3vw;
 }
 
 div#content {
