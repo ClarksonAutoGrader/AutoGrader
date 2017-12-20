@@ -39,7 +39,8 @@ div#header {
 	font-size: 1vw;
 	background: #015847;
 	border-bottom: 0.3vw double gray;
-	text-align: center;
+	position: relative;
+    width: 100%;
 }
 
 div#header h1 {
@@ -48,14 +49,19 @@ div#header h1 {
 }
 
 div#header span {
-	display: block;
-	text-align: right;
-	margin-right: 1%;
+	display: inline-block;
+	float: right;
+    padding-right: 10px;
+}
+
+div#header button {
+	display: inline-block;
+	float: right;
 }
 
 div#content {
  	padding-bottom: 4.5em; /* prevent footer overlap */
-	
+	position: relative;
 	overflow: hidden;
 }
 
