@@ -36,7 +36,7 @@ public class Autograder implements EntryPoint {
 
 	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 	
-	public static String CURRENT_USER = "";
+	private InlineLabel usernameLabel = new InlineLabel("");
 
 	public static String formatIdToken(int id) {
 		// Attempts to provide identical functionality as:
@@ -67,8 +67,8 @@ public class Autograder implements EntryPoint {
     private Widget getInfoWidget() {
     	requestUserAsync();
     	
-    	HorizontalPanel infoPanel = new HorizontalPanel();
-    	infoPanel.add(new InlineLabel(CURRENT_USER));
+    	HorizontalPanel userInfoPanel = new HorizontalPanel();
+    	userInfoPanel.add(usernameLabel);
     	
     	Button logoutButton = new Button("Test", new ClickHandler() {
 			@Override
@@ -76,9 +76,9 @@ public class Autograder implements EntryPoint {
 				Window.Location.replace("https://cas.clarkson.edu/cas/logout");
 				}	
     		});
-    	infoPanel.add(logoutButton);
+    	userInfoPanel.add(logoutButton);
     	
-    	return infoPanel;
+    	return userInfoPanel;
     }
     
     private void requestUserAsync() {
@@ -89,7 +89,7 @@ public class Autograder implements EntryPoint {
     		}
     		
     		public void onSuccess(String username) {
-    			CURRENT_USER = username;
+    			usernameLabel.setText(username);
     		}
     	};
     	userService.getCurrentUsername(callback);
