@@ -30,12 +30,13 @@ public class Database {
 	private static final String password = "292.2K16";
 
 	private static String getUsername() {
-		String username = AssertionHolder.getAssertion().getPrincipal().getName();
-		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user = " + username));
-		if (username == null) {
-			throw new RuntimeException("Could not locate user: null");
-		}
-		return username.toLowerCase();
+//		String username = AssertionHolder.getAssertion().getPrincipal().getName();
+//		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user = " + username));
+//		if (username == null) {
+//			throw new RuntimeException("Could not locate user: null");
+//		}
+//		return username.toLowerCase();
+		return "murphycd";
 	}
 
 	private static Connection establishConnection() {
@@ -58,10 +59,12 @@ public class Database {
 	public static List<Category> queryAssignmentProblemTreeData() {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - begin"));
 
+		List<Category> data = new ArrayList<Category>();
+
 		// query database
 
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
-		return null;
+		return data;
 	}
 
 	public static List<Course> queryCourses() {
