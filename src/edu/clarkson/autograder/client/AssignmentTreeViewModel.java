@@ -19,6 +19,7 @@ import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
 
 public class AssignmentTreeViewModel implements TreeViewModel {
+	
 
 	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 
@@ -203,6 +204,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 
 	public AssignmentTreeViewModel() {
 		requestAssignmentProblemTreeDataAsync();
+		//intializeTree();
 	}
 
 	private void requestAssignmentProblemTreeDataAsync() {
@@ -221,14 +223,15 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 			public void onSuccess(List<Category> treeData) {
 				LOG.publish(new LogRecord(Level.INFO,
 				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onSuccess"));
-				topLevelTreeData.setList(treeData);
-
+				//topLevelTreeData.setList(treeData);
+				
 				// TODO remove this TEMP DEBUG
-				initializeTree();
+				//initializeTree();
 			}
 		});
-		
+		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - end"));	
 	}
+	
 
 	/**
 	 * Get the {@link NodeInfo} that provides the children of the specified

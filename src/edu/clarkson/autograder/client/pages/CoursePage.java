@@ -55,12 +55,18 @@ public class CoursePage extends Content {
 
 		// Create a side bar for assignment selection.
 		final AssignmentTreeViewModel treeModel = new AssignmentTreeViewModel();
+		
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#CoursePage - Post Creation of AssignmentTreeViewModel"));
+		
 		CellTree sideBar = new CellTree(treeModel, null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
 		sideBar.addStyleName("assignmentSideBar");
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#CoursePage - Before getRootTreeNode"));
 		sideBar.getRootTreeNode().setChildOpen(0, true);
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#CoursePage - Post Creation of Cell Tree"));
+		
 
 		// Problem content
 		ProblemContent problemContent = new ProblemContent();
