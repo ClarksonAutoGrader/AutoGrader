@@ -7,6 +7,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -19,6 +20,11 @@ public class Autograder implements EntryPoint {
 	 * The static images used throughout the Autograder.
 	 */
 	public static final AutograderResources images = GWT.create(AutograderResources.class);
+
+	/**
+	 * The html used to show a loading icon.
+	 */
+	public final String loadingHtml = AbstractImagePrototype.create(Autograder.images.loading()).getHTML();
 
 	public static final int ID_TOKEN_WIDTH = 6;
 

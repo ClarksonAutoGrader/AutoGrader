@@ -2,21 +2,14 @@ package edu.clarkson.autograder.client;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionModel;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
-
-import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
-import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
 
 public class AssignmentTreeViewModel implements TreeViewModel {
 	
@@ -190,7 +183,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	/**
 	 * The top level categories.
 	 */
-	private ListDataProvider<Category> topLevelTreeData = new ListDataProvider<Category>();
+	private ListDataProvider<Category> topLevelTreeData;
 
 	/**
 	 * The cell used to render problem listings.
@@ -202,36 +195,9 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	 */
 	private final SelectionModel<ProblemListing> selectionModel = new SingleSelectionModel<ProblemListing>();
 
-	public AssignmentTreeViewModel() {
-		requestAssignmentProblemTreeDataAsync();
-		//intializeTree();
+	public AssignmentTreeViewModel(List<Category> treeData) {
+		topLevelTreeData = new ListDataProvider<Category>(treeData);
 	}
-
-	private void requestAssignmentProblemTreeDataAsync() {
-		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - begin"));
-		
-		AssignmentProblemTreeDataServiceAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
-		treeDataService.fetchTreeData(new AsyncCallback<List<Category>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				LOG.publish(new LogRecord(Level.INFO,
-				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onFailure"));
-				//throw new AsyncCallbackException("Server error: failed to retrieve course assignments.");
-			}
-
-			@Override
-			public void onSuccess(List<Category> treeData) {
-				LOG.publish(new LogRecord(Level.INFO,
-				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onSuccess"));
-				//topLevelTreeData.setList(treeData);
-				
-				// TODO remove this TEMP DEBUG
-				//initializeTree();
-			}
-		});
-		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - end"));	
-	}
-	
 
 	/**
 	 * Get the {@link NodeInfo} that provides the children of the specified
