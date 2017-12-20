@@ -100,7 +100,6 @@ public class CourseSelectionPage extends Content {
 		initWidget(layout);
 	}
 
-
 	private void requestCourseListAsync() {
 		LOG.publish(new LogRecord(Level.INFO, "CourseSelectionPage#requestCourseListAsync - begin"));
 		CoursesServiceAsync courseService = GWT.create(CoursesService.class);

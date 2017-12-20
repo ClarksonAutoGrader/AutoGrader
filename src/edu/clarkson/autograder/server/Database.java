@@ -24,22 +24,17 @@ public class Database {
 	private static Connection conn = null;
 
 	// Database parameters
-	// private static final String url =
-	// "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
-	private static final String url = "jdbc:mysql://127.0.0.1:3306/autograder_db";
-	// private static final String user = "autograder_dev";
-	private static final String user = "root";
+	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
+	private static final String user = "autograder_dev";
 	private static final String password = "292.2K16";
 
 	private static String getUsername() {
-//		String username = AssertionHolder.getAssertion().getPrincipal().getName();
-//		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user = " + username));
-//		if (username == null) {
-//			throw new RuntimeException("Could not locate user: null");
-//		}
-//		return username.toLowerCase();
-		
-		return "murphycd"; // DEBUG ONLY
+		String username = AssertionHolder.getAssertion().getPrincipal().getName();
+		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user = " + username));
+		if (username == null) {
+			throw new RuntimeException("Could not locate user: null");
+		}
+		return username.toLowerCase();
 	}
 
 	private static Connection establishConnection() {
