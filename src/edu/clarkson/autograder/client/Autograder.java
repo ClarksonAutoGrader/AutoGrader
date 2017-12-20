@@ -34,7 +34,7 @@ public class Autograder implements EntryPoint {
 
 	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 	
-	private InlineLabel usernameLabel = new InlineLabel("TEST_USERNAME");
+	private InlineLabel usernameLabel = new InlineLabel("");
 
 	public static String formatIdToken(int id) {
 		// Attempts to provide identical functionality as:
@@ -55,12 +55,21 @@ public class Autograder implements EntryPoint {
 		
 		requestUserAsync();
 		
-		RootPanel.get("info").add(new Button("Log Out", new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				Window.Location.replace("https://cas.clarkson.edu/cas/logout");
-				}	
-    		}));
+		//logout button (INOP)
+//		RootPanel.get("info").add(new Button("Log Out", new ClickHandler() {
+//			@Override
+//			public void onClick(ClickEvent event) {
+//				Window.Location.assign("https://cas.clarkson.edu/cas/logout");
+//				}	
+//    		}));
+		
+		//Home button
+		RootPanel.get("info").add(new Button("Course Selection", new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			Window.Location.replace("#courses");
+			}	
+		}));
 		RootPanel.get("info").add(usernameLabel);
 
         History.addValueChangeHandler(State.getInstance());
@@ -74,7 +83,7 @@ public class Autograder implements EntryPoint {
     	UsernameServiceAsync userService = GWT.create(UsernameService.class);
     	AsyncCallback<String> callback = new AsyncCallback<String>() {
     		public void onFailure(Throwable caught) {
-    			//TODO: graceful error handling
+    			usernameLabel.setText("Failed fetching username");
     		}
     		
     		public void onSuccess(String username) {
