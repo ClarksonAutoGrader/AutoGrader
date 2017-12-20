@@ -8,7 +8,6 @@ import edu.clarkson.autograder.client.Autograder;
 public class Course implements Serializable {
 	private int id;
 	private String title;
-	private boolean visible;
 
 	/**
 	 * Constructor
@@ -17,14 +16,10 @@ public class Course implements Serializable {
 	 *            unique course id
 	 * @param title
 	 *            course title (any String)
-	 * @param visible
-	 *            whether or not enrolled students (lowest level permissions)
-	 *            can view the course
 	 */
-	public Course(int id, String title, boolean visible) {
+	public Course(int id, String title) {
 		this.id = id;
 		this.title = title;
-		this.visible = visible;
 	}
 
 	public int getId() {
@@ -33,10 +28,6 @@ public class Course implements Serializable {
 
 	public String getTitle() {
 		return title;
-	}
-
-	public boolean isVisible() {
-		return visible;
 	}
 
 	public String getToken() {
