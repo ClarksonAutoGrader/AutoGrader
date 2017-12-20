@@ -21,8 +21,8 @@
     	     SDK configuration 
     	-->
         <!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-user -->
-        <dependency org="com.google.gwt" name="gwt-user" rev="&gwt.version;" conf="sdk->default"/>
-        <dependency org="javax.validation" name="validation-api" rev="1.0.0.GA" conf="sdk->default"> 
+        <dependency org="com.google.gwt" name="gwt-user" rev="&gwt.version;" conf="sdk,runtime->default"/>
+        <dependency org="javax.validation" name="validation-api" rev="1.0.0.GA" conf="sdk,runtime->default"> 
 			<artifact name="validation-api"/> 
 			<artifact name="validation-api" m:classifier="sources"/> 
 		</dependency>
@@ -32,7 +32,7 @@
 		</dependency>
         <!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-dev/ -->
 		<dependency org="com.google.gwt" name="gwt-dev" rev="&gwt.version;" conf="sdk->default"/>
-		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.2" conf="sdk->default"/>
+		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.2" conf="sdk,runtime->default"/>
     	
     	<!-- 
     	     runtime configuration
