@@ -1,7 +1,7 @@
 package edu.clarkson.autograder.client.pages;
 
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -74,7 +74,7 @@ public class CoursePage extends Content {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - begin"));
 
 		AssignmentProblemTreeDataServiceAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
-		treeDataService.fetchTreeData(courseId, new AsyncCallback<Map<Assignment, List<Problem>>>() {
+		treeDataService.fetchTreeData(courseId, new AsyncCallback<SortedMap<Assignment, List<Problem>>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - onFailure"));
@@ -84,7 +84,7 @@ public class CoursePage extends Content {
 			}
 
 			@Override
-			public void onSuccess(Map<Assignment, List<Problem>> treeData) {
+			public void onSuccess(SortedMap<Assignment, List<Problem>> treeData) {
 				LOG.publish(new LogRecord(Level.INFO,
 				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onSuccess"));
 				if (treeData.isEmpty()) {
@@ -100,7 +100,7 @@ public class CoursePage extends Content {
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - end"));
 	}
 
-	private void loadSideBarAndContent(Map<Assignment, List<Problem>> treeData) {
+	private void loadSideBarAndContent(SortedMap<Assignment, List<Problem>> treeData) {
 
 		// Create a side bar for assignment selection.
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBarAndContent - Create sidebar"));

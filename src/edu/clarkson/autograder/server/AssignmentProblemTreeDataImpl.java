@@ -1,7 +1,7 @@
 package edu.clarkson.autograder.server;
 
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -18,11 +18,11 @@ public class AssignmentProblemTreeDataImpl extends RemoteServiceServlet implemen
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
 	@Override
-	public Map<Assignment, List<Problem>> fetchTreeData(int courseId) throws IllegalArgumentException {
+	public SortedMap<Assignment, List<Problem>> fetchTreeData(int courseId) throws IllegalArgumentException {
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - begin"));
 
 		Database db = new Database();
-		Map<Assignment, List<Problem>> data = db.queryAssignmentProblemTreeData(courseId);
+		SortedMap<Assignment, List<Problem>> data = db.queryAssignmentProblemTreeData(courseId);
 
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - end"));
 		return data;

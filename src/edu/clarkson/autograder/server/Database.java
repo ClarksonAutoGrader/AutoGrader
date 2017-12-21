@@ -6,9 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -143,10 +143,10 @@ public class Database {
 		}
 	}
 
-	Map<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
+	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - begin: courseId=" + courseId));
 
-		Map<Assignment, List<Problem>> map = new HashMap<Assignment, List<Problem>>();
+		SortedMap<Assignment, List<Problem>> map = new TreeMap<Assignment, List<Problem>>();
 
 		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, "
 		        + "prob.problem_title, prob.points_possible, uw.points " + "FROM assignments a "
