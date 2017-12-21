@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import edu.clarkson.autograder.client.pages.GradebookPage;
 import edu.clarkson.autograder.client.services.UsernameService;
 import edu.clarkson.autograder.client.services.UsernameServiceAsync;
 
@@ -53,30 +54,32 @@ public class Autograder implements EntryPoint {
 		SimpleRemoteLogHandler remoteLog = new SimpleRemoteLogHandler();
 		remoteLog.publish(new LogRecord(Level.INFO, "EntryPoint"));
 		
-		requestUserAsync();
+		new GradebookPage();
 		
-		//logout button (INOP)
-//		RootPanel.get("info").add(new Button("Log Out", new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				Window.Location.assign("https://cas.clarkson.edu/cas/logout");
-//				}	
-//    		}));
-		
-		//Home button
-		RootPanel.get("info").add(new Button("Course Selection", new ClickHandler() {
-		@Override
-		public void onClick(ClickEvent event) {
-			Window.Location.replace("#courses");
-			}	
-		}));
-		RootPanel.get("info").add(usernameLabel);
-
-        History.addValueChangeHandler(State.getInstance());
-        if (History.getToken().isEmpty()) {
-            History.newItem("courses");
-        }
-        History.fireCurrentHistoryState();
+//		requestUserAsync();
+//		
+//		//logout button (INOP)
+////		RootPanel.get("info").add(new Button("Log Out", new ClickHandler() {
+////			@Override
+////			public void onClick(ClickEvent event) {
+////				Window.Location.assign("https://cas.clarkson.edu/cas/logout");
+////				}	
+////    		}));
+//		
+//		//Home button
+//		RootPanel.get("info").add(new Button("Course Selection", new ClickHandler() {
+//		@Override
+//		public void onClick(ClickEvent event) {
+//			Window.Location.replace("#courses");
+//			}	
+//		}));
+//		RootPanel.get("info").add(usernameLabel);
+//
+//        History.addValueChangeHandler(State.getInstance());
+//        if (History.getToken().isEmpty()) {
+//            History.newItem("courses");
+//        }
+//        History.fireCurrentHistoryState();
     }
 
     private void requestUserAsync() {
