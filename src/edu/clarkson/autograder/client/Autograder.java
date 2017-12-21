@@ -14,6 +14,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 import edu.clarkson.autograder.client.services.UsernameService;
 import edu.clarkson.autograder.client.services.UsernameServiceAsync;
@@ -29,6 +30,11 @@ public class Autograder implements EntryPoint {
 	 * The static images used throughout the Autograder.
 	 */
 	public static final AutograderResources images = GWT.create(AutograderResources.class);
+
+	/**
+	 * The html used to show a loading icon.
+	 */
+	public final String loadingHtml = AbstractImagePrototype.create(Autograder.images.loading()).getHTML();
 
 	public static final int ID_TOKEN_WIDTH = 6;
 
@@ -76,6 +82,7 @@ public class Autograder implements EntryPoint {
         if (History.getToken().isEmpty()) {
             History.newItem("courses");
         }
+		// trigger State#onValueChange
         History.fireCurrentHistoryState();
     }
 
@@ -91,6 +98,5 @@ public class Autograder implements EntryPoint {
     		}
     	};
     	userService.getCurrentUsername(callback);
-    	
     }
 }

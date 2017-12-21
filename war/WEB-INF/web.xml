@@ -78,17 +78,17 @@
     <filter-name>CAS Validation Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-  
+
   <filter-mapping>
     <filter-name>CAS Authentication Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-  
+
   <filter-mapping>
     <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-
+  
   <filter-mapping>
  	<filter-name>CAS Assertion Thread Local Filter</filter-name>
   	<url-pattern>/*</url-pattern>
@@ -114,12 +114,12 @@
   </servlet-mapping>
   
   <servlet>
-    <servlet-name>assignmentList</servlet-name>
-    <servlet-class>edu.clarkson.autograder.server.AssignmentServiceImpl</servlet-class>
+    <servlet-name>treeData</servlet-name>
+    <servlet-class>edu.clarkson.autograder.server.AssignmentProblemTreeDataImpl</servlet-class>
   </servlet>
   <servlet-mapping>
-      <servlet-name>assignmentList</servlet-name>
-      <url-pattern>/autograder/assignment</url-pattern>
+    <servlet-name>treeData</servlet-name>
+    <url-pattern>/autograder/tree_data</url-pattern>
   </servlet-mapping>
   
   <servlet>
@@ -127,8 +127,8 @@
     <servlet-class>edu.clarkson.autograder.server.UsernameServiceImpl</servlet-class>
   </servlet>
   <servlet-mapping>
-      <servlet-name>username</servlet-name>
-      <url-pattern>/autograder/username</url-pattern>
+    <servlet-name>username</servlet-name>
+    <url-pattern>/autograder/username</url-pattern>
   </servlet-mapping>
   
   <servlet>

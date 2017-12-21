@@ -4,7 +4,7 @@
     <!ENTITY gwtmodule "edu.clarkson.autograder.Autograder">
     <!ENTITY ivyversion "2.4.0">
 ]>
-<project name="&appname;" default="build" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="&appname;" default="clean-and-war" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
 
   <!-- Convert appname to lowercase -->
   <scriptdef language="javascript" name="lower">
@@ -128,5 +128,7 @@
   </target>
   
   <target name="clean-all" depends="clean,clean-ivy"/>
+	
+  <target name="clean-and-war" depends="clean-all,war"/>
 
 </project>
