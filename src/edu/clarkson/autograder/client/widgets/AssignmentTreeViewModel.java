@@ -1,5 +1,6 @@
 package edu.clarkson.autograder.client.widgets;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -250,6 +251,9 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	 * Initialize the top level categories in the tree.
 	 */
 	public List<CategoryNode> initializeTree(Map<Assignment, List<Problem>> treeData) {
+
+		// TODO convert treeData to preparedData
+
 		List<CategoryNode> preparedData = new ArrayList<CategoryNode>();
 
 		// Current Assignments
@@ -257,9 +261,8 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 			CategoryNode categoryNode = new CategoryNode("Current Assignments");
 			preparedData.add(categoryNode);
 
-
 			// TODO temporary: need async load of assignments
-			AssignmentNode a1 = new AssignmentNode(new Assignment(1, 1, "Assignment 1", "dueDate"));
+			AssignmentNode a1 = new AssignmentNode(new Assignment(1, 1, "Assignment 1", new Date(2012, 12, 12)));
 			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 4.2", 20, 17.2)));
 			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 4.3", 20, 17.2)));
 			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 4.7", 20, 17.2)));
@@ -270,7 +273,7 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 19.6", 20, 17.2)));
 			categoryNode.addChild(a1);
 
-			AssignmentNode a2 = new AssignmentNode(new Assignment(2, 1, "Assignment 2", "dueDate"));
+			AssignmentNode a2 = new AssignmentNode(new Assignment(2, 1, "Assignment 2", new Date(2012, 12, 12)));
 			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 4.2", 20, 17.2)));
 			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 4.3", 20, 17.2)));
 			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 4.7", 20, 17.2)));
@@ -287,27 +290,27 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 			CategoryNode categoryNode = new CategoryNode("Past Assignments");
 			preparedData.add(categoryNode);
 
-			AssignmentNode a0 = new AssignmentNode(new Assignment(2, 1, "Assignment 3", "dueDate"));
+			AssignmentNode a0 = new AssignmentNode(new Assignment(2, 1, "Assignment 3", new Date(2012, 12, 12)));
 			a0.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
 			a0.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
 			categoryNode.addChild(a0);
 
-			AssignmentNode a1 = new AssignmentNode(new Assignment(2, 1, "Assignment 27", "dueDate"));
+			AssignmentNode a1 = new AssignmentNode(new Assignment(2, 1, "Assignment 27", new Date(2012, 12, 12)));
 			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
 			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
 			categoryNode.addChild(a1);
 
-			AssignmentNode a2 = new AssignmentNode(new Assignment(2, 1, "Assignment 28", "dueDate"));
+			AssignmentNode a2 = new AssignmentNode(new Assignment(2, 1, "Assignment 28", new Date(2012, 12, 12)));
 			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
 			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
 			categoryNode.addChild(a2);
 
-			AssignmentNode a3 = new AssignmentNode(new Assignment(2, 1, "Assignment 92", "dueDate"));
+			AssignmentNode a3 = new AssignmentNode(new Assignment(2, 1, "Assignment 92", new Date(2012, 12, 12)));
 			a3.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
 			a3.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
 			categoryNode.addChild(a3);
 
-			AssignmentNode a4 = new AssignmentNode(new Assignment(2, 1, "Assignment 2.2b", "dueDate"));
+			AssignmentNode a4 = new AssignmentNode(new Assignment(2, 1, "Assignment 2.2b", new Date(2012, 12, 12)));
 			a4.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
 			a4.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
 			categoryNode.addChild(a4);

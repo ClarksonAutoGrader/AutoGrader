@@ -1,13 +1,14 @@
 package edu.clarkson.autograder.client.objects;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @SuppressWarnings("serial")
 public class Assignment implements Serializable {
     private int id;
     private int cId;
     private String title;
-	private String dueDate;
+	private Date dueDate;
 
     /**
 	 * Constructor
@@ -21,7 +22,7 @@ public class Assignment implements Serializable {
 	 * @param dueDate
 	 *            assignments after due date cannot be worked on for a grade
 	 */
-	public Assignment(int id, int cId, String title, String dueDate) {
+	public Assignment(int id, int cId, String title, Date dueDate) {
         this.id = id;
         this.cId = cId;
         this.title = title;
@@ -46,7 +47,7 @@ public class Assignment implements Serializable {
         return title;
     }
 
-	public String getDueDate() {
+	public Date getDueDate() {
 		return dueDate;
     }
 }
