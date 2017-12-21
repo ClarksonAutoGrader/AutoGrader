@@ -1,20 +1,16 @@
 package edu.clarkson.autograder.client;
 
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 import edu.clarkson.autograder.client.services.UsernameService;
 import edu.clarkson.autograder.client.services.UsernameServiceAsync;
@@ -37,8 +33,6 @@ public class Autograder implements EntryPoint {
 	public final String loadingHtml = AbstractImagePrototype.create(Autograder.images.loading()).getHTML();
 
 	public static final int ID_TOKEN_WIDTH = 6;
-
-	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 	
 	private InlineLabel usernameLabel = new InlineLabel("");
 
@@ -56,8 +50,6 @@ public class Autograder implements EntryPoint {
      * This is the entry point method.
      */
 	public void onModuleLoad() {
-		SimpleRemoteLogHandler remoteLog = new SimpleRemoteLogHandler();
-		remoteLog.publish(new LogRecord(Level.INFO, "EntryPoint"));
 		
 		requestUserAsync();
 		

@@ -2,7 +2,6 @@ package edu.clarkson.autograder.client.widgets;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -22,8 +21,6 @@ import com.google.gwt.user.client.ui.Widget;
  * ProblemContent needs to populate mutable problem fields
  */
 public class ProblemContent extends Composite {
-
-	private static SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 
 	private VerticalPanel problemContent = new VerticalPanel();
 	private FlowPanel problemHeader = new FlowPanel();
