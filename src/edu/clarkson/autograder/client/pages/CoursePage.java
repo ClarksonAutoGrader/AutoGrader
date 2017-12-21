@@ -77,8 +77,7 @@ public class CoursePage extends Content {
 		treeDataService.fetchTreeData(courseId, new AsyncCallback<Map<Assignment, List<Problem>>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				LOG.publish(new LogRecord(Level.INFO,
-				        "CoursePage#requestAssignmentProblemTreeDataAsync - onFailure"));
+				LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - onFailure"));
 				Label errorLabel = new Label("Failed to load course assignments.");
 				errorLabel.addStyleName("errorLabel");
 				sideBarAndContent.add(errorLabel);
@@ -88,7 +87,14 @@ public class CoursePage extends Content {
 			public void onSuccess(Map<Assignment, List<Problem>> treeData) {
 				LOG.publish(new LogRecord(Level.INFO,
 				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onSuccess"));
-				loadSideBarAndContent(treeData);
+				if (treeData.isEmpty()) {
+					Label errorLabel = new Label("The instructor has not added any assignments to the course.");
+					errorLabel.addStyleName("errorLabel");
+					sideBarAndContent.add(errorLabel);
+				} else {
+					loadSideBarAndContent(treeData);
+				}
+
 			}
 		});
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - end"));
@@ -97,8 +103,7 @@ public class CoursePage extends Content {
 	private void loadSideBarAndContent(Map<Assignment, List<Problem>> treeData) {
 
 		// Create a side bar for assignment selection.
-		LOG.publish(new LogRecord(Level.INFO,
-		        "CoursePage#loadSideBarAndContent - Create sidebar"));
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBarAndContent - Create sidebar"));
 		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData), null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
