@@ -69,14 +69,14 @@ public class CoursePage extends Content {
 	}
 
 	private void requestAssignmentProblemTreeDataAsync() {
-		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - begin"));
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - begin"));
 
 		AssignmentProblemTreeDataServiceAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
 		treeDataService.fetchTreeData(new AsyncCallback<List<Category>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO,
-				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onFailure"));
+				        "CoursePage#requestAssignmentProblemTreeDataAsync - onFailure"));
 				Label errorLabel = new Label("Failed to load course assignments.");
 				errorLabel.addStyleName("errorLabel");
 				sideBarAndContent.add(errorLabel);
@@ -95,7 +95,8 @@ public class CoursePage extends Content {
 	private void loadSideBarAndContent(List<Category> treeData) {
 
 		// Create a side bar for assignment selection.
-		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBarAndContent - Create sidebar"));
+		LOG.publish(new LogRecord(Level.INFO,
+		        "CoursePage#loadSideBarAndContent - Create sidebar: node count" + treeData.size()));
 		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData), null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
