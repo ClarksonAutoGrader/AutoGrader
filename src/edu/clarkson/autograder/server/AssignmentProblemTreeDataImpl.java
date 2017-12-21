@@ -18,7 +18,7 @@ public class AssignmentProblemTreeDataImpl extends RemoteServiceServlet implemen
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
 	@Override
-	public SortedMap<Assignment, List<Problem>> fetchTreeData(int courseId) throws IllegalArgumentException {
+	public SortedMap<Assignment, List<Problem>> fetchTreeData(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - begin"));
 
 		Database db = new Database();

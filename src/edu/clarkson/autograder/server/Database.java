@@ -148,22 +148,48 @@ public class Database {
 
 		SortedMap<Assignment, List<Problem>> map = new TreeMap<Assignment, List<Problem>>();
 
+		/*
+			SELECT 
+				a.assignment_id,
+			    a.assignment_title,
+			    a.due_date,
+			    prob.problem_id,
+			    prob.problem_title,
+			    prob.points_possible,
+			    uw.points
+			FROM
+			    users u
+			        RIGHT JOIN
+			    user_work uw ON u.u_id = uw.soln_uid
+			        RIGHT JOIN
+			    problems prob ON uw.soln_prob_id = prob.problem_id
+			        RIGHT JOIN
+			    assignments a ON prob.problem_aid = a.assignment_id
+			WHERE
+			    u.username = 'clappdj' AND a.a_cid = 1;
+		 */
 		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, "
-		        + "prob.problem_title, prob.points_possible, uw.points " + "FROM assignments a "
-		        + "RIGHT JOIN problems prob ON a.assignment_id = prob.problem_aid "
-		        + "LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id " + "WHERE a.a_cid = " + courseId + ";";
+		        + "prob.problem_title, prob.points_possible, uw.points " + "FROM users u "
+		        + "RIGHT JOIN user_work uw ON u.u_id = uw.soln_uid "
+		        + "RIGHT JOIN problems prob ON uw.soln_prob_id = prob.problem_id "
+		        + "RIGHT JOIN assignments a ON prob.problem_aid = a.assignment_id " + "WHERE u.username = '"
+		        + getUsername() + "' AND a.a_cid = " + courseId + ";";
 
 		final ResultSet rs = query(SQL);
 		try {
 			if (!rs.next()) {
 				return map;
 			}
+			rs.beforeFirst();
+
 			// put resultSet into map
 			Assignment assign = null;
 			List<Problem> problemSet = new ArrayList<Problem>();
 			int currentAssignId = -1;
 			int previousAssignId = -1;
 			while (rs.next()) {
+				LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - aId="
+				        + rs.getString("a.assignment_id") + " pId=" + rs.getString("prob.problem_id")));
 				currentAssignId = Integer.parseInt(rs.getString("a.assignment_id"));
 				final Problem currentProb = new Problem(Integer.parseInt(rs.getString("prob.problem_id")),
 				        currentAssignId, rs.getString("prob.problem_title"),
@@ -189,18 +215,22 @@ public class Database {
 
 					// create the new problemSet
 					problemSet = new ArrayList<Problem>();
+					problemSet.add(currentProb);
 				}
 			}
-		} catch (NumberFormatException e) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - course_id NaN"));
-		} catch (SQLException e) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - " + e));
-		} catch (Exception e) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - " + e));
+			map.put(assign, problemSet);
+
+		} catch (NumberFormatException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - course_id NaN"));
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - SQLException " + exception));
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - unexpected exception " + exception));
+			throw new RuntimeException(exception);
 		}
 
 		closeConnection();
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - end"));
 		return map;
 	}
 
@@ -217,12 +247,13 @@ public class Database {
 				courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_title")));
 				LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
 			}
-		} catch (NumberFormatException e) {
+		} catch (NumberFormatException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - course_id NaN"));
-		} catch (SQLException e) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - " + e));
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - SQLException " + exception));
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - unexpected exception " + exception));
+			throw new RuntimeException(exception);
 		}
 
 		closeConnection();
