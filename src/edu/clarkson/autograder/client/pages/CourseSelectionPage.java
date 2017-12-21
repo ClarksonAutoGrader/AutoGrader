@@ -82,10 +82,10 @@ public class CourseSelectionPage extends Content {
 
 	private FlexTable courseTable = new FlexTable();
 
-    public CourseSelectionPage() {
+	public CourseSelectionPage() {
 		requestCourseListAsync();
 
-        // Create page title
+		// Create page title
 		Label pageTitle = new Label("Enrolled Courses");
 		pageTitle.addStyleName("courseSelectionPageTitle");
 
@@ -117,17 +117,24 @@ public class CourseSelectionPage extends Content {
 				LOG.publish(new LogRecord(Level.INFO, "CourseSelectionPage#requestCourseListAsync - onSuccess"));
 				courseTable.clear();
 
-				// populate table of course listings
-				for (Course course : courseList) {
-					courseTable.setWidget(courseTable.getRowCount(), 0, new Listing(course));
+				if (courseList.isEmpty()) {
+					Label errorLabel = new Label("You are not enrolled in any courses.");
+					errorLabel.addStyleName("errorLabel");
+					courseTable.setWidget(0, 0, errorLabel);
+				} else {
+
+					// populate table of course listings
+					for (Course course : courseList) {
+						courseTable.setWidget(courseTable.getRowCount(), 0, new Listing(course));
+					}
 				}
 			}
 		});
 	}
 
-    @Override
-    public String getPrimaryStyleName() {
-        return "courseSelectionPage";
-    }
-    
+	@Override
+	public String getPrimaryStyleName() {
+		return "courseSelectionPage";
+	}
+
 }
