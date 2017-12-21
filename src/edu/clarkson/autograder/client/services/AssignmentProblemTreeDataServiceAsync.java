@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import edu.clarkson.autograder.client.AssignmentTreeViewModel.Category;
+import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel.Category;
 
 public interface AssignmentProblemTreeDataServiceAsync {
 	

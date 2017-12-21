@@ -13,12 +13,12 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-import edu.clarkson.autograder.client.AssignmentTreeViewModel;
-import edu.clarkson.autograder.client.AssignmentTreeViewModel.Category;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
+import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel;
 import edu.clarkson.autograder.client.widgets.Content;
 import edu.clarkson.autograder.client.widgets.ProblemContent;
+import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel.Category;
 
 /**
  * Generate a page listing all assignments in the specified course.

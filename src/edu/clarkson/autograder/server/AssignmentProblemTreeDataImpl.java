@@ -7,8 +7,8 @@ import java.util.logging.LogRecord;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-import edu.clarkson.autograder.client.AssignmentTreeViewModel.Category;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
+import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel.Category;
 
 @SuppressWarnings("serial")
 public class AssignmentProblemTreeDataImpl extends RemoteServiceServlet implements AssignmentProblemTreeDataService {

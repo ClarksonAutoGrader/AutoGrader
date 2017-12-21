@@ -13,8 +13,8 @@ import java.util.logging.LogRecord;
 
 import org.jasig.cas.client.util.AssertionHolder;
 
-import edu.clarkson.autograder.client.AssignmentTreeViewModel.Category;
 import edu.clarkson.autograder.client.objects.Course;
+import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel.Category;
 
 public class Database {
 

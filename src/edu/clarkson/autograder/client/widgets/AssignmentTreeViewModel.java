@@ -1,4 +1,4 @@
-package edu.clarkson.autograder.client;
+package edu.clarkson.autograder.client.widgets;
 
 import java.io.Serializable;
 import java.util.List;
