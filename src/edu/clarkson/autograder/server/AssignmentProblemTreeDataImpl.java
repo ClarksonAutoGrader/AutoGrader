@@ -21,7 +21,8 @@ public class AssignmentProblemTreeDataImpl extends RemoteServiceServlet implemen
 	public Map<Assignment, List<Problem>> fetchTreeData(int courseId) throws IllegalArgumentException {
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - begin"));
 
-		Map<Assignment, List<Problem>> data = Database.queryAssignmentProblemTreeData(courseId);
+		Database db = new Database();
+		Map<Assignment, List<Problem>> data = db.queryAssignmentProblemTreeData(courseId);
 
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - end"));
 		return data;

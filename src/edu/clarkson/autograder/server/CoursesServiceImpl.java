@@ -15,11 +15,13 @@ public class CoursesServiceImpl extends RemoteServiceServlet implements CoursesS
 	
 	private static ConsoleHandler LOG = new ConsoleHandler();
 	
+	@Override
 	public List<Course> fetchCourses() {
 		
 		LOG.publish(new LogRecord(Level.INFO, "#fetchCourses - begin"));
 		
-		List<Course> courses = Database.queryCourses();
+		Database db = new Database();
+		List<Course> courses = db.queryCourses();
 
 		LOG.publish(new LogRecord(Level.INFO, "#fetchCourses - end"));
 

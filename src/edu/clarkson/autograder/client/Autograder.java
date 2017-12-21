@@ -90,11 +90,17 @@ public class Autograder implements EntryPoint {
     	UsernameServiceAsync userService = GWT.create(UsernameService.class);
     	AsyncCallback<String> callback = new AsyncCallback<String>() {
     		public void onFailure(Throwable caught) {
-    			usernameLabel.setText("Failed fetching username");
+				usernameLabel.setText("Authentication Error (1)");
+				ContentContainer.clearContent();
     		}
     		
     		public void onSuccess(String username) {
-    			usernameLabel.setText(username);
+				if (username.equals("null")) {
+					ContentContainer.clearContent();
+					usernameLabel.setText("Authentication Error (2)");
+				} else {
+					usernameLabel.setText(username);
+				}
     		}
     	};
     	userService.getCurrentUsername(callback);
