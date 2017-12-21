@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @SuppressWarnings("serial")
-public class Assignment implements Serializable {
+public class Assignment implements Serializable, Comparable<Assignment> {
     private int id;
     private int cId;
     private String title;
@@ -50,4 +50,12 @@ public class Assignment implements Serializable {
 	public Date getDueDate() {
 		return dueDate;
     }
+
+	/**
+	 * Sort assignments by due date, future to past
+	 */
+	@Override
+	public int compareTo(Assignment other) {
+		return getDueDate().compareTo(other.getDueDate());
+	}
 }
