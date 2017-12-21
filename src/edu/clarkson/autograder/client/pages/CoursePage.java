@@ -1,6 +1,7 @@
 package edu.clarkson.autograder.client.pages;
 
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -13,12 +14,13 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import edu.clarkson.autograder.client.objects.Assignment;
+import edu.clarkson.autograder.client.objects.Problem;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
 import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel;
 import edu.clarkson.autograder.client.widgets.Content;
 import edu.clarkson.autograder.client.widgets.ProblemContent;
-import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel.Category;
 
 /**
  * Generate a page listing all assignments in the specified course.
@@ -72,7 +74,7 @@ public class CoursePage extends Content {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - begin"));
 
 		AssignmentProblemTreeDataServiceAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
-		treeDataService.fetchTreeData(new AsyncCallback<List<Category>>() {
+		treeDataService.fetchTreeData(courseId, new AsyncCallback<Map<Assignment, List<Problem>>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO,
@@ -83,7 +85,7 @@ public class CoursePage extends Content {
 			}
 
 			@Override
-			public void onSuccess(List<Category> treeData) {
+			public void onSuccess(Map<Assignment, List<Problem>> treeData) {
 				LOG.publish(new LogRecord(Level.INFO,
 				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onSuccess"));
 				loadSideBarAndContent(treeData);
@@ -92,11 +94,11 @@ public class CoursePage extends Content {
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - end"));
 	}
 
-	private void loadSideBarAndContent(List<Category> treeData) {
+	private void loadSideBarAndContent(Map<Assignment, List<Problem>> treeData) {
 
 		// Create a side bar for assignment selection.
 		LOG.publish(new LogRecord(Level.INFO,
-		        "CoursePage#loadSideBarAndContent - Create sidebar: node count" + treeData.size()));
+		        "CoursePage#loadSideBarAndContent - Create sidebar"));
 		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData), null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);

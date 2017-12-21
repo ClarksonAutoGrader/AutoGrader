@@ -6,15 +6,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import org.jasig.cas.client.util.AssertionHolder;
-
+import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
-import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel.Category;
+import edu.clarkson.autograder.client.objects.Problem;
 
 public class Database {
 
@@ -56,15 +57,21 @@ public class Database {
 		return conn;
 	}
 
-	public static List<Category> queryAssignmentProblemTreeData() {
+	public static Map<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - begin"));
 
-		List<Category> data = new ArrayList<Category>();
+		Map<Assignment, List<Problem>> map = new HashMap<Assignment, List<Problem>>();
 
 		// query database
+		/*
+			statement
+			connection
+			result set
+			map.put(new Assignment(asdfasdf), list of problems)
+		*/
 
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
-		return data;
+		return map;
 	}
 
 	public static List<Course> queryCourses() {

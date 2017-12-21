@@ -1,6 +1,9 @@
 package edu.clarkson.autograder.client.objects;
 
-public class Problem {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class Problem implements Serializable {
 
 	private int id;
 	private int aId;
@@ -30,6 +33,12 @@ public class Problem {
 		this.totalPoints = totalPoints;
 		this.earnedPoints = earnedPoints;
     }
+
+	/**
+	 * Default constructor required for serialization
+	 */
+	public Problem() {
+	}
 
 	public int getId() {
 		return id;

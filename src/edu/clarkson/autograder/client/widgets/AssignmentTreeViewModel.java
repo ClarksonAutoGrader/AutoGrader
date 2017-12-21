@@ -1,7 +1,8 @@
 package edu.clarkson.autograder.client.widgets;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
@@ -10,6 +11,9 @@ import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionModel;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
+
+import edu.clarkson.autograder.client.objects.Assignment;
+import edu.clarkson.autograder.client.objects.Problem;
 
 public class AssignmentTreeViewModel implements TreeViewModel {
 	
@@ -25,11 +29,9 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	public abstract class SideBarNode<N> {
 
 		protected final ListDataProvider<N> children = new ListDataProvider<N>();
-		private final String name;
 		protected NodeInfo<N> nodeInfo;
 
-		SideBarNode(String name) {
-			this.name = name;
+		SideBarNode() {
 		}
 
 		void addChild(N childNode) {
@@ -39,9 +41,12 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 			// example);
 		}
 
-		String getName() {
-			return name;
-		}
+		/**
+		 * Each node must produce its own label based on its content
+		 * 
+		 * @return String visible node label
+		 */
+		abstract String getName();
 
 		/**
 		 * Get the node info for the children under this node.
@@ -53,14 +58,19 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 
 	/**
 	 * A top-level node of the {@link AssignmentTreeViewModel} containing
-	 * {@link AssignmentTreeViewModel#Assignment}s. The constructor argument is
-	 * the Category node name which will be displayed to the user.
+	 * {@link AssignmentTreeViewModel#AssignmentNode}s. The constructor argument is
+	 * the CategoryNode node name which will be displayed to the user.
 	 */
-	@SuppressWarnings("serial")
-	public class Category extends SideBarNode<Assignment> implements Serializable {
+	public class CategoryNode extends SideBarNode<AssignmentNode> {
 
-		public Category(String name) {
-			super(name);
+		private final String name;
+
+		public CategoryNode(String name) {
+			this.name = name;
+		}
+
+		String getName() {
+			return name;
 		}
 
 		/**
@@ -69,9 +79,9 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 		 * @return the node info
 		 */
 		@Override
-		public NodeInfo<Assignment> getNodeInfo() {
+		public NodeInfo<AssignmentNode> getNodeInfo() {
 			if (nodeInfo == null) {
-				nodeInfo = new DefaultNodeInfo<Assignment>(children, new AssignmentCell());
+				nodeInfo = new DefaultNodeInfo<AssignmentNode>(children, new AssignmentCell());
 			}
 			return nodeInfo;
 		}
@@ -79,14 +89,20 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 
 	/**
 	 * A mid-level node of the {@link AssignmentTreeViewModel} containing
-	 * {@link AssignmentTreeViewModel#ProblemListing}s and appearing under
-	 * {@link AssignmentTreeViewModel#Category} nodes. The constructor argument
-	 * is the Assignment node name which will be displayed to the user.
+	 * {@link AssignmentTreeViewModel#ProblemNode}s and appearing under
+	 * {@link AssignmentTreeViewModel#CategoryNode} nodes. The constructor argument
+	 * is the AssignmentNode node name which will be displayed to the user.
 	 */
-	private class Assignment extends SideBarNode<ProblemListing> {
+	private class AssignmentNode extends SideBarNode<ProblemNode> {
 
-		public Assignment(String name) {
-			super(name);
+		private final Assignment assignment;
+
+		public AssignmentNode(Assignment assignment) {
+			this.assignment = assignment;
+		}
+
+		String getName() {
+			return assignment.getTitle();
 		}
 
 		/**
@@ -95,34 +111,34 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 		 * @return the node info
 		 */
 		@Override
-		public NodeInfo<ProblemListing> getNodeInfo() {
+		public NodeInfo<ProblemNode> getNodeInfo() {
 			if (nodeInfo == null) {
-				nodeInfo = new DefaultNodeInfo<ProblemListing>(children, problemListingCell, selectionModel,
+				nodeInfo = new DefaultNodeInfo<ProblemNode>(children, problemCell, selectionModel,
 				        null);
 			}
 			return nodeInfo;
 		}
 	}
 
-	private class ProblemListing {
+	private class ProblemNode {
 
-		private String name;
+		private Problem problem;
 
-		public ProblemListing(String name) {
-			this.name = name;
+		public ProblemNode(Problem problem) {
+			this.problem = problem;
 		}
 
 		String getName() {
-			return name;
+			return problem.getTitle();
 		}
 	}
 
 	/**
-	 * The cell used to render Categories.
+	 * The cell used to render {@link AssignmentTreeViewModel#CategoryNode}s.
 	 */
-	private static class CategoryCell extends AbstractCell<Category> {
+	private static class CategoryCell extends AbstractCell<CategoryNode> {
 		@Override
-		public void render(Context context, Category value, SafeHtmlBuilder sb) {
+		public void render(Context context, CategoryNode value, SafeHtmlBuilder sb) {
 			if (value != null) {
 				sb.appendEscaped(value.getName());
 
@@ -139,14 +155,14 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	}
 
 	/**
-	 * The cell used to render Assignments.
+	 * The cell used to render {@link AssignmentTreeViewModel#AssignmentNode}s.
 	 */
-	private static class AssignmentCell extends AbstractCell<Assignment> {
+	private static class AssignmentCell extends AbstractCell<AssignmentNode> {
 		@Override
-		public void render(Context context, Assignment value, SafeHtmlBuilder sb) {
+		public void render(Context context, AssignmentNode value, SafeHtmlBuilder sb) {
 			if (value != null) {
 				sb.appendEscaped(value.getName());
-				// TODO add information to Assignment Cell...
+				// TODO add information to AssignmentNode Cell...
 				// such as at-a-glance progress (% pts. earned / total
 				// assignment pts.)
 				int percentComplete = Math.min(100, 25 * ((int) (Math.random() * 6)));
@@ -169,11 +185,11 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	}
 
 	/**
-	 * The cell used to render ProblemListings.
+	 * The cell used to render {@link AssignmentTreeViewModel#ProblemNode}s.
 	 */
-	private static class ProblemListingCell extends AbstractCell<ProblemListing> {
+	private static class ProblemCell extends AbstractCell<ProblemNode> {
 		@Override
-		public void render(Context context, ProblemListing value, SafeHtmlBuilder sb) {
+		public void render(Context context, ProblemNode value, SafeHtmlBuilder sb) {
 			if (value != null) {
 				sb.appendEscaped(value.getName());
 			}
@@ -183,20 +199,23 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	/**
 	 * The top level categories.
 	 */
-	private ListDataProvider<Category> topLevelTreeData;
+	private ListDataProvider<CategoryNode> topLevelTreeData;
 
 	/**
-	 * The cell used to render problem listings.
+	 * The cell used to render {@link AssignmentTreeViewModel#ProblemNode}s.
 	 */
-	private final ProblemListingCell problemListingCell = new ProblemListingCell();
+	private final ProblemCell problemCell = new ProblemCell();
 
 	/**
-	 * The selection model used to select problem listings.
+	 * The selection model used to select
+	 * {@link AssignmentTreeViewModel#ProblemNode}s.
 	 */
-	private final SelectionModel<ProblemListing> selectionModel = new SingleSelectionModel<ProblemListing>();
+	private final SelectionModel<ProblemNode> selectionModel = new SingleSelectionModel<ProblemNode>();
 
-	public AssignmentTreeViewModel(List<Category> treeData) {
-		topLevelTreeData = new ListDataProvider<Category>(treeData);
+	public AssignmentTreeViewModel(Map<Assignment, List<Problem>> treeData) {
+		final List<CategoryNode> preparedData;
+		preparedData = initializeTree(treeData);
+		topLevelTreeData = new ListDataProvider<CategoryNode>(preparedData);
 	}
 
 	/**
@@ -207,13 +226,13 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	public <T> NodeInfo<?> getNodeInfo(T value) {
 		if (value == null) {
 			// Return the top-level categories
-			return new DefaultNodeInfo<Category>(topLevelTreeData, new CategoryCell());
-		} else if (value instanceof Category) {
-			Category category = (Category) value;
-			return category.getNodeInfo();
-		} else if (value instanceof Assignment) {
-			Assignment assignment = (Assignment) value;
-			return assignment.getNodeInfo();
+			return new DefaultNodeInfo<CategoryNode>(topLevelTreeData, new CategoryCell());
+		} else if (value instanceof CategoryNode) {
+			CategoryNode categoryNode = (CategoryNode) value;
+			return categoryNode.getNodeInfo();
+		} else if (value instanceof AssignmentNode) {
+			AssignmentNode assignmentNode = (AssignmentNode) value;
+			return assignmentNode.getNodeInfo();
 		}
 		return null;
 	}
@@ -224,80 +243,76 @@ public class AssignmentTreeViewModel implements TreeViewModel {
 	 */
 	@Override
 	public boolean isLeaf(Object value) {
-		return value != null && (value instanceof ProblemListing);
+		return value != null && (value instanceof ProblemNode);
 	}
 
 	/**
 	 * Initialize the top level categories in the tree.
 	 */
-	private void initializeTree() {
-		List<Category> catList = topLevelTreeData.getList();
+	public List<CategoryNode> initializeTree(Map<Assignment, List<Problem>> treeData) {
+		List<CategoryNode> preparedData = new ArrayList<CategoryNode>();
 
 		// Current Assignments
 		{
-			Category category = new Category("Current Assignments");
-			catList.add(category);
+			CategoryNode categoryNode = new CategoryNode("Current Assignments");
+			preparedData.add(categoryNode);
+
 
 			// TODO temporary: need async load of assignments
-			Assignment a1 = new Assignment("Assignment 4");
-			a1.addChild(new ProblemListing("Question 4.7"));
-			a1.addChild(new ProblemListing("Question 4.8"));
-			a1.addChild(new ProblemListing("Question 4.15"));
-			a1.addChild(new ProblemListing("Question 4.16"));
-			a1.addChild(new ProblemListing("Question 4.22"));
-			a1.addChild(new ProblemListing("Question 5.1"));
-			a1.addChild(new ProblemListing("Question 5.3"));
-			category.addChild(a1);
+			AssignmentNode a1 = new AssignmentNode(new Assignment(1, 1, "Assignment 1", "dueDate"));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 4.2", 20, 17.2)));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 4.3", 20, 17.2)));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 4.7", 20, 17.2)));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 8.2", 20, 17.2)));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 15.2", 20, 17.2)));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 19.6", 20, 17.2)));
+			categoryNode.addChild(a1);
 
-			Assignment a3 = new Assignment("Take Home Exam II");
-			a3.addChild(new ProblemListing("Question 1"));
-			a3.addChild(new ProblemListing("Question 2"));
-			a3.addChild(new ProblemListing("Question 3"));
-			a3.addChild(new ProblemListing("Question 4"));
-			a3.addChild(new ProblemListing("Question 5"));
-			a3.addChild(new ProblemListing("Bonus!!"));
-			category.addChild(a3);
+			AssignmentNode a2 = new AssignmentNode(new Assignment(2, 1, "Assignment 2", "dueDate"));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 4.2", 20, 17.2)));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 4.3", 20, 17.2)));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 4.7", 20, 17.2)));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 8.2", 20, 17.2)));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 15.2", 20, 17.2)));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 19.6", 20, 17.2)));
+			categoryNode.addChild(a2);
 		}
 
 		// Past Assignments
 		{
-			Category category = new Category("Past Assignments");
-			catList.add(category);
+			CategoryNode categoryNode = new CategoryNode("Past Assignments");
+			preparedData.add(categoryNode);
 
-			Assignment a0 = new Assignment("Pre-test (Quiz) Due 9/31");
-			a0.addChild(new ProblemListing("Problem 1"));
-			a0.addChild(new ProblemListing("Problem 2"));
-			a0.addChild(new ProblemListing("Problem 3"));
-			a0.addChild(new ProblemListing("Problem 4"));
-			category.addChild(a0);
+			AssignmentNode a0 = new AssignmentNode(new Assignment(2, 1, "Assignment 3", "dueDate"));
+			a0.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
+			a0.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
+			categoryNode.addChild(a0);
 
-			Assignment a1 = new Assignment("Assignment 1");
-			a1.addChild(new ProblemListing("Problem 1"));
-			a1.addChild(new ProblemListing("Problem 2"));
-			a1.addChild(new ProblemListing("Problem 3"));
-			a1.addChild(new ProblemListing("Problem 4"));
-			category.addChild(a1);
+			AssignmentNode a1 = new AssignmentNode(new Assignment(2, 1, "Assignment 27", "dueDate"));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
+			a1.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
+			categoryNode.addChild(a1);
 
-			Assignment a2 = new Assignment("Assignment 2");
-			a2.addChild(new ProblemListing("Problem 1"));
-			a2.addChild(new ProblemListing("Problem 2"));
-			a2.addChild(new ProblemListing("Problem 3"));
-			category.addChild(a2);
+			AssignmentNode a2 = new AssignmentNode(new Assignment(2, 1, "Assignment 28", "dueDate"));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
+			a2.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
+			categoryNode.addChild(a2);
 
-			Assignment a3 = new Assignment("Take Home Exam");
-			a3.addChild(new ProblemListing("Question 1"));
-			a3.addChild(new ProblemListing("Question 2"));
-			a3.addChild(new ProblemListing("Question 3"));
-			a3.addChild(new ProblemListing("Question 4"));
-			a3.addChild(new ProblemListing("Question 5"));
-			a3.addChild(new ProblemListing("Bonus!!"));
-			category.addChild(a3);
+			AssignmentNode a3 = new AssignmentNode(new Assignment(2, 1, "Assignment 92", "dueDate"));
+			a3.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
+			a3.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
+			categoryNode.addChild(a3);
 
-			Assignment a4 = new Assignment("Assignment 3");
-			a4.addChild(new ProblemListing("One"));
-			a4.addChild(new ProblemListing("Two"));
-			a4.addChild(new ProblemListing("Three"));
-			category.addChild(a4);
+			AssignmentNode a4 = new AssignmentNode(new Assignment(2, 1, "Assignment 2.2b", "dueDate"));
+			a4.addChild(new ProblemNode(new Problem(1, 1, "Question 9.2", 20, 10.5)));
+			a4.addChild(new ProblemNode(new Problem(1, 1, "Question 11.5", 20, 17.2)));
+			categoryNode.addChild(a4);
 		}
+
+		return preparedData;
 	}
 }
