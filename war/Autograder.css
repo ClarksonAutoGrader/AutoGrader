@@ -107,6 +107,7 @@ div#footer a:active { color: #F0CA0C; }
 .errorLabel {
 	color: red;
 	text-align: center;
+	margin: 2vw;
 }
 
 .listingStyle {
