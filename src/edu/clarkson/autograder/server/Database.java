@@ -186,6 +186,9 @@ public class Database {
 					assign = new Assignment(Integer.parseInt(rs.getString("a.assignment_id")), courseId,
 					        rs.getString("a.assignment_title"), rs.getDate("a.due_date"));
 					previousAssignId = currentAssignId;
+
+					// create the new problemSet
+					problemSet = new ArrayList<Problem>();
 				}
 			}
 		} catch (NumberFormatException e) {
