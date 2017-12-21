@@ -155,36 +155,38 @@ public class Database {
 
 		final ResultSet rs = query(SQL);
 		try {
-
 			if (!rs.next()) {
 				return map;
 			}
-
+			// put resultSet into map
+			Assignment assign = null;
+			List<Problem> problemSet = new ArrayList<Problem>();
 			int currentAssignId = -1;
 			int previousAssignId = -1;
-
-			Assignment assign = null;
-			List<Problem> problems = new ArrayList<Problem>();
-
-			// TODO put resultSet into map
 			while (rs.next()) {
 				currentAssignId = Integer.parseInt(rs.getString("a.assignment_id"));
-				if (currentAssignId != previousAssignId) {
+				final Problem currentProb = new Problem(Integer.parseInt(rs.getString("prob.problem_id")),
+				        currentAssignId, rs.getString("prob.problem_title"),
+				        Double.parseDouble(rs.getString("prob.points_possible")),
+				        Double.parseDouble(rs.getString("uw.points")));
 
+				if (currentAssignId == previousAssignId) {
+					// add problem to the problem set for the assignment currently being processed
+					problemSet.add(currentProb);
+
+				} else {
+					// this must be a new assignment-problem set
+
+					// commit previous set to map, unless its the first assignment processed
 					if (!rs.isFirst()) {
-						map.put(assign, problems);
+						map.put(assign, problemSet);
 					}
 
+					// create the new assignment
 					assign = new Assignment(Integer.parseInt(rs.getString("a.assignment_id")), courseId,
 					        rs.getString("a.assignment_title"), rs.getDate("a.due_date"));
 					previousAssignId = currentAssignId;
 				}
-
-				final Problem prob = new Problem(Integer.parseInt(rs.getString("prob.problem_id")), currentAssignId,
-				        rs.getString("prob.problem_title"), Double.parseDouble(rs.getString("prob.points_possible")),
-				        Double.parseDouble(rs.getString("uw.points")));
-				problems.add(prob);
-
 			}
 		} catch (NumberFormatException e) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - course_id NaN"));
