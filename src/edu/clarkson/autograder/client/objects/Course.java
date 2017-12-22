@@ -6,54 +6,37 @@ import edu.clarkson.autograder.client.Autograder;
 
 @SuppressWarnings("serial")
 public class Course implements Serializable {
-    private int id;
-    private String title;
-    private boolean visible;
+	private int id;
+	private String title;
 
-    /**
-     * No argument constructor
-     */
-    public Course() {
-    }
-
-    /**
+	/**
 	 * Constructor
 	 * 
 	 * @param id
+	 *            unique course id
 	 * @param title
-	 * @param visible
+	 *            course title (any String)
 	 */
-	public Course(int id, String title, boolean visible) {
-        this.setId(id);
-        this.title = title;
-        this.visible = visible;
-    }
+	public Course(int id, String title) {
+		this.id = id;
+		this.title = title;
+	}
 
-    public int getId() {
-        return id;
-    }
+	/**
+	 * Default constructor required for serialization
+	 */
+	public Course() {
+	}
 
-    public void setId(int id) {
-        this.id = id;
-    }
+	public int getId() {
+		return id;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
-
-    public String getToken() {
+	public String getToken() {
 		return Autograder.formatIdToken(id);
-    }
+	}
 }
