@@ -145,7 +145,7 @@ div#notSubmitted {
 	padding-bottom: 2em;
 }
 
-.problemContent {
+.problemView {
 	padding: 2em 2em 0;
 }
 
@@ -172,6 +172,6 @@ div#notSubmitted {
 	margin-right: 1em !important;
 }
 
-.problemFlowPanel-footer {
+.problemFooter {
 	padding-top: 1em;
 }

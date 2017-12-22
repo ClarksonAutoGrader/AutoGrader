@@ -20,7 +20,7 @@ import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
 import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel;
 import edu.clarkson.autograder.client.widgets.Content;
-import edu.clarkson.autograder.client.widgets.ProblemContent;
+import edu.clarkson.autograder.client.widgets.ProblemView;
 
 /**
  * Generate a page listing all assignments in the specified course.
@@ -113,10 +113,10 @@ public class CoursePage extends Content {
 
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBarAndContent - Create problem view"));
 		// Problem content
-		ProblemContent problemContent = new ProblemContent();
-		problemContent.addStyleName("problemContent");
+		ProblemView problemView = new ProblemView();
+		problemView.addStyleName("problemView");
 
 		sideBarAndContent.add(sideBar);
-		sideBarAndContent.add(problemContent);
+		sideBarAndContent.add(problemView);
 	}
 }
