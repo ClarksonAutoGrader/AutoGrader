@@ -157,21 +157,36 @@ div#notSubmitted {
 	width: 100px;
 }
 
-.problemFlowPanel div {
+.problemHeader div {
 	float: left;
 	padding-right: 1em;
 	padding-bottom: 0.5em;
 	font-size: 22px;
 }
 
-.problemBodyText div {
-	float: left;
-}
-
-.buttons {
-	margin-right: 1em !important;
+.problemBody {
 }
 
 .problemFooter {
 	padding-top: 1em;
+}
+
+.newProblemButton {
+	float: left;
+	margin-right: 1em !important;
+}
+
+.resetsRemainingInlineLabel {
+	float: left;
+	padding: 5px;
+}
+
+.attemptsRemainingInlineLabel {
+	float: right;
+	padding: 5px;
+}
+
+.submitButton {
+	float: right;
+	margin-left: 1em !important;
 }

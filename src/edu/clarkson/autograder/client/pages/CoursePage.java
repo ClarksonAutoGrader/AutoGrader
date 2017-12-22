@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Problem;
+import edu.clarkson.autograder.client.objects.ProblemData;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
 import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel;
@@ -92,7 +93,7 @@ public class CoursePage extends Content {
 					errorLabel.addStyleName("errorLabel");
 					sideBarAndContent.add(errorLabel);
 				} else {
-					loadSideBarAndContent(treeData);
+					loadSideBar(treeData);
 				}
 
 			}
@@ -100,10 +101,10 @@ public class CoursePage extends Content {
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - end"));
 	}
 
-	private void loadSideBarAndContent(SortedMap<Assignment, List<Problem>> treeData) {
+	private void loadSideBar(SortedMap<Assignment, List<Problem>> treeData) {
 
 		// Create a side bar for assignment selection.
-		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBarAndContent - Create sidebar"));
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBar - begin"));
 		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData), null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
@@ -111,12 +112,17 @@ public class CoursePage extends Content {
 		sideBar.addStyleName("assignmentSideBar");
 		sideBar.getRootTreeNode().setChildOpen(0, true);
 
-		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBarAndContent - Create problem view"));
-		// Problem content
-		ProblemView problemView = new ProblemView();
-		problemView.addStyleName("problemView");
-
 		sideBarAndContent.add(sideBar);
+
+		// TODO: make ProblemNode selection trigger async request for
+		// ProblemData, which loads CoursePage#loadProblemView onSuccess
+		loadProblemView(new ProblemData());
+	}
+
+	private void loadProblemView(ProblemData data) {
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadProblemView - begin"));
+		ProblemView problemView = new ProblemView(data);
+		problemView.addStyleName("problemView");
 		sideBarAndContent.add(problemView);
 	}
 }
