@@ -36,14 +36,30 @@ public class Autograder implements EntryPoint {
 	
 	private InlineLabel usernameLabel = new InlineLabel("");
 
+	/**
+	 * Attempts to provide identical functionality as:<br>
+	 * <br>
+	 * <code>String.format("%0" + ID_TOKEN_WIDTH + "d", id);</code>
+	 */
 	public static String formatIdToken(int id) {
-		// Attempts to provide identical functionality as:
-		// String.format("%0" + ID_TOKEN_WIDTH + "d", id);
 		int unpadded_length = ("" + id).length();
 		String padding = "";
 		for (int i = 0; i < ID_TOKEN_WIDTH - unpadded_length; ++i)
 			padding += "0";
 		return padding + id;
+	}
+	
+	/**
+	 * 
+	 * @param unformatted
+	 *            - raw double-precision number
+	 * @param decimalPlaces
+	 *            - number of decimal places to keep
+	 * @return double formatted to the number of decimal places specified
+	 */
+	public static double numberPrecision(double unformatted, int decimalPlaces) {
+		double precision = Math.pow(10, decimalPlaces);
+		return (int) (unformatted * precision + 0.5) / precision;
 	}
 
     /**

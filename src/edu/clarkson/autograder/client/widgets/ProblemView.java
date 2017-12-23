@@ -2,17 +2,17 @@ package edu.clarkson.autograder.client.widgets;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
+import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.objects.ProblemData;
 
 /**
@@ -46,18 +46,43 @@ import edu.clarkson.autograder.client.objects.ProblemData;
  */
 public class ProblemView extends Composite {
 
-	private VerticalPanel toplevel;
-	private Header header;
-	private Body body;
-	private Footer footer;
+	private final VerticalPanel toplevel;
+	private final Header header;
+	private final Body body;
+	private final Footer footer;
 
 	private class Header extends Composite {
 
 		private static final String STYLE_TOP_LEVEL = "problemHeader";
 
-		private FlowPanel toplevel;
+		private static final String STYLE_TITLE = "problemTitleInlineLabel";
+
+		private static final String STYLE_GRADE = "problemGradeInlineLabel";
+
+		private static final String STYLE_PREVIOUS_ANSWERS = "previousAnswersButton";
+
+		private static final String TEXT_PREVIOUS_ANSWERS = "Previous Answers";
+
+		private final FlowPanel toplevel;
+
+		private InlineLabel problemTitle;
+
+		private InlineLabel problemGrade;
+
+		private Button previousAnswers;
+
+		private ProblemPopup previousAnswersPopup;
+
+		private Widget previousAnswersPopupContent;
+
+		private double earnedPoints = -1;
+
+		private double totalPoints = -1;
+
+		private static final int decimalPrecision = 2;
 
 		private Header() {
+			toplevel = new FlowPanel();
 			create();
 			initWidget(toplevel);
 		}
@@ -67,32 +92,73 @@ public class ProblemView extends Composite {
 		 */
 		private void create() {
 
-			toplevel = new FlowPanel();
 			toplevel.setStyleName(STYLE_TOP_LEVEL);
 
-			double pointsReceived = (int) (25 * Math.random());
-			double pointsTotal = (int) (50 * Math.random() + 25);
-			int problemNumber = 1 + (int) (10 * Math.random());
-			String problemHeaderHTML = "<div id=problemHeaderQuestionNumber>Problem " + problemNumber + "</div>";
-			String nextString = "<div id=problemHeaderPoints>" + (double) Math.round(pointsReceived) + "/"
-			        + ((double) Math.round(pointsTotal)) + " (" + Math.round((pointsReceived / pointsTotal) * 100)
-			        + "%)</div>";
-			toplevel.add(new HTML(problemHeaderHTML));
-			toplevel.add(new HTML(nextString));
+			problemTitle = new InlineLabel();
+			problemTitle.addStyleName(STYLE_TITLE);
 
-			Button previousAnswers = new Button("Previous Answers", new ClickHandler() {
+			problemGrade = new InlineLabel();
+			problemGrade.addStyleName(STYLE_GRADE);
+
+			toplevel.add(problemTitle);
+			toplevel.add(problemGrade);
+
+			previousAnswers = new Button(TEXT_PREVIOUS_ANSWERS);
+			previousAnswers.addStyleName(STYLE_PREVIOUS_ANSWERS);
+			previousAnswers.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					MyDialog dialogBox = new MyDialog("Previous Answers", "Previous answers listed below");
-					int left = Window.getClientWidth() / 2;
-					int top = Window.getClientHeight() / 2;
+					// null if content has not yet been generated for this
+					// problem
+					if (previousAnswersPopupContent == null) {
+						previousAnswersPopupContent = createPreviousAnswersContent();
+					}
 
-					dialogBox.setPopupPosition(left, top);
-					dialogBox.center();
-					dialogBox.show();
+					// ensure only one previous answers pop-up object is created
+					if (previousAnswersPopup == null) {
+						previousAnswersPopup = new ProblemPopup(Header.TEXT_PREVIOUS_ANSWERS,
+						        previousAnswersPopupContent);
+					}
+
+					previousAnswersPopup.center();
+					previousAnswersPopup.show();
+
 				}
 			});
+
 			toplevel.add(previousAnswers);
+		}
+
+		private void update(final String title, final double earnedPoints, final double totalPoints) {
+			problemTitle.setText(title);
+
+			if (this.earnedPoints != earnedPoints || this.totalPoints != totalPoints) {
+				// 00.00/00.00 (00.00%)
+				StringBuilder builder = new StringBuilder();
+				builder.setLength(0);
+				double earnedFormatted = Autograder.numberPrecision(earnedPoints, decimalPrecision);
+				builder.append(earnedFormatted);
+				builder.append("/");
+				double totalFormatted = Autograder.numberPrecision(totalPoints, decimalPrecision);
+				builder.append(totalFormatted);
+				builder.append(" (");
+				// problems out of zero total points are always 100% complete
+				double percentageFormatted = Autograder
+				        .numberPrecision((totalPoints != 0.0 ? earnedPoints / totalPoints * 100 : 100.0),
+				                decimalPrecision);
+				builder.append(percentageFormatted);
+				builder.append("%)");
+				problemGrade.setText(builder.toString());
+			}
+
+			// invalidate previous answers to force redraw (content may have changed)
+			previousAnswersPopupContent = null;
+		}
+
+		private Widget createPreviousAnswersContent() {
+			Label content = new Label("Previous answers listed below");
+			content.addStyleName("previousAnswersContent");
+			return content;
 		}
 	}
 
@@ -102,11 +168,12 @@ public class ProblemView extends Composite {
 
 		private static final String TEXT_DEFAULT_MARKUP = "Nothing to see here.";
 
-		private FlowPanel toplevel;
+		private final FlowPanel toplevel;
 
 		private String markup;
 
 		private Body() {
+			toplevel = new FlowPanel();
 			create();
 			initWidget(toplevel);
 		}
@@ -115,14 +182,11 @@ public class ProblemView extends Composite {
 		 * Instantiate top-level widget.
 		 */
 		private void create() {
-
-			toplevel = new FlowPanel();
 			toplevel.setStylePrimaryName(STYLE_TOP_LEVEL);
-
 			toplevel.add(new HTML(TEXT_DEFAULT_MARKUP));
 		}
 
-		private void update(String bodyMarkup) {
+		private void update(final String bodyMarkup) {
 			// update body only if it's different
 			if (!bodyMarkup.equals(markup)) {
 				markup = bodyMarkup;
@@ -146,7 +210,7 @@ public class ProblemView extends Composite {
 
 		private static final String STYLE_ATTEMPTS_REMAINING = "attemptsRemainingInlineLabel";
 
-		private static final String STYLE_SUBMIT = "submitButton";
+		private static final String STYLE_SUBMIT = "problemSubmitButton";
 
 		private static final String TEXT_NEW_PROBLEM = "New Problem (resets attempts)";
 
@@ -156,7 +220,7 @@ public class ProblemView extends Composite {
 
 		private static final String TEXT_SUBMIT = "Submit";
 
-		private FlowPanel toplevel;
+		private final FlowPanel toplevel;
 
 		private Button newProblem;
 		private InlineLabel resetsRemaining;
@@ -165,6 +229,7 @@ public class ProblemView extends Composite {
 		private Button submit;
 
 		private Footer() {
+			toplevel = new FlowPanel();
 			create();
 			initWidget(toplevel);
 		}
@@ -174,14 +239,13 @@ public class ProblemView extends Composite {
 		 */
 		private void create() {
 
-			toplevel = new FlowPanel();
 			toplevel.setStylePrimaryName(STYLE_TOP_LEVEL);
 
 			newProblem = new Button(TEXT_NEW_PROBLEM);
 			newProblem.addStyleName(STYLE_NEW_PROBLEM);
 			newProblem.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
-					requestNewProblemActionAsync();
+					actionNewProblem();
 				}
 			});
 
@@ -196,7 +260,7 @@ public class ProblemView extends Composite {
 			submit.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					requestSubmitActionAsync();
+					actionSubmit();
 				}
 			});
 
@@ -209,13 +273,21 @@ public class ProblemView extends Composite {
 			toplevel.add(attemptsRemaining);
 		}
 
-		private void update(int resets, int attempts) {
+		private void update(final int resets, final int attempts) {
 			resetsRemaining.setText(TEXT_RESETS_REMAINING + resets);
 			attemptsRemaining.setText(TEXT_ATTEMPTS_REMAINING + attempts);
 		}
+
+		private void actionSubmit() {
+			// TODO implement submit action
+		}
+
+		private void actionNewProblem() {
+			// TODO implement new problem action
+		}
 	}
 
-	public ProblemView(ProblemData data) {
+	public ProblemView(final ProblemData data) {
 
 		header = new Header();
 		body = new Body();
@@ -231,52 +303,57 @@ public class ProblemView extends Composite {
 		initWidget(toplevel);
 	}
 
-	private void update(ProblemData data) {
+	private void update(final ProblemData data) {
+		header.update(data.getTitle(), data.getEarnedPoints(), data.getTotalPoints());
 		body.update(data.getBodyMarkup());
 		footer.update(data.getResets(), data.getAttempts());
 	}
 
-	private void requestSubmitActionAsync() {
-
+	private void requestPreviousAnswersAsync() {
+		// onSuccess: call header.createPreviousAnswersContent
 	}
 
-	private void requestNewProblemActionAsync() {
+	private class ProblemPopup extends DialogBox {
 
-	}
+		private static final String STYLE_TOP_LEVEL = "problemPopup";
 
-	// Private DialogBox class to hold previous answers
-	private static class MyDialog extends DialogBox {
+		private static final String TEXT_CLOSE_BUTTON = "Close";
 
-		public MyDialog(String popupCaption, String popupContent) {
-			// Set the dialog box's caption.
+		private static final String STYLE_CLOSE_BUTTON = "problemPopupCloseButton";
+
+		private VerticalPanel toplevel;
+
+		private Widget content;
+
+		private Button closeButton;
+
+		public ProblemPopup(String popupCaption, Widget popupContent) {
+
 			setText(popupCaption);
 
-			// Enable animation.
+			// pop-up animation
 			setAnimationEnabled(true);
 
-			// Enable glass background.
+			// glass background
 			setGlassEnabled(true);
 
-			// DialogBox is a SimplePanel, so you have to set its widget
-			// property to whatever you want its contents to be.
-			Button ok = new Button("OK");
-			ok.addClickHandler(new ClickHandler() {
+			content = popupContent;
+
+			closeButton = new Button(TEXT_CLOSE_BUTTON);
+			closeButton.setStyleName(STYLE_CLOSE_BUTTON);
+			closeButton.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
-					MyDialog.this.hide();
+					hide();
 				}
 			});
 
-			Label label = new Label(popupContent);
+			toplevel = new VerticalPanel();
+			toplevel.setStyleName(STYLE_TOP_LEVEL);
 
-			VerticalPanel panel = new VerticalPanel();
-			panel.setHeight("40vh");
-			panel.setWidth("40vw");
-			panel.setSpacing(10);
-			panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-			panel.add(label);
-			panel.add(ok);
+			toplevel.add(content);
+			toplevel.add(closeButton);
 
-			setWidget(panel);
+			setWidget(toplevel);
 		}
 	}
 }

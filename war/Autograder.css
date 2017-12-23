@@ -149,19 +149,35 @@ div#notSubmitted {
 	padding: 2em 2em 0;
 }
 
-.problemBodyText {
-	font-size: 130%;
-}
-
 .gwt-TextBox {
 	width: 100px;
 }
 
-.problemHeader div {
-	float: left;
-	padding-right: 1em;
-	padding-bottom: 0.5em;
-	font-size: 22px;
+.problemHeader {
+	padding-bottom: 1em;
+}
+
+.problemTitleInlineLabel {
+	padding: 4px 7px 4px 0px;
+	font-size: 130%
+}
+
+.problemGradeInlineLabel {
+	padding: 4px 7px 4px 7px;
+	font-size: 130%
+}
+
+.previousAnswersButton {
+	margin-left: 7px !important;
+}
+
+.problemPopup button {
+	float: center;
+}
+
+.problemPopupCloseButton {
+	display: block;
+    margin: 0.5em auto 0.5em auto;
 }
 
 .problemBody {
@@ -186,7 +202,7 @@ div#notSubmitted {
 	padding: 5px;
 }
 
-.submitButton {
+.problemSubmitButton {
 	float: right;
 	margin-left: 1em !important;
 }
