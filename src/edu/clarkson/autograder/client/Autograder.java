@@ -1,20 +1,16 @@
 package edu.clarkson.autograder.client;
 
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 import edu.clarkson.autograder.client.services.UsernameService;
 import edu.clarkson.autograder.client.services.UsernameServiceAsync;
@@ -37,27 +33,39 @@ public class Autograder implements EntryPoint {
 	public final String loadingHtml = AbstractImagePrototype.create(Autograder.images.loading()).getHTML();
 
 	public static final int ID_TOKEN_WIDTH = 6;
-
-	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 	
 	private InlineLabel usernameLabel = new InlineLabel("");
 
+	/**
+	 * Attempts to provide identical functionality as:<br>
+	 * <br>
+	 * <code>String.format("%0" + ID_TOKEN_WIDTH + "d", id);</code>
+	 */
 	public static String formatIdToken(int id) {
-		// Attempts to provide identical functionality as:
-		// String.format("%0" + ID_TOKEN_WIDTH + "d", id);
 		int unpadded_length = ("" + id).length();
 		String padding = "";
 		for (int i = 0; i < ID_TOKEN_WIDTH - unpadded_length; ++i)
 			padding += "0";
 		return padding + id;
 	}
+	
+	/**
+	 * 
+	 * @param unformatted
+	 *            - raw double-precision number
+	 * @param decimalPlaces
+	 *            - number of decimal places to keep
+	 * @return double formatted to the number of decimal places specified
+	 */
+	public static double numberPrecision(double unformatted, int decimalPlaces) {
+		double precision = Math.pow(10, decimalPlaces);
+		return (int) (unformatted * precision + 0.5) / precision;
+	}
 
     /**
      * This is the entry point method.
      */
 	public void onModuleLoad() {
-		SimpleRemoteLogHandler remoteLog = new SimpleRemoteLogHandler();
-		remoteLog.publish(new LogRecord(Level.INFO, "EntryPoint"));
 		
 		requestUserAsync();
 		
