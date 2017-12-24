@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import edu.clarkson.autograder.client.pages.GradebookPage;
 import edu.clarkson.autograder.client.services.UsernameService;
 import edu.clarkson.autograder.client.services.UsernameServiceAsync;
 
@@ -35,6 +36,9 @@ public class Autograder implements EntryPoint {
 	public static final int ID_TOKEN_WIDTH = 6;
 	
 	private InlineLabel usernameLabel = new InlineLabel("");
+	
+	
+	int tempCourseID = 12;
 
 	/**
 	 * Attempts to provide identical functionality as:<br>
@@ -67,31 +71,34 @@ public class Autograder implements EntryPoint {
      */
 	public void onModuleLoad() {
 		
-		requestUserAsync();
+		new GradebookPage(tempCourseID);
 		
-		//logout button (INOP)
-//		RootPanel.get("info").add(new Button("Log Out", new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				Window.Location.assign("https://cas.clarkson.edu/cas/logout");
-//				}	
-//    		}));
 		
-		//Home button
-		RootPanel.get("info").add(new Button("Course Selection", new ClickHandler() {
-		@Override
-		public void onClick(ClickEvent event) {
-			Window.Location.replace("#courses");
-			}	
-		}));
-		RootPanel.get("info").add(usernameLabel);
-
-        History.addValueChangeHandler(State.getInstance());
-        if (History.getToken().isEmpty()) {
-            History.newItem("courses");
-        }
-		// trigger State#onValueChange
-        History.fireCurrentHistoryState();
+//		requestUserAsync();
+//		
+//		//logout button (INOP)
+////		RootPanel.get("info").add(new Button("Log Out", new ClickHandler() {
+////			@Override
+////			public void onClick(ClickEvent event) {
+////				Window.Location.assign("https://cas.clarkson.edu/cas/logout");
+////				}	
+////    		}));
+//		
+//		//Home button
+//		RootPanel.get("info").add(new Button("Course Selection", new ClickHandler() {
+//		@Override
+//		public void onClick(ClickEvent event) {
+//			Window.Location.replace("#courses");
+//			}	
+//		}));
+//		RootPanel.get("info").add(usernameLabel);
+//
+//        History.addValueChangeHandler(State.getInstance());
+//        if (History.getToken().isEmpty()) {
+//            History.newItem("courses");
+//        }
+//		// trigger State#onValueChange
+//        History.fireCurrentHistoryState();
     }
 
     private void requestUserAsync() {
