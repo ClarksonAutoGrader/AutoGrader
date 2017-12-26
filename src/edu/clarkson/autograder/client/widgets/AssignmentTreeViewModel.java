@@ -8,8 +8,9 @@ import java.util.SortedMap;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.view.client.ListDataProvider;
-import com.google.gwt.view.client.SelectionModel;
+import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
 
@@ -224,12 +225,22 @@ public final class AssignmentTreeViewModel implements TreeViewModel {
 	 * The selection model used to select
 	 * {@link AssignmentTreeViewModel#ProblemNode}s.
 	 */
-	private static final SelectionModel<ProblemNode> selectionModel = new SingleSelectionModel<ProblemNode>();
+	private static final SingleSelectionModel<ProblemNode> selectionModel = new SingleSelectionModel<ProblemNode>();
 
 	public AssignmentTreeViewModel(final SortedMap<Assignment, List<Problem>> treeData) {
 		final List<CategoryNode> preparedData;
 		preparedData = initializeTree(treeData);
 		topLevelTreeData = new ListDataProvider<CategoryNode>(preparedData);
+		
+		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
+			public void onSelectionChange(SelectionChangeEvent event) {
+				ProblemNode selected = selectionModel.getSelectedObject();
+				if (selected != null) {
+					Window.alert("You selected: " + selected.getName() + ", aId=" + selected.problem.getaId() + ", pId="
+					        + selected.problem.getId());
+				}
+			}
+		});
 	}
 
 	/**
