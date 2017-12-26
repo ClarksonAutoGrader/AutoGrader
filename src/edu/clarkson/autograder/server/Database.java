@@ -170,7 +170,7 @@ public class Database {
 		 */
 		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, "
 		        + "prob.problem_title, prob.points_possible, uw.points " + "FROM users u "
-		        + "RIGHT JOIN user_work uw ON u.u_id = uw.soln_uid "
+				+ "RIGHT JOIN user_work uw ON u.username = uw.soln_username "
 		        + "RIGHT JOIN problems prob ON uw.soln_prob_id = prob.problem_id "
 		        + "RIGHT JOIN assignments a ON prob.problem_aid = a.assignment_id " + "WHERE u.username = '"
 		        + getUsername() + "' AND a.a_cid = " + courseId + ";";
