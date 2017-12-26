@@ -127,6 +127,15 @@
   </servlet-mapping>
   
   <servlet>
+    <servlet-name>problemData</servlet-name>
+    <servlet-class>edu.clarkson.autograder.server.SelectedProblemDataServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>problemData</servlet-name>
+    <url-pattern>/autograder/problem_data</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>username</servlet-name>
     <servlet-class>edu.clarkson.autograder.server.UsernameServiceImpl</servlet-class>
   </servlet>
