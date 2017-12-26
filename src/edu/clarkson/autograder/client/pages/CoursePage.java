@@ -20,6 +20,7 @@ import edu.clarkson.autograder.client.objects.Problem;
 import edu.clarkson.autograder.client.objects.ProblemData;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
+import edu.clarkson.autograder.client.services.SelectedProblemDataService;
 import edu.clarkson.autograder.client.services.SelectedProblemDataServiceAsync;
 import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel;
 import edu.clarkson.autograder.client.widgets.Content;
@@ -126,7 +127,7 @@ public class CoursePage extends Content {
 
 			LOG.publish(new LogRecord(Level.INFO, "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - begin"));
 
-			SelectedProblemDataServiceAsync problemDataService = GWT.create(SelectedProblemDataServiceAsync.class);
+			SelectedProblemDataServiceAsync problemDataService = GWT.create(SelectedProblemDataService.class);
 			problemDataService.fetchProblemData(problemId, new AsyncCallback<ProblemData>() {
 				@Override
 				public void onFailure(Throwable caught) {
