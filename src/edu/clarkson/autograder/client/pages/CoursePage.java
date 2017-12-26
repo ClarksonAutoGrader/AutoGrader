@@ -43,6 +43,8 @@ public class CoursePage extends Content {
 
 	private HorizontalPanel sideBarAndContent;
 
+	private ProblemView problemView;
+
 	/**
 	 * Attempt to create CoursePage with specified course ID. The course ID
 	 * possibly does not exist, or the user cannot access it.
@@ -154,10 +156,12 @@ public class CoursePage extends Content {
 
 	private void loadProblemView(ProblemData data) {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadProblemView - begin"));
-		ProblemView problemView = new ProblemView(data);
-		problemView.addStyleName("problemView");
-		sideBarAndContent.add(problemView);
-
-		Window.alert("You selected: " + data.getTitle() + ", aId=" + data.getaId() + ", pId=" + data.getpId());
+		if (problemView == null) {
+			problemView = new ProblemView(data);
+			problemView.addStyleName("problemView");
+			sideBarAndContent.add(problemView);
+		} else {
+			problemView.update(data);
+		}
 	}
 }
