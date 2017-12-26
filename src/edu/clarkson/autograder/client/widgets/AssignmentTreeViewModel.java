@@ -9,12 +9,13 @@ import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.view.client.ListDataProvider;
-import com.google.gwt.view.client.SelectionModel;
+import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
 
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Problem;
+import edu.clarkson.autograder.client.pages.CoursePage;
 
 public final class AssignmentTreeViewModel implements TreeViewModel {
 
@@ -135,6 +136,10 @@ public final class AssignmentTreeViewModel implements TreeViewModel {
 		String getName() {
 			return problem.getTitle();
 		}
+		
+		Problem getProblem() {
+			return problem;
+		}
 	}
 
 	/**
@@ -224,12 +229,22 @@ public final class AssignmentTreeViewModel implements TreeViewModel {
 	 * The selection model used to select
 	 * {@link AssignmentTreeViewModel#ProblemNode}s.
 	 */
-	private static final SelectionModel<ProblemNode> selectionModel = new SingleSelectionModel<ProblemNode>();
+	private static final SingleSelectionModel<ProblemNode> selectionModel = new SingleSelectionModel<ProblemNode>();
 
-	public AssignmentTreeViewModel(final SortedMap<Assignment, List<Problem>> treeData) {
+	public AssignmentTreeViewModel(final SortedMap<Assignment, List<Problem>> treeData,
+	        final CoursePage.ProblemSelectionCallback selectionCallback) {
 		final List<CategoryNode> preparedData;
 		preparedData = initializeTree(treeData);
 		topLevelTreeData = new ListDataProvider<CategoryNode>(preparedData);
+		
+		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
+			public void onSelectionChange(SelectionChangeEvent event) {
+				Problem selected = selectionModel.getSelectedObject().getProblem();
+				if (selected != null) {
+					selectionCallback.requestSelectedProblemDataAsync(selected.getId());
+				}
+			}
+		});
 	}
 
 	/**

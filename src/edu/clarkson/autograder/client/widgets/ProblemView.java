@@ -303,7 +303,7 @@ public class ProblemView extends Composite {
 		initWidget(toplevel);
 	}
 
-	private void update(final ProblemData data) {
+	public void update(final ProblemData data) {
 		header.update(data.getTitle(), data.getEarnedPoints(), data.getTotalPoints());
 		body.update(data.getBodyMarkup());
 		footer.update(data.getResets(), data.getAttempts());
