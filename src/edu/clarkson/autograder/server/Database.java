@@ -20,6 +20,7 @@ import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.objects.Problem;
+import edu.clarkson.autograder.client.objects.ProblemData;
 
 /**
  * JDBC database class. Each instance of this class manages one active
@@ -259,5 +260,47 @@ public class Database {
 		closeConnection();
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
 		return courseList;
+	}
+
+	ProblemData querySelectedProblemData(int problemId) {
+		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - begin"));
+
+		ProblemData problemData = null;
+
+		// TODO make query
+		final String SQL = "";
+		try {
+			// TODO process resultset
+			ResultSet rs = query(SQL);
+
+			// get first and only problem
+			rs.next();
+
+			// warn if resultset contains more than one entry
+			if (rs.isAfterLast()) {
+				LOG.publish(new LogRecord(Level.INFO,
+				        "Database#querySelectedProblemData - Unexpected number of rows in ResultSet"));
+			}
+
+			Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
+			        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"),
+			        rs.getDouble("uw.points"));
+
+			problemData = new ProblemData(prob, rs.getString("prob.body"),
+			        5 /* number of new questions (resets) available to user */,
+			        3 /* number of attempts (submissions) available to user */);
+
+			LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
+				
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - SQLException " + exception));
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - unexpected exception " + exception));
+			throw new RuntimeException(exception);
+		}
+
+		closeConnection();
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
+		return problemData;
 	}
 }
