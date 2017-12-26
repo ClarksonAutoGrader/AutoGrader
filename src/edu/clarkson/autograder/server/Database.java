@@ -291,8 +291,6 @@ public class Database {
 			problemData = new ProblemData(prob, rs.getString("prob.body"),
 			        5 /* number of new questions (resets) available to user */,
 			        3 /* number of attempts (submissions) available to user */);
-
-			LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
 				
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - SQLException " + exception));

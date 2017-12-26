@@ -6,7 +6,6 @@ import java.util.logging.LogRecord;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-import edu.clarkson.autograder.client.objects.Problem;
 import edu.clarkson.autograder.client.objects.ProblemData;
 import edu.clarkson.autograder.client.services.SelectedProblemDataService;
 
