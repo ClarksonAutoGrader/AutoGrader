@@ -24,7 +24,7 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet impleme
 //		ProblemData data = db.querySelectedProblemData(problemId);
 		
 		// TODO delete this debug line
-		ProblemData data = new ProblemData(new Problem(7, 8, "MyTitle", 35.5, 50), "Sample body text.", 4, 5);
+		ProblemData data = new ProblemData(new Problem(7, 8, "MyTitle", 50, 35.5), "Sample body text.", 4, 5);
 
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - end"));
 		return data;

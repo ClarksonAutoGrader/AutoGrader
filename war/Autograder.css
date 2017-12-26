@@ -130,12 +130,19 @@ div#footer a:active { color: #F0CA0C; }
 	padding-left: 1em;
 }
 
+.coursePage {
+	display: block;
+}
+
 div#submitted {
 	color: green;
 }
 
 div#notSubmitted {
 	color: red;
+}
+
+.sideBarAndContent {
 }
 
 .assignmentSideBar {
