@@ -18,13 +18,9 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet impleme
 	@Override
 	public ProblemData fetchProblemData(int problemId) {
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - begin"));
-
-		// TODO uncomment and use
-//		Database db = new Database();
-//		ProblemData data = db.querySelectedProblemData(problemId);
 		
-		// TODO delete this debug line
-		ProblemData data = new ProblemData(new Problem(7, 8, "MyTitle", 50, 35.5), "Sample body text.", 4, 5);
+		Database db = new Database();
+		ProblemData data = db.querySelectedProblemData(problemId);
 
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - end"));
 		return data;

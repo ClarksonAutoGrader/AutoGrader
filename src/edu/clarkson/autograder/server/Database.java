@@ -267,8 +267,10 @@ public class Database {
 
 		ProblemData problemData = null;
 
-		// TODO make query
-		final String SQL = "";
+		// TODO: update uw.soln_uid to uw.soln_username = getUsername();
+		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.body, uw.points "
+				+ "FROM problems prob JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
+				+ "WHERE uw.soln_uid = 1 AND prob.problem_id = " + problemId + " AND uw.soln_perm_id % 2 <> 0";
 		try {
 			// TODO process resultset
 			ResultSet rs = query(SQL);
