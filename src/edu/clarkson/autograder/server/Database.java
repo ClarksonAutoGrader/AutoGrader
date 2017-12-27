@@ -298,7 +298,7 @@ public class Database {
 		        AND uw.soln_perm_id % 2 <> 0; //TODO don't do this
 		*/
 		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.body, uw.points, "
-				+ " perm.perm_id, perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10"
+		        + "perm.perm_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
 				+ "FROM problems prob RIGHT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id RIGHT JOIN permutations perm ON perm.perm_id = uw.soln_perm_id "
 		        + "WHERE uw.soln_username = '" + getUsername() + "' AND prob.problem_id = " + problemId + " AND uw.soln_perm_id % 2 <> 0;";
 		try {
@@ -341,6 +341,7 @@ public class Database {
 				
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - SQLException " + exception));
+			throw new RuntimeException(exception);
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - unexpected exception " + exception));
 			throw new RuntimeException(exception);
