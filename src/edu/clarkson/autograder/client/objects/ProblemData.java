@@ -11,6 +11,8 @@ public class ProblemData implements Serializable {
 	private int resets;
 	private int attempts;
 
+	private Permutation permutation;
+
 	/**
 	 * Constructor
 	 * 
@@ -24,11 +26,12 @@ public class ProblemData implements Serializable {
 	 * @param attempts
 	 *            number of attempts (submissions) available to the user
 	 */
-	public ProblemData(Problem problem, String bodyMarkup, int resets, int attempts) {
+	public ProblemData(Problem problem, String bodyMarkup, int resets, int attempts, Permutation permutation) {
 		this.problem = problem;
 		this.bodyMarkup = bodyMarkup;
 		this.resets = resets;
 		this.attempts = attempts;
+		this.permutation = permutation;
 	}
 
 	/**

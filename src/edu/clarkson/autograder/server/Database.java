@@ -19,6 +19,7 @@ import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
+import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.Problem;
 import edu.clarkson.autograder.client.objects.ProblemData;
 
@@ -287,10 +288,13 @@ public class Database {
 			Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
 			        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"),
 			        rs.getDouble("uw.points"));
+			
+			Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"), rs.getInt("perm.num_inputs"), rs.getInt("perm.num_answers"), rs.getString(/*somehome get the whole array of 10 columns of data inputs*/));
 
 			problemData = new ProblemData(prob, rs.getString("prob.body"),
 			        5 /* number of new questions (resets) available to user */,
-			        3 /* number of attempts (submissions) available to user */);
+			        3 /* number of attempts (submissions) available to user */,
+			        permutation);
 				
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - SQLException " + exception));
