@@ -213,3 +213,8 @@ div#notSubmitted {
 	float: right;
 	margin-left: 1em !important;
 }
+
+.richTextEditor {
+  border: 1px solid #BBBBBB;
+  border-spacing: 0px;
+}

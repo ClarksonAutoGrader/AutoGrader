@@ -1,20 +1,28 @@
 package edu.clarkson.autograder.client.widgets;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RichTextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.ProblemData;
+import edu.clarkson.autograder.client.widgets.texteditor.RichTextToolbar;
 
 /**
  * A widget to display all the visual facets of a problem. Each problem includes
@@ -46,6 +54,8 @@ import edu.clarkson.autograder.client.objects.ProblemData;
  * </ul>
  */
 public class ProblemView extends Composite {
+
+	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 
 	private final VerticalPanel toplevel;
 	private final Header header;
@@ -198,11 +208,47 @@ public class ProblemView extends Composite {
 		private void renderMarkup(final Permutation permutation) {
 			toplevel.clear();
 			
-			String body = markup;
-			for (int i = 1; i <= permutation.getNumInputs(); i++)
-				body = body.replaceAll("[<]in_" + i + "[>]", permutation.getInputString(i - 1));
-			
-			toplevel.add(new HTML(body));
+			// phase 1: inject inputs
+			String inputBody = markup;
+			for (int i = 1; i <= permutation.getNumInputs(); i++) {
+				inputBody = inputBody.replaceAll("[<]in_" + i + "[>]", permutation.getInputString(i - 1));
+			}
+
+			// phase 2: insert answer widgets (typically fields)
+			String[] splitBody = inputBody.split("[<]ans_\\d+[>]");
+
+			HTML finalBody = new HTML(inputBody);
+
+			// TODO: remove block (temporary)
+			{
+				// side experiment on how to create problem text
+				// helps understand how to render it
+				final RichTextArea area = new RichTextArea();
+				area.setSize("100%", "14em");
+				RichTextToolbar toolbar = new RichTextToolbar(area);
+				toolbar.setWidth("100%");
+				Grid grid = new Grid(2, 1);
+				grid.setStyleName("richTextEditor");
+				grid.setWidget(0, 0, toolbar);
+				grid.setWidget(1, 0, area);
+				toplevel.add(grid);
+				final InlineHTML inlineHtml = new InlineHTML();
+				toplevel.add(inlineHtml);
+				Button getHtml = new Button("temp (get area HTML)");
+				getHtml.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						String text = area.getHTML();
+						LOG.publish(new LogRecord(Level.INFO, "AREA HTML: " + text));
+						inlineHtml.setHTML(text);
+					}
+				});
+				toplevel.add(getHtml);
+			}
+
+			LOG.publish(new LogRecord(Level.INFO, "ProblemView#renderMarkup - " + finalBody.toString()));
+
+			toplevel.add(finalBody);
 		}
 	}
 
