@@ -20,6 +20,7 @@ import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.objects.Problem;
+import edu.clarkson.autograder.client.objects.ProblemData;
 
 /**
  * JDBC database class. Each instance of this class manages one active
@@ -259,5 +260,47 @@ public class Database {
 		closeConnection();
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
 		return courseList;
+	}
+
+	ProblemData querySelectedProblemData(int problemId) {
+		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - begin"));
+
+		ProblemData problemData = null;
+
+		// TODO: update uw.soln_uid to uw.soln_username = getUsername();
+		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.body, uw.points "
+				+ "FROM problems prob JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
+		        + "WHERE uw.soln_uid = 1 AND prob.problem_id = " + problemId + " AND uw.soln_perm_id % 2 <> 0;";
+		try {
+			// TODO process resultset
+			ResultSet rs = query(SQL);
+
+			// get first and only problem
+			rs.next();
+
+			// warn if resultset contains more than one entry
+			if (rs.isAfterLast()) {
+				LOG.publish(new LogRecord(Level.INFO,
+				        "Database#querySelectedProblemData - Unexpected number of rows in ResultSet"));
+			}
+
+			Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
+			        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"),
+			        rs.getDouble("uw.points"));
+
+			problemData = new ProblemData(prob, rs.getString("prob.body"),
+			        5 /* number of new questions (resets) available to user */,
+			        3 /* number of attempts (submissions) available to user */);
+				
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - SQLException " + exception));
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - unexpected exception " + exception));
+			throw new RuntimeException(exception);
+		}
+
+		closeConnection();
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
+		return problemData;
 	}
 }

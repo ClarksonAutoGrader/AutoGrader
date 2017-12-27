@@ -19,6 +19,8 @@ import edu.clarkson.autograder.client.objects.Problem;
 import edu.clarkson.autograder.client.objects.ProblemData;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
+import edu.clarkson.autograder.client.services.SelectedProblemDataService;
+import edu.clarkson.autograder.client.services.SelectedProblemDataServiceAsync;
 import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel;
 import edu.clarkson.autograder.client.widgets.Content;
 import edu.clarkson.autograder.client.widgets.ProblemView;
@@ -39,6 +41,8 @@ public class CoursePage extends Content {
 	private int courseId;
 
 	private HorizontalPanel sideBarAndContent;
+
+	private ProblemView problemView;
 
 	/**
 	 * Attempt to create CoursePage with specified course ID. The course ID
@@ -105,7 +109,7 @@ public class CoursePage extends Content {
 
 		// Create a side bar for assignment selection.
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBar - begin"));
-		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData), null);
+		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData, new ProblemSelectionCallback()), null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		// sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
@@ -113,16 +117,50 @@ public class CoursePage extends Content {
 		sideBar.getRootTreeNode().setChildOpen(0, true);
 
 		sideBarAndContent.add(sideBar);
+	}
 
-		// TODO: make ProblemNode selection trigger async request for
-		// ProblemData, which loads CoursePage#loadProblemView onSuccess
-		loadProblemView(new ProblemData());
+	public final class ProblemSelectionCallback {
+
+		private ProblemSelectionCallback() {
+		}
+
+		public void requestSelectedProblemDataAsync(int problemId) {
+
+			LOG.publish(new LogRecord(Level.INFO, "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - begin"));
+
+			SelectedProblemDataServiceAsync problemDataService = GWT.create(SelectedProblemDataService.class);
+			problemDataService.fetchProblemData(problemId, new AsyncCallback<ProblemData>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					LOG.publish(new LogRecord(Level.INFO,
+					        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - onFailure"));
+					Label errorLabel = new Label("Failed to load the selected problem.");
+					errorLabel.addStyleName("errorLabel");
+					sideBarAndContent.add(errorLabel);
+				}
+
+				@Override
+				public void onSuccess(ProblemData data) {
+					LOG.publish(new LogRecord(Level.INFO,
+					        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - onSuccess"));
+					loadProblemView(data);
+
+				}
+			});
+			LOG.publish(new LogRecord(Level.INFO,
+			        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - end"));
+		}
+
 	}
 
 	private void loadProblemView(ProblemData data) {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadProblemView - begin"));
-		ProblemView problemView = new ProblemView(data);
-		problemView.addStyleName("problemView");
-		sideBarAndContent.add(problemView);
+		if (problemView == null) {
+			problemView = new ProblemView(data);
+			problemView.addStyleName("problemView");
+			sideBarAndContent.add(problemView);
+		} else {
+			problemView.update(data);
+		}
 	}
 }
