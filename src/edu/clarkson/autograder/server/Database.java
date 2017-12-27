@@ -37,6 +37,7 @@ public class Database {
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
 	// private static final String DEFAULT_USERNAME = "null";
+	// TODO: remove debug
 	private static final String DEFAULT_USERNAME = "clappdj";
 
 	// Database parameters

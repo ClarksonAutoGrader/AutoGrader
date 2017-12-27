@@ -2,10 +2,6 @@ package edu.clarkson.autograder.client.widgets;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.safehtml.shared.HtmlSanitizer;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -17,6 +13,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import edu.clarkson.autograder.client.Autograder;
+import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.ProblemData;
 
 /**
@@ -190,17 +187,22 @@ public class ProblemView extends Composite {
 			toplevel.add(new HTML(TEXT_DEFAULT_MARKUP));
 		}
 
-		private void update(final String bodyMarkup) {
+		private void update(final String bodyMarkup, final Permutation permutation) {
 			// update body only if it's different
 			if (!bodyMarkup.equals(markup)) {
 				markup = bodyMarkup;
-				renderMarkup();
+				renderMarkup(permutation);
 			}
 		}
 
-		private void renderMarkup() {
+		private void renderMarkup(final Permutation permutation) {
 			toplevel.clear();
-			toplevel.add(new HTML(markup));
+			
+			String body = markup;
+			for (int i = 1; i <= permutation.getNumInputs(); i++)
+				body = body.replaceAll("[<]in_" + i + "[>]", permutation.getInputString(i - 1));
+			
+			toplevel.add(new HTML(body));
 		}
 	}
 
@@ -309,7 +311,7 @@ public class ProblemView extends Composite {
 
 	public void update(final ProblemData data) {
 		header.update(data.getTitle(), data.getEarnedPoints(), data.getTotalPoints());
-		body.update(data.getBodyMarkup());
+		body.update(data.getBodyMarkup(), data.getPermutation());
 		footer.update(data.getResets(), data.getAttempts());
 	}
 

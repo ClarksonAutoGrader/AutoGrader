@@ -98,6 +98,8 @@ public class ProblemData implements Serializable {
 		return attempts;
 	}
 
-	// TODO wrappers for perm data
+	public Permutation getPermutation() {
+		return permutation;
+	}
 
 }
