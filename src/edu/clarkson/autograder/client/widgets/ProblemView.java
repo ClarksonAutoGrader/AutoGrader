@@ -2,6 +2,7 @@ package edu.clarkson.autograder.client.widgets;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -196,7 +197,12 @@ public class ProblemView extends Composite {
 
 		private void renderMarkup() {
 			toplevel.clear();
-			toplevel.add(new HTML(markup));
+
+			SafeHtmlBuilder bodyBuilder = new SafeHtmlBuilder();
+
+			bodyBuilder.appendEscapedLines(markup);
+
+			toplevel.add(new HTML(bodyBuilder.toSafeHtml()));
 		}
 	}
 
