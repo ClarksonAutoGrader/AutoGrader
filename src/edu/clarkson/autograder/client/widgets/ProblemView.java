@@ -3,23 +3,26 @@ package edu.clarkson.autograder.client.widgets;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.ProblemData;
-import edu.clarkson.autograder.client.widgets.texteditor.RichTextEditor;
 
 /**
  * A widget to display all the visual facets of a problem. Each problem includes
@@ -202,25 +205,69 @@ public class ProblemView extends Composite {
 			}
 		}
 
+		/*
+		 * Possible regex design for handling multiple answer types.
+		 * 
+		 * !ans_([1-9]|10)_?(field|boolean|list)\s*\{?(\s*\w+(?:\s*,\s*\w+)*)?\}
+		 * ?!
+		 * 
+		 * Format: String "!ans_" followed by a number 1 through 10. Answer type
+		 * is assumed to be a standard text input field. Type may also be
+		 * specified explicitly. Types include "field" (default), "boolean"
+		 * (True/False drop-down), or "list" (drop-down with custom content).
+		 * Type "list" must be followed by curly braces containing a
+		 * comma-separated list of desired drop-down choices.
+		 * 
+		 * See more at http://rubular.com/r/53KJ7bquDx
+		 * 
+		 * 
+		 * Examples: !ans_1! Default text field, exactly one or two digits
+		 * required
+		 * 
+		 * !ans_1_field! Explicitly calling for a text field
+		 * 
+		 * !ans_1_boolean! True/False input drop-down
+		 * 
+		 * !ans_1_list{Odd, Even} Drop-down with specified content (comma
+		 * delimited, whitespace around comma does not matter)
+		 * 
+		 */
 		private void renderMarkup(final Permutation permutation) {
-			toplevel.clear();
 			
-			// phase 1: inject inputs
+			// Inject inputs
 			String inputBody = markup;
 			for (int i = 1; i <= permutation.getNumInputs(); i++) {
-				inputBody = inputBody.replaceAll("[<]in_" + i + "[>]", permutation.getInputString(i - 1));
+				inputBody = inputBody.replaceAll("[!]in_" + i + "[!]", permutation.getInputString(i - 1));
 			}
 
-			// phase 2: insert answer widgets (typically fields)
-			String[] splitBody = inputBody.split("[<]ans_\\d+[>]");
+			// Replace answer tags with HTML divs of the proper id
+			final String answer_tag = "!ans_([1-9]|10)_?(field|boolean|list)\\s*\\{?(\\s*\\w+(?:\\s*,\\s*\\w+)*)?\\}?!";
+			final String answer_div = "<div id=\"ans_$1\" answer_type=\"$2\">$3</div>";
+			String domBody = inputBody.replaceAll(answer_tag, answer_div);
+			LOG.publish(new LogRecord(Level.INFO, "Problem body DOM: " + domBody));
 
-			HTML finalBody = new HTML(inputBody);
+			// Attach to DOM
+			HTMLPanel panel = new HTMLPanel(domBody);
+			toplevel.clear();
+			toplevel.add(panel);
+			
+			// Replace answer divs with widgets by ID
+			for(int i = 1; i <= permutation.getNumAnswers(); i++) {
+				Element divElement = DOM.getElementById(""+i);
+				String answerType = divElement.getAttribute("answer_type");
+				if (answerType.equals("") || answerType.equals("field")) {
+					TextBox field = new TextBox();
 
-			toplevel.add(RichTextEditor.createTemporaryExampleWidget());
+				} else if (answerType.equals("boolean")) {
 
-			LOG.publish(new LogRecord(Level.INFO, "ProblemView#renderMarkup - " + finalBody.toString()));
+				} else if (answerType.equals("list")) {
 
-			toplevel.add(finalBody);
+				}
+				
+				
+			}
+			
+
 		}
 	}
 
