@@ -173,7 +173,7 @@ public class Database {
 				+ "RIGHT JOIN user_work uw ON u.username = uw.soln_username "
 		        + "RIGHT JOIN problems prob ON uw.soln_prob_id = prob.problem_id "
 		        + "RIGHT JOIN assignments a ON prob.problem_aid = a.assignment_id " + "WHERE u.username = '"
-		        + getUsername() + "' AND a.a_cid = " + courseId + ";";
+				+ getUsername() + "' AND a.a_cid = " + courseId + " AND uw.soln_perm_id % 2 <> 0;";
 
 		final ResultSet rs = query(SQL);
 		try {
