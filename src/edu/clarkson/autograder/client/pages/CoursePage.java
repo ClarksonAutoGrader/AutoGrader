@@ -44,6 +44,8 @@ public class CoursePage extends Content {
 
 	private ProblemView problemView;
 
+	private Label errorLabel;
+
 	/**
 	 * Attempt to create CoursePage with specified course ID. The course ID
 	 * possibly does not exist, or the user cannot access it.
@@ -52,6 +54,7 @@ public class CoursePage extends Content {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#<init> - courseId=" + courseId));
 		this.courseId = courseId;
 
+
 		// Page title
 		Label pageTitle = new Label(edu.clarkson.autograder.client.Autograder.tempDebugCourseNameSelected);
 		pageTitle.addStyleName("coursePageHeader");
@@ -59,6 +62,8 @@ public class CoursePage extends Content {
 		// Assemble the course page elements
 		sideBarAndContent = new HorizontalPanel();
 		sideBarAndContent.addStyleName("sideBarAndContent");
+		errorLabel = new Label();
+		errorLabel.addStyleName("errorLabel");
 		VerticalPanel topLevel = new VerticalPanel();
 		topLevel.add(pageTitle);
 		topLevel.add(sideBarAndContent);
@@ -82,9 +87,10 @@ public class CoursePage extends Content {
 		treeDataService.fetchTreeData(courseId, new AsyncCallback<SortedMap<Assignment, List<Problem>>>() {
 			@Override
 			public void onFailure(Throwable caught) {
+				final String failureToLoadAssignments = "Failed to load course assignments.";
 				LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - onFailure"));
-				Label errorLabel = new Label("Failed to load course assignments.");
-				errorLabel.addStyleName("errorLabel");
+				sideBarAndContent.remove(errorLabel);
+				errorLabel.setText(failureToLoadAssignments);
 				sideBarAndContent.add(errorLabel);
 			}
 
@@ -93,10 +99,12 @@ public class CoursePage extends Content {
 				LOG.publish(new LogRecord(Level.INFO,
 				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onSuccess"));
 				if (treeData.isEmpty()) {
-					Label errorLabel = new Label("The instructor has not added any assignments to the course.");
-					errorLabel.addStyleName("errorLabel");
+					sideBarAndContent.remove(errorLabel);
+					errorLabel.setText("The instructor has not added any assignments to the course.");
 					sideBarAndContent.add(errorLabel);
 				} else {
+					errorLabel.setText("");
+					sideBarAndContent.remove(errorLabel);
 					loadSideBar(treeData);
 				}
 
@@ -134,8 +142,8 @@ public class CoursePage extends Content {
 				public void onFailure(Throwable caught) {
 					LOG.publish(new LogRecord(Level.INFO,
 					        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - onFailure"));
-					Label errorLabel = new Label("Failed to load the selected problem.");
-					errorLabel.addStyleName("errorLabel");
+					sideBarAndContent.remove(errorLabel);
+					errorLabel.setText("Failed to load the selected problem.");
 					sideBarAndContent.add(errorLabel);
 				}
 
@@ -143,6 +151,8 @@ public class CoursePage extends Content {
 				public void onSuccess(ProblemData data) {
 					LOG.publish(new LogRecord(Level.INFO,
 					        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - onSuccess"));
+					errorLabel.setText("");
+					sideBarAndContent.remove(errorLabel);
 					loadProblemView(data);
 
 				}

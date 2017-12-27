@@ -172,10 +172,10 @@ public class Database {
 		 */
 		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, "
 		        + "prob.problem_title, prob.points_possible, uw.points " + "FROM users u "
-		        + "RIGHT JOIN user_work uw ON u.u_id = uw.soln_uid "
+				+ "RIGHT JOIN user_work uw ON u.username = uw.soln_username "
 		        + "RIGHT JOIN problems prob ON uw.soln_prob_id = prob.problem_id "
 		        + "RIGHT JOIN assignments a ON prob.problem_aid = a.assignment_id " + "WHERE u.username = '"
-		        + getUsername() + "' AND a.a_cid = " + courseId + ";";
+				+ getUsername() + "' AND a.a_cid = " + courseId + " AND uw.soln_perm_id % 2 <> 0;";
 
 		final ResultSet rs = query(SQL);
 		try {
@@ -297,8 +297,6 @@ public class Database {
 		    uw.soln_username = 'clappdj' AND prob.problem_id = 5
 		        AND uw.soln_perm_id % 2 <> 0; //TODO don't do this
 		*/
-		
-		// TODO: update uw.soln_uid to uw.soln_username = getUsername();
 		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.body, uw.points, "
 				+ " perm.perm_id, perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10"
 				+ "FROM problems prob RIGHT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id RIGHT JOIN permutations perm ON perm.perm_id = uw.soln_perm_id "
