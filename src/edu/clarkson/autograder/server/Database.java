@@ -270,37 +270,22 @@ public class Database {
 		ProblemData problemData = null;
 
 		/*
-			SELECT 
-		    prob.problem_id,
-		    prob.problem_aid,
-		    prob.problem_title,
-		    prob.points_possible,
-		    prob.body,
-		    uw.points,
-		    perm.perm_id,
-		    perm.input_1,
-		    perm.input_2,
-		    perm.input_3,
-		    perm.input_4,
-		    perm.input_5,
-		    perm.input_6,
-		    perm.input_7,
-		    perm.input_8,
-		    perm.input_9,
-		    perm.input_10
-		FROM
-		    problems prob
-		        RIGHT JOIN
-		    user_work uw ON prob.problem_id = uw.soln_prob_id
-				RIGHT JOIN
-		    permutations perm ON perm.perm_id = uw.soln_perm_id
-		WHERE
-		    uw.soln_username = 'clappdj' AND prob.problem_id = 5
-		        AND uw.soln_perm_id % 2 <> 0; //TODO don't do this
-		*/
-		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.body, uw.points, "
-		        + "perm.perm_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
-				+ "FROM problems prob RIGHT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id RIGHT JOIN permutations perm ON perm.perm_id = uw.soln_perm_id "
+		 * SELECT prob.problem_id, prob.problem_aid, prob.problem_title,
+		 * prob.points_possible, b.body_text, uw.points, perm.perm_id,
+		 * perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5,
+		 * perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10
+		 * FROM problems prob INNER JOIN body b ON prob.problem_id =
+		 * b.body_prob_id RIGHT JOIN user_work uw ON prob.problem_id =
+		 * uw.soln_prob_id RIGHT JOIN permutations perm ON perm.perm_id =
+		 * uw.soln_perm_id WHERE uw.soln_username = 'clappdj' AND
+		 * prob.problem_id = 1 AND uw.soln_perm_id % 2 <> 0; //TODO don't do
+		 * this
+		 */
+		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, b.body_text, uw.points, "
+				+ "perm.perm_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5, "
+				+ "perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
+				+ "FROM problems prob INNER JOIN body b ON prob.problem_id = b.body_prob_id RIGHT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
+				+ "RIGHT JOIN permutations perm ON perm.perm_id = uw.soln_perm_id "
 		        + "WHERE uw.soln_username = '" + getUsername() + "' AND prob.problem_id = " + problemId + " AND uw.soln_perm_id % 2 <> 0;";
 		try {
 			// TODO process resultset
@@ -335,7 +320,7 @@ public class Database {
 			Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"),
 			        rs.getInt("perm.num_inputs"), rs.getInt("perm.num_answers"), inputs);
 
-			problemData = new ProblemData(prob, rs.getString("prob.body"),
+			problemData = new ProblemData(prob, rs.getString("b.body_text"),
 			        5 /* number of new questions (resets) available to user */,
 			        3 /* number of attempts (submissions) available to user */,
 			        permutation);
