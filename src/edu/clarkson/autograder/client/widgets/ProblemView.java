@@ -18,7 +18,6 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -186,40 +185,36 @@ public class ProblemView extends Composite {
 		private String markup;
 		
 		/**
-		 * Possible regex design for handling multiple answer types.
+		 * Possible regex design for handling multiple answer types.<br>
+		 * <br>
+		 * <code>!ans_([1-9]|10)_?(field|boolean|list)\s*\{?(\s*\w+(?:\s*,\s*\w+)*)?\}?!</code><br>
+		 * <br>
+		 * Format: String "!ans_" followed by a number 1 through 10, another
+		 * underscore, and finally the answer type Types include "field"
+		 * (default), "boolean" (True/False drop-down), or "list" (drop-down
+		 * with custom content). Type "list" must be followed by curly braces
+		 * containing a comma-separated list of desired drop-down choices.<br>
+		 * <br>
+		 * {@link http://rubular.com/r/uU1ThMAy3x} <br>
+		 * Examples:
 		 * 
-		 * !ans_([1-9]|10)_?(field|boolean|list)\s*\{?(\s*\w+(?:\s*,\s*\w+)*)?\}
-		 * ?!
+		 * <li>!ans_1_field! Exactly one or two digits required Type is a text
+		 * field</li>
 		 * 
-		 * Format: String "!ans_" followed by a number 1 through 10. Answer type
-		 * is assumed to be a standard text input field. Type may also be
-		 * specified explicitly. Types include "field" (default), "boolean"
-		 * (True/False drop-down), or "list" (drop-down with custom content).
-		 * Type "list" must be followed by curly braces containing a
-		 * comma-separated list of desired drop-down choices.
+		 * <li>!ans_1_boolean! True/False input drop-down</li>
 		 * 
-		 * See more at http://rubular.com/r/53KJ7bquDx
-		 * 
-		 * 
-		 * Examples: !ans_1! Default text field, exactly one or two digits
-		 * required
-		 * 
-		 * !ans_1_field! Explicitly calling for a text field
-		 * 
-		 * !ans_1_boolean! True/False input drop-down
-		 * 
-		 * !ans_1_list{Odd, Even} Drop-down with specified content (comma
-		 * delimited, whitespace around comma does not matter)
+		 * <li>!ans_1_list{Odd, Even} Drop-down with specified content (comma
+		 * delimited, whitespace around comma does not matter)</li>
 		 */
-		private static final String RAW_ANSWER_TAG = "!ans_(?<number>[1-9]|10)_?(?<type>field|boolean)?!";
-		
+		private static final String RAW_ANSWER_TAG = "!ans_(?<number>[1-9]|10)_(?<type>field|boolean|list)\\s*\\{?(?<content>\\s*\\w+(?:\\s*,\\s*\\w+)*)?\\}?!";
+
 		/** Uses groups from RAW_ANSWER_TAG, content not yet supported */
-		private static final String CREATE_ANSWER_DIV = "<div id=\"ans_${number}\">type:${type},content:</div>";
-		
+		private static final String CREATE_ANSWER_DIV = "<div id=\"ans_${number}\">type:${type},content:${content}</div>";
+
 		/**
 		 * Reference: http://rubular.com/r/34EtJ6hjK8
 		 */
-		private static final String PROCESS_ANSWER_DIV = "<div.*>type:(?<type>field|boolean)?,content:(?<content>.*)<\\/div>";
+		private static final String PROCESS_ANSWER_DIV = "<div.*>type:(?<type>field|boolean|list)?,content:(?<content>.*)<\\/div>";
 
 		private final Pattern PROCESS_PATTERN = Pattern.compile(PROCESS_ANSWER_DIV);
 
@@ -250,7 +245,7 @@ public class ProblemView extends Composite {
 			// Inject inputs
 			String inputBody = markup;
 			for (int i = 1; i <= permutation.getNumInputs(); i++) {
-				inputBody = inputBody.replaceAll("[!]in_" + i + "[!]", permutation.getInputString(i - 1));
+				inputBody = inputBody.replaceAll("!in_" + i + "!", permutation.getInputString(i - 1));
 			}
 
 			// Replace answer tags with HTML divs of the proper id
@@ -272,25 +267,39 @@ public class ProblemView extends Composite {
 				final Element divElement = DOM.getElementById("" + i);
 				final String innerText = divElement.getInnerText();
 
+				// TODO
+				// https://stackoverflow.com/questions/1162240/regular-expressions-and-gwt
+
 				final Matcher processedText = PROCESS_PATTERN.matcher(innerText);
+				if (processedText.matches()) {
+					System.out.println("Match found");
+				} else {
+					System.out.println("Match not found");
+				}
+
 				final String type = processedText.group("type");
 				final String content = processedText.group("content");
 
 				LOG.publish(new LogRecord(Level.INFO,
 				        "Answer " + i + " type \"" + type + "\", content \"" + content + "\""));
 
-				if (type.equals("") || type.equals("field")) {
-					final TextBox field = new TextBox();
+				if (type.equals("field")) {
+					LOG.publish(new LogRecord(Level.INFO, "Process field type"));
+					// TODO insert textbox widget
 
 				} else if (type.equals("boolean")) {
 					// not supported
 					// true/false drop-down
+					LOG.publish(new LogRecord(Level.INFO, "Process boolean type"));
 
 				} else if (type.equals("list")) {
 					// not supported
 					// custom (content-specified) drop-down
+					LOG.publish(new LogRecord(Level.INFO, "Process list type"));
+
 				} else {
 					// not supported
+					LOG.publish(new LogRecord(Level.INFO, "Process other type"));
 				}
 				
 				
