@@ -2,6 +2,8 @@ package edu.clarkson.autograder.client.widgets;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -182,30 +184,8 @@ public class ProblemView extends Composite {
 		private final FlowPanel toplevel;
 
 		private String markup;
-
-		private Body() {
-			toplevel = new FlowPanel();
-			create();
-			initWidget(toplevel);
-		}
-
+		
 		/**
-		 * Instantiate top-level widget.
-		 */
-		private void create() {
-			toplevel.setStylePrimaryName(STYLE_TOP_LEVEL);
-			toplevel.add(new HTML(TEXT_DEFAULT_MARKUP));
-		}
-
-		private void update(final String bodyMarkup, final Permutation permutation) {
-			// update body only if it's different
-			if (!bodyMarkup.equals(markup)) {
-				markup = bodyMarkup;
-				renderMarkup(permutation);
-			}
-		}
-
-		/*
 		 * Possible regex design for handling multiple answer types.
 		 * 
 		 * !ans_([1-9]|10)_?(field|boolean|list)\s*\{?(\s*\w+(?:\s*,\s*\w+)*)?\}
@@ -230,8 +210,41 @@ public class ProblemView extends Composite {
 		 * 
 		 * !ans_1_list{Odd, Even} Drop-down with specified content (comma
 		 * delimited, whitespace around comma does not matter)
-		 * 
 		 */
+		private static final String RAW_ANSWER_TAG = "!ans_(?<number>[1-9]|10)_?(?<type>field|boolean)?!";
+		
+		/** Uses groups from RAW_ANSWER_TAG, content not yet supported */
+		private static final String CREATE_ANSWER_DIV = "<div id=\"ans_${number}\">type:${type},content:</div>";
+		
+		/**
+		 * Reference: http://rubular.com/r/34EtJ6hjK8
+		 */
+		private static final String PROCESS_ANSWER_DIV = "<div.*>type:(?<type>field|boolean)?,content:(?<content>.*)<\\/div>";
+
+		private final Pattern PROCESS_PATTERN = Pattern.compile(PROCESS_ANSWER_DIV);
+
+		private Body() {
+			toplevel = new FlowPanel();
+			create();
+			initWidget(toplevel);
+		}
+
+		/**
+		 * Instantiate top-level widget.
+		 */
+		private void create() {
+			toplevel.setStylePrimaryName(STYLE_TOP_LEVEL);
+			toplevel.add(new HTML(TEXT_DEFAULT_MARKUP));
+		}
+
+		private void update(final String bodyMarkup, final Permutation permutation) {
+			// update body only if it's different
+			if (!bodyMarkup.equals(markup)) {
+				markup = bodyMarkup;
+				renderMarkup(permutation);
+			}
+		}
+
 		private void renderMarkup(final Permutation permutation) {
 			
 			// Inject inputs
@@ -241,10 +254,13 @@ public class ProblemView extends Composite {
 			}
 
 			// Replace answer tags with HTML divs of the proper id
-			final String answer_tag = "!ans_([1-9]|10)_?(field|boolean|list)\\s*\\{?(\\s*\\w+(?:\\s*,\\s*\\w+)*)?\\}?!";
-			final String answer_div = "<div id=\"ans_$1\" answer_type=\"$2\">$3</div>";
-			String domBody = inputBody.replaceAll(answer_tag, answer_div);
-			LOG.publish(new LogRecord(Level.INFO, "Problem body DOM: " + domBody));
+			String domBody = inputBody.replaceAll(RAW_ANSWER_TAG, CREATE_ANSWER_DIV);
+
+			LOG.publish(new LogRecord(Level.INFO, "Problem body pre-replacement:  " + inputBody));
+
+			LOG.publish(new LogRecord(Level.INFO, "Problem body post-replacement: " + domBody));
+
+			LOG.publish(new LogRecord(Level.INFO, "Problem body replacement success: " + inputBody.equals(domBody)));
 
 			// Attach to DOM
 			HTMLPanel panel = new HTMLPanel(domBody);
@@ -253,15 +269,28 @@ public class ProblemView extends Composite {
 			
 			// Replace answer divs with widgets by ID
 			for(int i = 1; i <= permutation.getNumAnswers(); i++) {
-				Element divElement = DOM.getElementById(""+i);
-				String answerType = divElement.getAttribute("answer_type");
-				if (answerType.equals("") || answerType.equals("field")) {
-					TextBox field = new TextBox();
+				final Element divElement = DOM.getElementById("" + i);
+				final String innerText = divElement.getInnerText();
 
-				} else if (answerType.equals("boolean")) {
+				final Matcher processedText = PROCESS_PATTERN.matcher(innerText);
+				final String type = processedText.group("type");
+				final String content = processedText.group("content");
 
-				} else if (answerType.equals("list")) {
+				LOG.publish(new LogRecord(Level.INFO,
+				        "Answer " + i + " type \"" + type + "\", content \"" + content + "\""));
 
+				if (type.equals("") || type.equals("field")) {
+					final TextBox field = new TextBox();
+
+				} else if (type.equals("boolean")) {
+					// not supported
+					// true/false drop-down
+
+				} else if (type.equals("list")) {
+					// not supported
+					// custom (content-specified) drop-down
+				} else {
+					// not supported
 				}
 				
 				
