@@ -322,11 +322,11 @@ public class Database {
 				        "Database#querySelectedProblemData - Unexpected number of rows in ResultSet"));
 			}
 
-			Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
+			final Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
 			        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"),
 			        rs.getDouble("uw.points"));
 			
-			String[] inputs = {
+			final String[] inputs = {
 					rs.getString("perm.input_1"),
 					rs.getString("perm.input_2"),
 					rs.getString("perm.input_3"),
@@ -339,10 +339,21 @@ public class Database {
 					rs.getString("perm.input_10")
 			};
 			
-			Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"),
+			final Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"),
 			        rs.getInt("perm.num_inputs"), rs.getInt("perm.num_answers"), inputs);
 
-			problemData = new ProblemData(prob, rs.getString("b.body_text"),
+			String bodyText = rs.getString("b.body_text");
+
+			// Inject inputs
+			for (int i = 1; i <= permutation.getNumInputs(); i++) {
+				bodyText = bodyText.replaceAll("!in_" + i + "!", permutation.getInputString(i - 1));
+			}
+
+			// Replace answer tags with HTML divs of the proper id
+			final String bodyWithReplacements = bodyText.replaceAll(SelectedProblemDataServiceImpl.RAW_ANSWER_TAG,
+			        SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV);
+
+			problemData = new ProblemData(prob, bodyWithReplacements,
 			        5 /* number of new questions (resets) available to user */,
 			        3 /* number of attempts (submissions) available to user */,
 			        permutation);

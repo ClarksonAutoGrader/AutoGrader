@@ -2,8 +2,6 @@ package edu.clarkson.autograder.client.widgets;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -11,7 +9,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -20,6 +17,8 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -122,8 +121,7 @@ public class ProblemView extends Composite {
 			previousAnswers.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					// null if content has not yet been generated for this
-					// problem
+					// null if content has not yet been generated for this problem
 					if (previousAnswersPopupContent == null) {
 						previousAnswersPopupContent = createPreviousAnswersContent();
 					}
@@ -136,7 +134,6 @@ public class ProblemView extends Composite {
 
 					previousAnswersPopup.center();
 					previousAnswersPopup.show();
-
 				}
 			});
 
@@ -185,38 +182,11 @@ public class ProblemView extends Composite {
 		private final FlowPanel toplevel;
 
 		private String markup;
-		
-		/**
-		 * Finds answer markup text (example: <code>!ans_##_type!</code>) and parses into groups containing number, type, and content<br>
-		 * <br>
-		 * <code>!ans_([1-9]|10)_?(field|boolean|list)\s*\{?(\s*\w+(?:\s*,\s*\w+)*)?\}?!</code><br>
-		 * <br>
-		 * Format: String "!ans_" followed by a number 1 through 10, another
-		 * underscore, and finally the answer type Types include "field"
-		 * (default), "boolean" (True/False drop-down), or "list" (drop-down
-		 * with custom content). Type "list" must be followed by curly braces
-		 * containing a comma-separated list of desired drop-down choices.<br>
-		 * <br>
-		 * {@link http://rubular.com/r/uU1ThMAy3x} <br>
-		 * Examples:
-		 * 
-		 * <li>!ans_1_field! Exactly one or two digits required Type is a text
-		 * field</li>
-		 * 
-		 * <li>!ans_1_boolean! True/False input drop-down</li>
-		 * 
-		 * <li>!ans_1_list{Odd, Even} Drop-down with specified content (comma
-		 * delimited, whitespace around comma does not matter)</li>
-		 */
-		private static final String RAW_ANSWER_TAG = "!ans_(?<number>[1-9]|10)_(?<type>field|boolean|list)\\s*\\{?(?<content>\\s*\\w+(?:\\s*,\\s*\\w+)*)?\\}?!";
-
-		/** Uses groups from RAW_ANSWER_TAG (number, type, and content) to create a div element */
-		private static final String CREATE_ANSWER_DIV = "<div id=\"ans_${number}\">type:${type},content:${content}</div>";
 
 		/**
-		 * Reference: http://rubular.com/r/34EtJ6hjK8
+		 * Reference: http://rubular.com/r/SlPJkHnlY8
 		 */
-		private static final String PROCESS_ANSWER_DIV = "<div.*>type:(?<type>field|boolean|list)?,content:(?<content>.*)<\\/div>";
+		private static final String PROCESS_ANSWER_DIV = "^type:(field|boolean|list)?,content:(.*)$";
 
 		private final RegExp PROCESS_PATTERN = RegExp.compile(PROCESS_ANSWER_DIV);
 
@@ -243,73 +213,69 @@ public class ProblemView extends Composite {
 		}
 
 		private void renderMarkup(final Permutation permutation) {
-			
-			// Inject inputs
-			String inputBody = markup;
-			for (int i = 1; i <= permutation.getNumInputs(); i++) {
-				inputBody = inputBody.replaceAll("!in_" + i + "!", permutation.getInputString(i - 1));
-			}
-
-			// Replace answer tags with HTML divs of the proper id
-			String domBody = inputBody.replaceAll(RAW_ANSWER_TAG, CREATE_ANSWER_DIV);
-
-			//TODO up to this point can be completed server-side at the time of transmission
-			LOG.publish(new LogRecord(Level.INFO, "Problem body post-replacement: " + domBody));
 
 			// Attach to DOM
-			HTMLPanel panel = new HTMLPanel(domBody);
+			HTMLPanel panel = new HTMLPanel(markup);
 			toplevel.clear();
 			toplevel.add(panel);
-			
+
 			// Replace answer divs with widgets by ID
 			for(int i = 1; i <= permutation.getNumAnswers(); i++) {
-				final Element divElement = DOM.getElementById("" + i);
+				final String id = "ans_" + i;
+				final Element divElement = panel.getElementById(id);
 				final String innerText = divElement.getInnerText();
 
 				final MatchResult matcher = PROCESS_PATTERN.exec(innerText);
 				final boolean matchFound = matcher != null;
 				if (matchFound) {
 					
-					if (matcher.getGroupCount() != 1) {
-						LOG.publish(new LogRecord(Level.INFO, "Error parsing problem body: answer match group count != 1"));
-						toplevel.clear();
-						toplevel.add(new Label("Error loading problem body. (Error 100"));
+					if (matcher.getGroupCount() != 3) {
+						reportErrorLoadingBody("Error parsing problem body: answer match group count is != 3",
+						        "Error loading problem body (Error 100)");
+						return;
 					}
-					
-					
-					
-					matcher.get
-				
-				final String type = processedText.group("type");
-				final String content = processedText.group("content");
 
-				LOG.publish(new LogRecord(Level.INFO,
-				        "Answer " + i + " type \"" + type + "\", content \"" + content + "\""));
+					// group 0 is whole, group 1 type
+					final String type = matcher.getGroup(1);
+					// group 2 content
+					final String content = matcher.getGroup(2);
 
-				if (type.equals("field")) {
-					LOG.publish(new LogRecord(Level.INFO, "Process field type"));
-					// TODO insert textbox widget
-
-				} else if (type.equals("boolean")) {
-					// not supported
-					// true/false drop-down
-					LOG.publish(new LogRecord(Level.INFO, "Process boolean type"));
-
-				} else if (type.equals("list")) {
-					// not supported
-					// custom (content-specified) drop-down
-					LOG.publish(new LogRecord(Level.INFO, "Process list type"));
-
-				} else {
-					// not supported
-					LOG.publish(new LogRecord(Level.INFO, "Process other type"));
+					//TODO track created widget to pull information from them on submit
+					if (type.equals("field")) {
+						TextBox widget = new TextBox();
+						panel.addAndReplaceElement(widget, id);
+					} else if (type.equals("boolean")) {
+						// true/false drop-down
+						ListBox widget = new ListBox();
+						widget.addItem("");
+						widget.addItem("True");
+						widget.addItem("False");
+						panel.addAndReplaceElement(widget, id);
+					} else if (type.equals("list")) {
+						// custom (content-specified) drop-down
+						ListBox widget = new ListBox();
+						final String[] items = content.split(",");
+						widget.addItem("");
+						for (String item : items) {
+							widget.addItem(item);
+						}
+						panel.addAndReplaceElement(widget, id);
+					} else {
+						// not supported
+						reportErrorLoadingBody("Error parsing problem body: unsupported answer type: " + type,
+						        "Error loading problem body (Error 200)");
+						return;
+					}
 				}
-
-				}
-				
 			}
-			
+		}
 
+		private void reportErrorLoadingBody(String logMessage, String userMessage) {
+			LOG.publish(new LogRecord(Level.INFO, logMessage));
+			toplevel.clear();
+			Label errorLabel = new Label(userMessage);
+			errorLabel.addStyleName("errorLabel");
+			toplevel.add(errorLabel);
 		}
 	}
 
