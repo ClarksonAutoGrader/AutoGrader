@@ -9,6 +9,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -185,7 +187,7 @@ public class ProblemView extends Composite {
 		private String markup;
 		
 		/**
-		 * Possible regex design for handling multiple answer types.<br>
+		 * Finds answer markup text (example: <code>!ans_##_type!</code>) and parses into groups containing number, type, and content<br>
 		 * <br>
 		 * <code>!ans_([1-9]|10)_?(field|boolean|list)\s*\{?(\s*\w+(?:\s*,\s*\w+)*)?\}?!</code><br>
 		 * <br>
@@ -208,7 +210,7 @@ public class ProblemView extends Composite {
 		 */
 		private static final String RAW_ANSWER_TAG = "!ans_(?<number>[1-9]|10)_(?<type>field|boolean|list)\\s*\\{?(?<content>\\s*\\w+(?:\\s*,\\s*\\w+)*)?\\}?!";
 
-		/** Uses groups from RAW_ANSWER_TAG, content not yet supported */
+		/** Uses groups from RAW_ANSWER_TAG (number, type, and content) to create a div element */
 		private static final String CREATE_ANSWER_DIV = "<div id=\"ans_${number}\">type:${type},content:${content}</div>";
 
 		/**
@@ -216,7 +218,7 @@ public class ProblemView extends Composite {
 		 */
 		private static final String PROCESS_ANSWER_DIV = "<div.*>type:(?<type>field|boolean|list)?,content:(?<content>.*)<\\/div>";
 
-		private final Pattern PROCESS_PATTERN = Pattern.compile(PROCESS_ANSWER_DIV);
+		private final RegExp PROCESS_PATTERN = RegExp.compile(PROCESS_ANSWER_DIV);
 
 		private Body() {
 			toplevel = new FlowPanel();
@@ -251,11 +253,8 @@ public class ProblemView extends Composite {
 			// Replace answer tags with HTML divs of the proper id
 			String domBody = inputBody.replaceAll(RAW_ANSWER_TAG, CREATE_ANSWER_DIV);
 
-			LOG.publish(new LogRecord(Level.INFO, "Problem body pre-replacement:  " + inputBody));
-
+			//TODO up to this point can be completed server-side at the time of transmission
 			LOG.publish(new LogRecord(Level.INFO, "Problem body post-replacement: " + domBody));
-
-			LOG.publish(new LogRecord(Level.INFO, "Problem body replacement success: " + inputBody.equals(domBody)));
 
 			// Attach to DOM
 			HTMLPanel panel = new HTMLPanel(domBody);
@@ -267,16 +266,20 @@ public class ProblemView extends Composite {
 				final Element divElement = DOM.getElementById("" + i);
 				final String innerText = divElement.getInnerText();
 
-				// TODO
-				// https://stackoverflow.com/questions/1162240/regular-expressions-and-gwt
-
-				final Matcher processedText = PROCESS_PATTERN.matcher(innerText);
-				if (processedText.matches()) {
-					System.out.println("Match found");
-				} else {
-					System.out.println("Match not found");
-				}
-
+				final MatchResult matcher = PROCESS_PATTERN.exec(innerText);
+				final boolean matchFound = matcher != null;
+				if (matchFound) {
+					
+					if (matcher.getGroupCount() != 1) {
+						LOG.publish(new LogRecord(Level.INFO, "Error parsing problem body: answer match group count != 1"));
+						toplevel.clear();
+						toplevel.add(new Label("Error loading problem body. (Error 100"));
+					}
+					
+					
+					
+					matcher.get
+				
 				final String type = processedText.group("type");
 				final String content = processedText.group("content");
 
@@ -301,7 +304,8 @@ public class ProblemView extends Composite {
 					// not supported
 					LOG.publish(new LogRecord(Level.INFO, "Process other type"));
 				}
-				
+
+				}
 				
 			}
 			
