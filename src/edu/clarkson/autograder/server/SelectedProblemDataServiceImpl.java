@@ -32,9 +32,9 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet impleme
 	 * <li>!ans_1_field! Exactly one or two digits required Type is a text
 	 * field</li>
 	 * 
-	 * <li>!ans_1_boolean! True/False input drop-down</li>
+	 * <li>!ans_5_boolean! True/False input drop-down</li>
 	 * 
-	 * <li>!ans_1_list{Odd, Even} Drop-down with specified content (comma
+	 * <li>!ans_10_list{Odd, Even} Drop-down with specified content (comma
 	 * delimited, whitespace around comma does not matter)</li>
 	 */
 	static final String RAW_ANSWER_TAG = "!ans_(?<number>[1-9]|10)_(?<type>field|boolean|list)\\s*\\{?(?<content>\\s*\\w+(?:\\s*,\\s*\\w+)*)?\\}?!";
