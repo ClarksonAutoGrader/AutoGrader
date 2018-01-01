@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -188,36 +189,87 @@ public class ProblemView extends Composite {
 
 		private String markup;
 
-		private Answer[] answers;
+		private QuestionWidget[] questions;
 
-		private class CustomField extends TextBox implements Answer {
+		private final class QuestionWidget extends Composite {
 
-			private CustomField() {
-				super();
-			}
+			private static final String ANSWER_FIELD = "field";
 
-			@Override
-			public String getAnswer() {
-				return getValue();
-			}
-		}
+			private static final String ANSWER_BOOLEAN = "boolean";
 
-		private class CustomList extends ListBox implements Answer {
+			private static final String ANSWER_LIST = "list";
 
-			private CustomList() {
-				super();
-			}
+			private final String TYPE;
 
-			private void addItems(String... items) {
-				addItem("");
-				for (String item : items) {
-					addItem(item);
+			private final String CONTENT;
+
+			private final HorizontalPanel layout;
+
+			private final Widget ANSWER_WIDGET;
+
+			private final class CustomField extends TextBox implements Answer {
+
+				private CustomField() {
+					super();
+				}
+
+				@Override
+				public String getAnswer() {
+					return getValue();
 				}
 			}
 
-			@Override
-			public String getAnswer() {
-				return getSelectedItemText();
+			private final class CustomList extends ListBox implements Answer {
+
+				private CustomList(String... items) {
+					super();
+					addItem("");
+					for (String item : items) {
+						addItem(item);
+					}
+				}
+
+				@Override
+				public String getAnswer() {
+					return getSelectedItemText();
+				}
+			}
+
+			private QuestionWidget(final String type, final String content) {
+				this.TYPE = type;
+				this.CONTENT = content;
+
+				// create answer widget
+				if (type.equals(ANSWER_FIELD)) {
+					// simple text field
+					ANSWER_WIDGET = new CustomField();
+
+				} else if (type.equals(ANSWER_BOOLEAN)) {
+					// true/false drop-down
+					ANSWER_WIDGET = new CustomList("True", "False");
+
+				} else if (type.equals(ANSWER_LIST)) {
+					// custom (content-specified) drop-down
+					final String[] items = content.split(",");
+					ANSWER_WIDGET = new CustomList(items);
+
+				} else {
+					// not supported
+					ANSWER_WIDGET = null;
+					reportErrorParsingBody("Error parsing problem body: unsupported answer type: " + type,
+					        "Error loading problem body (Error 200)");
+				}
+
+				layout = new HorizontalPanel();
+//				layout.add(/* answer form feedback (green checkmark or red X) */);
+				layout.add(ANSWER_WIDGET);
+//				layout.add(/* info button for previous answers */);
+
+				initWidget(layout);
+			}
+
+			private String getAnswer() {
+				return ((Answer) ANSWER_WIDGET).getAnswer();
 			}
 		}
 
@@ -246,7 +298,9 @@ public class ProblemView extends Composite {
 			// update body only if it's different
 			if (!bodyMarkup.equals(markup)) {
 				markup = bodyMarkup;
-				answers = null;
+				for (int i = 0; i < questions.length; ++i) {
+					questions[0] = null;
+				}
 				renderMarkup(permutation);
 			}
 		}
@@ -258,7 +312,7 @@ public class ProblemView extends Composite {
 			toplevel.clear();
 			toplevel.add(panel);
 
-			answers = new Answer[permutation.getNumAnswers()];
+			questions = new QuestionWidget[permutation.getNumAnswers()];
 
 			// Replace answer divs with widgets by ID
 			for(int i = 1; i <= permutation.getNumAnswers(); i++) {
@@ -281,33 +335,10 @@ public class ProblemView extends Composite {
 					// group 2 content
 					final String content = matcher.getGroup(2);
 
-					if (type.equals("field")) {
-						// simple text field
-						CustomField widget = new CustomField();
-						panel.addAndReplaceElement(widget, id);
-						answers[i - 1] = widget;
-
-					} else if (type.equals("boolean")) {
-						// true/false drop-down
-						CustomList widget = new CustomList();
-						widget.addItems("True", "False");
-						panel.addAndReplaceElement(widget, id);
-						answers[i - 1] = widget;
-
-					} else if (type.equals("list")) {
-						// custom (content-specified) drop-down
-						CustomList widget = new CustomList();
-						final String[] items = content.split(",");
-						widget.addItems(items);
-						panel.addAndReplaceElement(widget, id);
-						answers[i - 1] = widget;
-
-					} else {
-						// not supported
-						reportErrorParsingBody("Error parsing problem body: unsupported answer type: " + type,
-						        "Error loading problem body (Error 200)");
-						return;
-					}
+					// create QuestionWidget to house each answer field
+					final QuestionWidget widget = new QuestionWidget(type, content);
+					panel.addAndReplaceElement(widget, id);
+					questions[i - 1] = widget;
 				}
 			}
 		}
@@ -401,13 +432,13 @@ public class ProblemView extends Composite {
 
 		private void actionSubmit() {
 			// TODO implement submit action
-			if (body.answers == null) {
+			if (body.questions == null) {
 				Window.alert("Nothing to submit...");
 				return;
 			}
-			String[] answers = new String[body.answers.length];
-			for (int i = 0; i < body.answers.length; ++i) {
-				answers[i] = body.answers[i].getAnswer();
+			String[] answers = new String[body.questions.length];
+			for (int i = 0; i < body.questions.length; ++i) {
+				answers[i] = body.questions[i].getAnswer();
 			}
 
 			// temporary:
