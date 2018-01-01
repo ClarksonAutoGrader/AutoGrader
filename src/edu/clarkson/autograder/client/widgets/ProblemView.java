@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -173,6 +174,10 @@ public class ProblemView extends Composite {
 		}
 	}
 
+	private interface Answer {
+		String getAnswer();
+	}
+
 	private class Body extends Composite {
 
 		private static final String STYLE_TOP_LEVEL = "problemBody";
@@ -182,6 +187,39 @@ public class ProblemView extends Composite {
 		private final FlowPanel toplevel;
 
 		private String markup;
+
+		private Answer[] answers;
+
+		private class CustomField extends TextBox implements Answer {
+
+			private CustomField() {
+				super();
+			}
+
+			@Override
+			public String getAnswer() {
+				return getValue();
+			}
+		}
+
+		private class CustomList extends ListBox implements Answer {
+
+			private CustomList() {
+				super();
+			}
+
+			private void addItems(String... items) {
+				addItem("");
+				for (String item : items) {
+					addItem(item);
+				}
+			}
+
+			@Override
+			public String getAnswer() {
+				return getSelectedItemText();
+			}
+		}
 
 		/**
 		 * Reference: http://rubular.com/r/SlPJkHnlY8
@@ -208,6 +246,7 @@ public class ProblemView extends Composite {
 			// update body only if it's different
 			if (!bodyMarkup.equals(markup)) {
 				markup = bodyMarkup;
+				answers = null;
 				renderMarkup(permutation);
 			}
 		}
@@ -218,6 +257,8 @@ public class ProblemView extends Composite {
 			HTMLPanel panel = new HTMLPanel(markup);
 			toplevel.clear();
 			toplevel.add(panel);
+
+			answers = new Answer[permutation.getNumAnswers()];
 
 			// Replace answer divs with widgets by ID
 			for(int i = 1; i <= permutation.getNumAnswers(); i++) {
@@ -230,7 +271,7 @@ public class ProblemView extends Composite {
 				if (matchFound) {
 					
 					if (matcher.getGroupCount() != 3) {
-						reportErrorLoadingBody("Error parsing problem body: answer match group count is != 3",
+						reportErrorParsingBody("Error parsing problem body: answer match group count is != 3",
 						        "Error loading problem body (Error 100)");
 						return;
 					}
@@ -240,29 +281,30 @@ public class ProblemView extends Composite {
 					// group 2 content
 					final String content = matcher.getGroup(2);
 
-					//TODO track created widget to pull information from them on submit
 					if (type.equals("field")) {
-						TextBox widget = new TextBox();
+						// simple text field
+						CustomField widget = new CustomField();
 						panel.addAndReplaceElement(widget, id);
+						answers[i - 1] = widget;
+
 					} else if (type.equals("boolean")) {
 						// true/false drop-down
-						ListBox widget = new ListBox();
-						widget.addItem("");
-						widget.addItem("True");
-						widget.addItem("False");
+						CustomList widget = new CustomList();
+						widget.addItems("True", "False");
 						panel.addAndReplaceElement(widget, id);
+						answers[i - 1] = widget;
+
 					} else if (type.equals("list")) {
 						// custom (content-specified) drop-down
-						ListBox widget = new ListBox();
+						CustomList widget = new CustomList();
 						final String[] items = content.split(",");
-						widget.addItem("");
-						for (String item : items) {
-							widget.addItem(item);
-						}
+						widget.addItems(items);
 						panel.addAndReplaceElement(widget, id);
+						answers[i - 1] = widget;
+
 					} else {
 						// not supported
-						reportErrorLoadingBody("Error parsing problem body: unsupported answer type: " + type,
+						reportErrorParsingBody("Error parsing problem body: unsupported answer type: " + type,
 						        "Error loading problem body (Error 200)");
 						return;
 					}
@@ -270,7 +312,7 @@ public class ProblemView extends Composite {
 			}
 		}
 
-		private void reportErrorLoadingBody(String logMessage, String userMessage) {
+		private void reportErrorParsingBody(String logMessage, String userMessage) {
 			LOG.publish(new LogRecord(Level.INFO, logMessage));
 			toplevel.clear();
 			Label errorLabel = new Label(userMessage);
@@ -359,6 +401,21 @@ public class ProblemView extends Composite {
 
 		private void actionSubmit() {
 			// TODO implement submit action
+			if (body.answers == null) {
+				Window.alert("Nothing to submit...");
+				return;
+			}
+			String[] answers = new String[body.answers.length];
+			for (int i = 0; i < body.answers.length; ++i) {
+				answers[i] = body.answers[i].getAnswer();
+			}
+
+			// temporary:
+			String alert = answers[0];
+			for (int i = 1; i < answers.length; ++i) {
+				alert += ", " + answers[1];
+			}
+			Window.alert(alert);
 		}
 
 		private void actionNewProblem() {
