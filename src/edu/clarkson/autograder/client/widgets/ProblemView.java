@@ -74,6 +74,8 @@ public class ProblemView extends Composite {
 	// pop-up elements
 	private ProblemPopup previousAnswersPopup;
 	private static final String TEXT_PREVIOUS_ANSWERS = "Previous Answers";
+	
+	private ProblemData problemData;
 
 	private class Header extends Composite {
 
@@ -152,6 +154,10 @@ public class ProblemView extends Composite {
 	}
 
 	private Widget createPreviousAnswersContent(final int permutationId, final int answerNumber) {
+
+		// TODO: call this method at some point in here
+		requestPreviousAnswersAsync();
+
 		Label content = new Label("Previous answers listed below" + " temp: perm=" + permutationId + " ans_" + answerNumber);
 		content.addStyleName("previousAnswersContent");
 		return content;
@@ -282,7 +288,6 @@ public class ProblemView extends Composite {
 				final Element infoElement = infoButton.getElement();
 				final Image info = new Image(AutograderResources.INSTANCE.info());
 				infoElement.appendChild(info.getElement());
-				LOG.publish(new LogRecord(Level.INFO, "I MADE A QUESTION_WIDGET"));
 				infoElement.getStyle().setPadding(1, Unit.PX);
 				infoElement.getStyle().setHeight(20, Unit.PX);
 				infoElement.getStyle().setDisplay(Display.INLINE_BLOCK);
@@ -383,8 +388,7 @@ public class ProblemView extends Composite {
 					final String content = matcher.getGroup(2);
 
 					// create QuestionWidget to house each answer field
-					final QuestionWidget widget = new QuestionWidget(permutation.getId(), ansNum, type, content,
-					        new Image(AutograderResources.INSTANCE.redCross()));
+					final QuestionWidget widget = new QuestionWidget(permutation.getId(), ansNum, type, content, null);
 					panel.addAndReplaceElement(widget, id);
 					questions[ansNum - 1] = widget;
 				} else {
@@ -481,28 +485,40 @@ public class ProblemView extends Composite {
 			resetsRemaining.setText(TEXT_RESETS_REMAINING + resets);
 			attemptsRemaining.setText(TEXT_ATTEMPTS_REMAINING + attempts);
 		}
-
-		private void actionSubmit() {
-			// TODO implement submit action
-			if (body.questions == null) {
-				Window.alert("Nothing to submit...");
-				return;
-			}
-			String[] answers = new String[body.questions.length];
-			for (int i = 0; i < body.questions.length; ++i) {
-				answers[i] = body.questions[i].getAnswer();
-			}
-
-			// temporary:
-			String alert = answers[0];
-			for (int i = 1; i < answers.length; ++i) {
-				alert += ", " + answers[1];
-			}
-			Window.alert(alert);
+	}
+	
+	private void actionSubmit() {
+		// TODO implement submit action
+		
+		// check if body never completed rendering
+		if (body.questions == null) {
+			Window.alert("Nothing to submit...");
+			return;
 		}
+		String[] answers = new String[problemData.getNumAnswers()];
+		for (int i = 0; i < answers.length; ++i) {
+			answers[i] = body.questions[i].getAnswer();
+		}
+		
+		// temporary:
+		String alert = answers[0];
+		for (int i = 1; i < answers.length; ++i) {
+			alert += ", " + answers[i];
+		}
+		Window.alert(alert);
 
-		private void actionNewProblem() {
-			// TODO implement new problem action
+		// temporary: clear gradeFlag for testing purposes
+		for (Body.QuestionWidget question : body.questions) {
+			question.setGradeFlag(null);
+		}
+	}
+	
+	private void actionNewProblem() {
+		// TODO implement new problem action
+
+		// temporary: change gradeFlag for testing purposes
+		for (Body.QuestionWidget question : body.questions) {
+			question.setGradeFlag(new Image(AutograderResources.INSTANCE.redCross()));
 		}
 	}
 
@@ -523,6 +539,9 @@ public class ProblemView extends Composite {
 	}
 
 	public void update(final ProblemData data) {
+		
+		problemData = data;
+		
 		header.update(data.getTitle(), data.getEarnedPoints(), data.getTotalPoints());
 		body.update(data.getBodyMarkup(), data.getPermutation());
 		footer.update(data.getResets(), data.getAttempts());
