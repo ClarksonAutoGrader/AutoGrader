@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -25,6 +26,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import edu.clarkson.autograder.client.Autograder;
+import edu.clarkson.autograder.client.AutograderResources;
 import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.ProblemData;
 
@@ -60,6 +62,12 @@ import edu.clarkson.autograder.client.objects.ProblemData;
 public class ProblemView extends Composite {
 
 	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
+
+	private static final Image greenCheck = new Image(AutograderResources.INSTANCE.greenCheck());
+
+	private static final Image redCross = new Image(AutograderResources.INSTANCE.redCross());
+
+	private static final Image info = new Image(AutograderResources.INSTANCE.info());
 
 	private final VerticalPanel toplevel;
 	private final Header header;
@@ -207,6 +215,8 @@ public class ProblemView extends Composite {
 
 			private final Widget ANSWER_WIDGET;
 
+			private Image gradeFlag;
+
 			private final class CustomField extends TextBox implements Answer {
 
 				private CustomField() {
@@ -235,41 +245,62 @@ public class ProblemView extends Composite {
 				}
 			}
 
-			private QuestionWidget(final String type, final String content) {
+			private QuestionWidget(final String type, final String content, Image gradeFlag) {
 				this.TYPE = type;
 				this.CONTENT = content;
+				this.gradeFlag = gradeFlag;
 
-				// create answer widget
-				if (type.equals(ANSWER_FIELD)) {
+				layout = new HorizontalPanel();
+
+				/*
+				 * Possibly add grade flag (usually green check or red cross)
+				 */
+				if (gradeFlag != null) {
+					layout.add(gradeFlag);
+				}
+
+				/*
+				 * Add answer widget
+				 */
+				if (TYPE.equals(ANSWER_FIELD)) {
 					// simple text field
 					ANSWER_WIDGET = new CustomField();
 
-				} else if (type.equals(ANSWER_BOOLEAN)) {
+				} else if (TYPE.equals(ANSWER_BOOLEAN)) {
 					// true/false drop-down
 					ANSWER_WIDGET = new CustomList("True", "False");
 
-				} else if (type.equals(ANSWER_LIST)) {
+				} else if (TYPE.equals(ANSWER_LIST)) {
 					// custom (content-specified) drop-down
-					final String[] items = content.split(",");
+					final String[] items = CONTENT.split(",");
 					ANSWER_WIDGET = new CustomList(items);
 
 				} else {
 					// not supported
 					ANSWER_WIDGET = null;
-					reportErrorParsingBody("Error parsing problem body: unsupported answer type: " + type,
+					reportErrorParsingBody("Error parsing problem body: unsupported answer type: " + TYPE,
 					        "Error loading problem body (Error 200)");
 				}
-
-				layout = new HorizontalPanel();
-//				layout.add(/* answer form feedback (green checkmark or red X) */);
 				layout.add(ANSWER_WIDGET);
-//				layout.add(/* info button for previous answers */);
+
+				/*
+				 * Add question info button (usually previous answers)
+				 */
+				layout.add(info);
 
 				initWidget(layout);
 			}
 
 			private String getAnswer() {
 				return ((Answer) ANSWER_WIDGET).getAnswer();
+			}
+
+			private void setGradeFlag(final Image gradeFlag) {
+				if (this.gradeFlag != null) {
+					layout.remove(0);
+				}
+				this.gradeFlag = gradeFlag;
+				layout.insert(gradeFlag, 0);
 			}
 		}
 
@@ -336,7 +367,7 @@ public class ProblemView extends Composite {
 					final String content = matcher.getGroup(2);
 
 					// create QuestionWidget to house each answer field
-					final QuestionWidget widget = new QuestionWidget(type, content);
+					final QuestionWidget widget = new QuestionWidget(type, content, null);
 					panel.addAndReplaceElement(widget, id);
 					questions[i - 1] = widget;
 				}
