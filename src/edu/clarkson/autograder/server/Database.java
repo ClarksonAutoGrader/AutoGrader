@@ -151,30 +151,26 @@ public class Database {
 
 		/*
 			SELECT 
-				a.assignment_id,
+			    a.assignment_id,
 			    a.assignment_title,
 			    a.due_date,
 			    prob.problem_id,
 			    prob.problem_title,
 			    prob.points_possible,
-			    uw.points
+			    COALESCE(uw.points, 0) AS uw.points
 			FROM
-			    users u
-			        RIGHT JOIN
-			    user_work uw ON u.u_id = uw.soln_uid
-			        RIGHT JOIN
-			    problems prob ON uw.soln_prob_id = prob.problem_id
-			        RIGHT JOIN
-			    assignments a ON prob.problem_aid = a.assignment_id
+			    assignments a,
+			    problems prob
+			        LEFT JOIN
+			    user_work uw ON uw.soln_prob_id = prob.problem_id
 			WHERE
-			    u.username = 'clappdj' AND a.a_cid = 1;
+			    a.assignment_id = prob.problem_aid
+			        AND a.a_cid = 1 AND IF((uw.soln_username = 'murphycd' OR uw.soln_username IS NULL), TRUE, FALSE);
 		 */
-		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, "
-		        + "prob.problem_title, prob.points_possible, uw.points " + "FROM users u "
-				+ "RIGHT JOIN user_work uw ON u.username = uw.soln_username "
-		        + "RIGHT JOIN problems prob ON uw.soln_prob_id = prob.problem_id "
-		        + "RIGHT JOIN assignments a ON prob.problem_aid = a.assignment_id " + "WHERE u.username = '"
-				+ getUsername() + "' AND a.a_cid = " + courseId + " AND uw.soln_perm_id % 2 <> 0;";
+		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, COALESCE(uw.points, 0) AS 'uw.points' "
+				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id "
+				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " AND IF((uw.soln_username = '" + getUsername()
+				+ "' OR uw.soln_username IS NULL), TRUE, FALSE);";
 
 		final ResultSet rs = query(SQL);
 		try {
@@ -266,12 +262,55 @@ public class Database {
 		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - begin"));
 
 		ProblemData problemData = null;
+		
+		/*
+		 SELECT 
+		    prob.problem_id,
+		    prob.problem_aid,
+		    prob.problem_title,
+		    prob.points_possible,
+		    prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining',
+    		prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining',
+		    b.body_text,
+		    COALESCE(uw.points, 0) AS 'uw.points',
+		    perm.perm_id,
+		    perm.input_1,
+		    perm.input_2,
+		    perm.input_3,
+		    perm.input_4,
+		    perm.input_5,
+		    perm.input_6,
+		    perm.input_7,
+		    perm.input_8,
+		    perm.input_9,
+		    perm.input_10
+		FROM
+		    permutations perm,
+		    body b,
+		    problems prob
+		        LEFT JOIN
+		    user_work uw ON prob.problem_id = uw.soln_prob_id
+		WHERE
+		    b.body_prob_id = prob.problem_id
+		        AND perm.perm_prob_id = prob.problem_id
+		        AND IF((uw.soln_username = 'murphycd'
+		            OR uw.soln_username IS NULL),
+		        TRUE,
+		        FALSE) AND prob.problem_id = 1
+		ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND())
+		LIMIT 1;
+		  
+		 */
 
 		// TODO: update uw.soln_uid to uw.soln_username = getUsername();
-		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.body, uw.points "
-				+ "FROM problems prob JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
-				+ "WHERE uw.soln_username = '" + getUsername() + "' AND prob.problem_id = " + problemId
-				+ " AND uw.soln_perm_id % 2 <> 0;";
+		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
+				+ "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', b.body_text, COALESCE(uw.points, 0) AS 'uw.points', "
+				+ "perm.perm_id, perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5, perm.input_6, "
+				+ "perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
+				+ "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
+				+ "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
+				+ "IF((uw.soln_username = '" + getUsername() + "' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = " + problemId
+				+ " ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
 		try {
 			// TODO process resultset
 			ResultSet rs = query(SQL);
@@ -289,9 +328,9 @@ public class Database {
 			        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"),
 			        rs.getDouble("uw.points"));
 
-			problemData = new ProblemData(prob, rs.getString("prob.body"),
-			        5 /* number of new questions (resets) available to user */,
-			        3 /* number of attempts (submissions) available to user */);
+			problemData = new ProblemData(prob, rs.getString("b.body_text"),
+			        rs.getInt("questions_remaining") /* number of new questions (resets) available to user */,
+			        rs.getInt("checks_remaining") /* number of attempts (submissions) available to user */);
 				
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - SQLException " + exception));
