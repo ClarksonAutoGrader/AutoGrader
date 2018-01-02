@@ -1,13 +1,16 @@
 package edu.clarkson.autograder.client;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -28,51 +31,32 @@ public class Autograder implements EntryPoint {
 	 */
 	public static final AutograderResources images = GWT.create(AutograderResources.class);
 
-	/**
-	 * The html used to show a loading icon.
-	 */
-	public final String loadingHtml = AbstractImagePrototype.create(Autograder.images.loading()).getHTML();
-
 	public static final int ID_TOKEN_WIDTH = 6;
+
+	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 	
 	private InlineLabel usernameLabel = new InlineLabel("");
 	
-	
-	int tempCourseID = 12;
+	private int courseid = 50;
 
-	/**
-	 * Attempts to provide identical functionality as:<br>
-	 * <br>
-	 * <code>String.format("%0" + ID_TOKEN_WIDTH + "d", id);</code>
-	 */
 	public static String formatIdToken(int id) {
+		// Attempts to provide identical functionality as:
+		// String.format("%0" + ID_TOKEN_WIDTH + "d", id);
 		int unpadded_length = ("" + id).length();
 		String padding = "";
 		for (int i = 0; i < ID_TOKEN_WIDTH - unpadded_length; ++i)
 			padding += "0";
 		return padding + id;
 	}
-	
-	/**
-	 * 
-	 * @param unformatted
-	 *            - raw double-precision number
-	 * @param decimalPlaces
-	 *            - number of decimal places to keep
-	 * @return double formatted to the number of decimal places specified
-	 */
-	public static double numberPrecision(double unformatted, int decimalPlaces) {
-		double precision = Math.pow(10, decimalPlaces);
-		return (int) (unformatted * precision + 0.5) / precision;
-	}
 
     /**
      * This is the entry point method.
      */
 	public void onModuleLoad() {
+		SimpleRemoteLogHandler remoteLog = new SimpleRemoteLogHandler();
+		remoteLog.publish(new LogRecord(Level.INFO, "EntryPoint"));
 		
-		new GradebookPage(tempCourseID);
-		
+		ContentContainer.setContent(new GradebookPage(courseid));
 		
 //		requestUserAsync();
 //		
@@ -97,7 +81,6 @@ public class Autograder implements EntryPoint {
 //        if (History.getToken().isEmpty()) {
 //            History.newItem("courses");
 //        }
-//		// trigger State#onValueChange
 //        History.fireCurrentHistoryState();
     }
 
@@ -105,19 +88,14 @@ public class Autograder implements EntryPoint {
     	UsernameServiceAsync userService = GWT.create(UsernameService.class);
     	AsyncCallback<String> callback = new AsyncCallback<String>() {
     		public void onFailure(Throwable caught) {
-				usernameLabel.setText("Authentication Error (1)");
-				ContentContainer.clearContent();
+    			usernameLabel.setText("Failed fetching username");
     		}
     		
     		public void onSuccess(String username) {
-				if (username.equals("null")) {
-					ContentContainer.clearContent();
-					usernameLabel.setText("Authentication Error (2)");
-				} else {
-					usernameLabel.setText(username);
-				}
+    			usernameLabel.setText(username);
     		}
     	};
     	userService.getCurrentUsername(callback);
+    	
     }
 }

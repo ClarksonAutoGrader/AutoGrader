@@ -97,6 +97,12 @@ div#footer a:active { color: #F0CA0C; }
 	margin-right: auto;
 }
 
+.gradebookPageTitle {
+	text-align: center;
+	font-size: 200%;
+	margin-bottom: 1vw;	
+}
+
 .courseSelectionPageTitle, .coursePageTitle {
 	margin-bottom: 1vw;
 	font-size: 200%;
