@@ -98,8 +98,49 @@ public class ProblemData implements Serializable {
 		return attempts;
 	}
 
-	public Permutation getPermutation() {
-		return permutation;
+	/**
+	 * Wraps {@link edu.clarkson.autograder.client.objects.Permutation#getId()}
+	 */
+	public int getPermId() {
+		return permutation.getId();
 	}
 
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Permutation#getProblemId()}
+	 */
+	public int getProblemId() {
+		return permutation.getpId();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Permutation#getNumInputs()}
+	 */
+	public int getNumInputs() {
+		return permutation.getNumInputs();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Permutation#getNumAnswers()}
+	 */
+	public int getNumAnswers() {
+		return permutation.getNumAnswers();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Permutation#getInputString()}
+	 */
+	public String getInputString(int index) {
+		return permutation.getInputString(index);
+	}
+
+	/**
+	 * @return Permutation wrapped by this ProblemData
+	 */
+	public final Permutation getPermutation() {
+		return permutation;
+	}
 }
