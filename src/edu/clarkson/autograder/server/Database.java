@@ -187,8 +187,6 @@ public class Database {
 			int currentAssignId = -1;
 			int previousAssignId = -1;
 			while (rs.next()) {
-				LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - aId="
-				        + rs.getString("a.assignment_id") + " pId=" + rs.getString("prob.problem_id")));
 				currentAssignId = Integer.parseInt(rs.getString("a.assignment_id"));
 				final Problem currentProb = new Problem(Integer.parseInt(rs.getString("prob.problem_id")),
 				        currentAssignId, rs.getString("prob.problem_title"),
@@ -371,7 +369,7 @@ public class Database {
 		}
 
 		closeConnection();
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
+		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - end"));
 		return problemData;
 	}
 }
