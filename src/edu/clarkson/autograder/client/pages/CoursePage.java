@@ -116,7 +116,7 @@ public class CoursePage extends Content {
 	private void loadSideBar(SortedMap<Assignment, List<Problem>> treeData) {
 
 		// Create a side bar for assignment selection.
-		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBar - begin"));
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBar"));
 		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData, new ProblemSelectionCallback()), null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
@@ -143,6 +143,10 @@ public class CoursePage extends Content {
 					LOG.publish(new LogRecord(Level.INFO,
 					        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - onFailure"));
 					sideBarAndContent.remove(errorLabel);
+					if (problemView != null) {
+						sideBarAndContent.remove(problemView);
+						problemView = null;
+					}
 					errorLabel.setText("Failed to load the selected problem.");
 					sideBarAndContent.add(errorLabel);
 				}

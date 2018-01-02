@@ -7,8 +7,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -22,15 +22,7 @@ public class Autograder implements EntryPoint {
 
 	public static String tempDebugCourseNameSelected = "ME310 - Thermodynamics";
 
-	/**
-	 * The static images used throughout the Autograder.
-	 */
-	public static final AutograderResources images = GWT.create(AutograderResources.class);
-
-	/**
-	 * The html used to show a loading icon.
-	 */
-	public final String loadingHtml = AbstractImagePrototype.create(Autograder.images.loading()).getHTML();
+	public static final Image loadingImage = new Image(AutograderResources.INSTANCE.loading());
 
 	public static final int ID_TOKEN_WIDTH = 6;
 	

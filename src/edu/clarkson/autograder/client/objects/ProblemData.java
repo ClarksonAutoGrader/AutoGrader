@@ -11,6 +11,8 @@ public class ProblemData implements Serializable {
 	private int resets;
 	private int attempts;
 
+	private Permutation permutation;
+
 	/**
 	 * Constructor
 	 * 
@@ -24,11 +26,12 @@ public class ProblemData implements Serializable {
 	 * @param attempts
 	 *            number of attempts (submissions) available to the user
 	 */
-	public ProblemData(Problem problem, String bodyMarkup, int resets, int attempts) {
+	public ProblemData(Problem problem, String bodyMarkup, int resets, int attempts, Permutation permutation) {
 		this.problem = problem;
 		this.bodyMarkup = bodyMarkup;
 		this.resets = resets;
 		this.attempts = attempts;
+		this.permutation = permutation;
 	}
 
 	/**
@@ -95,4 +98,49 @@ public class ProblemData implements Serializable {
 		return attempts;
 	}
 
+	/**
+	 * Wraps {@link edu.clarkson.autograder.client.objects.Permutation#getId()}
+	 */
+	public int getPermId() {
+		return permutation.getId();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Permutation#getProblemId()}
+	 */
+	public int getProblemId() {
+		return permutation.getpId();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Permutation#getNumInputs()}
+	 */
+	public int getNumInputs() {
+		return permutation.getNumInputs();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Permutation#getNumAnswers()}
+	 */
+	public int getNumAnswers() {
+		return permutation.getNumAnswers();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Permutation#getInputString()}
+	 */
+	public String getInputString(int index) {
+		return permutation.getInputString(index);
+	}
+
+	/**
+	 * @return Permutation wrapped by this ProblemData
+	 */
+	public final Permutation getPermutation() {
+		return permutation;
+	}
 }

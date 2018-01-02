@@ -19,6 +19,7 @@ import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
+import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.Problem;
 import edu.clarkson.autograder.client.objects.ProblemData;
 
@@ -36,6 +37,7 @@ public class Database {
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
 	// private static final String DEFAULT_USERNAME = "null";
+	// TODO: remove debug
 	private static final String DEFAULT_USERNAME = "clappdj";
 
 	// Database parameters
@@ -171,7 +173,7 @@ public class Database {
 				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id "
 				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " AND IF((uw.soln_username = '" + getUsername()
 				+ "' OR uw.soln_username IS NULL), TRUE, FALSE);";
-
+				
 		final ResultSet rs = query(SQL);
 		try {
 			if (!rs.next()) {
@@ -185,8 +187,6 @@ public class Database {
 			int currentAssignId = -1;
 			int previousAssignId = -1;
 			while (rs.next()) {
-				LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - aId="
-				        + rs.getString("a.assignment_id") + " pId=" + rs.getString("prob.problem_id")));
 				currentAssignId = Integer.parseInt(rs.getString("a.assignment_id"));
 				final Problem currentProb = new Problem(Integer.parseInt(rs.getString("prob.problem_id")),
 				        currentAssignId, rs.getString("prob.problem_title"),
@@ -274,6 +274,8 @@ public class Database {
 		    b.body_text,
 		    COALESCE(uw.points, 0) AS 'uw.points',
 		    perm.perm_id,
+		    perm.num_inputs,
+		    perm.num_answers,
 		    perm.input_1,
 		    perm.input_2,
 		    perm.input_3,
@@ -288,7 +290,7 @@ public class Database {
 		    permutations perm,
 		    body b,
 		    problems prob
-		        LEFT JOIN
+		LEFT JOIN
 		    user_work uw ON prob.problem_id = uw.soln_prob_id
 		WHERE
 		    b.body_prob_id = prob.problem_id
@@ -301,18 +303,16 @@ public class Database {
 		LIMIT 1;
 		  
 		 */
-
-		// TODO: update uw.soln_uid to uw.soln_username = getUsername();
-		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
-				+ "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', b.body_text, COALESCE(uw.points, 0) AS 'uw.points', "
-				+ "perm.perm_id, perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5, perm.input_6, "
-				+ "perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
+		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
+				+ "prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
+				+ "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', "
+				+ "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', perm.perm_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
+				+ "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
 				+ "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
 				+ "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
 				+ "IF((uw.soln_username = '" + getUsername() + "' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = " + problemId
 				+ " ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
 		try {
-			// TODO process resultset
 			ResultSet rs = query(SQL);
 
 			// get first and only problem
@@ -324,23 +324,52 @@ public class Database {
 				        "Database#querySelectedProblemData - Unexpected number of rows in ResultSet"));
 			}
 
-			Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
+			final Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
 			        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"),
 			        rs.getDouble("uw.points"));
+			
+			final String[] inputs = {
+					rs.getString("perm.input_1"),
+					rs.getString("perm.input_2"),
+					rs.getString("perm.input_3"),
+					rs.getString("perm.input_4"),
+					rs.getString("perm.input_5"),
+					rs.getString("perm.input_6"),
+					rs.getString("perm.input_7"),
+					rs.getString("perm.input_8"),
+					rs.getString("perm.input_9"),
+					rs.getString("perm.input_10")
+			};
+			
+			final Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"),
+			        rs.getInt("perm.num_inputs"), rs.getInt("perm.num_answers"), inputs);
 
-			problemData = new ProblemData(prob, rs.getString("b.body_text"),
-			        rs.getInt("questions_remaining") /* number of new questions (resets) available to user */,
-			        rs.getInt("checks_remaining") /* number of attempts (submissions) available to user */);
+			String bodyText = rs.getString("b.body_text");
+
+			// Inject inputs
+			for (int i = 1; i <= permutation.getNumInputs(); i++) {
+				bodyText = bodyText.replaceAll("!in_" + i + "!", permutation.getInputString(i - 1));
+			}
+
+			// Replace answer tags with HTML divs of the proper id
+			final String bodyWithReplacements = bodyText.replaceAll(SelectedProblemDataServiceImpl.RAW_ANSWER_TAG,
+			        SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV);
+
+			problemData = new ProblemData(prob, bodyWithReplacements,
+			        rs.getInt("questions_remaining"),
+			        rs.getInt("checks_remaining"),
+			        permutation);
 				
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - SQLException " + exception));
+			throw new RuntimeException(exception);
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - unexpected exception " + exception));
 			throw new RuntimeException(exception);
 		}
 
 		closeConnection();
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
+		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - end"));
 		return problemData;
 	}
 }
