@@ -5,6 +5,8 @@ import java.util.logging.LogRecord;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Display;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
@@ -61,18 +63,17 @@ import edu.clarkson.autograder.client.objects.ProblemData;
  */
 public class ProblemView extends Composite {
 
-	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
+	private static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 
-	private static final Image greenCheck = new Image(AutograderResources.INSTANCE.greenCheck());
-
-	private static final Image redCross = new Image(AutograderResources.INSTANCE.redCross());
-
-	private static final Image info = new Image(AutograderResources.INSTANCE.info());
-
+	// core ProblemView elements
 	private final VerticalPanel toplevel;
 	private final Header header;
 	private final Body body;
 	private final Footer footer;
+
+	// pop-up elements
+	private ProblemPopup previousAnswersPopup;
+	private static final String TEXT_PREVIOUS_ANSWERS = "Previous Answers";
 
 	private class Header extends Composite {
 
@@ -82,21 +83,11 @@ public class ProblemView extends Composite {
 
 		private static final String STYLE_GRADE = "problemGradeInlineLabel";
 
-		private static final String STYLE_PREVIOUS_ANSWERS = "previousAnswersButton";
-
-		private static final String TEXT_PREVIOUS_ANSWERS = "Previous Answers";
-
 		private final FlowPanel toplevel;
 
 		private InlineLabel problemTitle;
 
 		private InlineLabel problemGrade;
-
-		private Button previousAnswers;
-
-		private ProblemPopup previousAnswersPopup;
-
-		private Widget previousAnswersPopupContent;
 
 		private double earnedPoints = -1;
 
@@ -125,29 +116,6 @@ public class ProblemView extends Composite {
 
 			toplevel.add(problemTitle);
 			toplevel.add(problemGrade);
-
-			previousAnswers = new Button(TEXT_PREVIOUS_ANSWERS);
-			previousAnswers.addStyleName(STYLE_PREVIOUS_ANSWERS);
-			previousAnswers.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					// null if content has not yet been generated for this problem
-					if (previousAnswersPopupContent == null) {
-						previousAnswersPopupContent = createPreviousAnswersContent();
-					}
-
-					// ensure only one previous answers pop-up object is created
-					if (previousAnswersPopup == null) {
-						previousAnswersPopup = new ProblemPopup(Header.TEXT_PREVIOUS_ANSWERS,
-						        previousAnswersPopupContent);
-					}
-
-					previousAnswersPopup.center();
-					previousAnswersPopup.show();
-				}
-			});
-
-			toplevel.add(previousAnswers);
 		}
 
 		private void update(final String title, final double earnedPoints, final double totalPoints) {
@@ -171,20 +139,22 @@ public class ProblemView extends Composite {
 				builder.append("%)");
 				problemGrade.setText(builder.toString());
 			}
-
-			// invalidate previous answers to force redraw (content may have changed)
-			previousAnswersPopupContent = null;
 		}
 
-		private Widget createPreviousAnswersContent() {
-			Label content = new Label("Previous answers listed below");
-			content.addStyleName("previousAnswersContent");
-			return content;
-		}
 	}
 
+	/**
+	 * Abstracts question input widget type which may have various methods for
+	 * obtaining their current value.
+	 */
 	private interface Answer {
 		String getAnswer();
+	}
+
+	private Widget createPreviousAnswersContent(final int permutationId, final int answerNumber) {
+		Label content = new Label("Previous answers listed below" + " temp: perm=" + permutationId + " ans_" + answerNumber);
+		content.addStyleName("previousAnswersContent");
+		return content;
 	}
 
 	private class Body extends Composite {
@@ -206,10 +176,6 @@ public class ProblemView extends Composite {
 			private static final String ANSWER_BOOLEAN = "boolean";
 
 			private static final String ANSWER_LIST = "list";
-
-			private String type;
-
-			private String content;
 
 			private final FlowPanel layout;
 
@@ -245,20 +211,22 @@ public class ProblemView extends Composite {
 				}
 			}
 
-			private QuestionWidget(final String type, final String content, Image gradeFlag) {
-				this.type = type;
-				this.content = content;
+			private QuestionWidget(final int permutationId, final int answerId, final String type, final String content,
+			        Image gradeFlag) {
 				this.gradeFlag = gradeFlag;
 
 				// Make QuestionWidget div display inline
 				layout = new FlowPanel();
-				layout.getElement().getStyle().setDisplay(Display.INLINE);
+				layout.getElement().getStyle().setDisplay(Display.INLINE_BLOCK);
+				layout.getElement().getStyle().setVerticalAlign(VerticalAlign.MIDDLE);
 
 				/*
 				 * Possibly add grade flag (usually green check or red cross)
 				 */
 				if (gradeFlag != null) {
 					layout.add(gradeFlag);
+					gradeFlag.getElement().getStyle().setDisplay(Display.INLINE_BLOCK);
+					gradeFlag.getElement().getStyle().setVerticalAlign(VerticalAlign.MIDDLE);
 				}
 
 				/*
@@ -284,11 +252,42 @@ public class ProblemView extends Composite {
 					        "Error loading problem body (Error 200)");
 				}
 				layout.add(ANSWER_WIDGET);
+				ANSWER_WIDGET.getElement().getStyle().setDisplay(Display.INLINE_BLOCK);
+				ANSWER_WIDGET.getElement().getStyle().setVerticalAlign(VerticalAlign.MIDDLE);
+				ANSWER_WIDGET.getElement().getStyle().setMarginLeft(3, Unit.PX);
+				ANSWER_WIDGET.getElement().getStyle().setMarginRight(0, Unit.PX);
+				ANSWER_WIDGET.getElement().getStyle().setPadding(1, Unit.PX);
 
 				/*
 				 * Add question info button (usually previous answers)
 				 */
-				layout.add(info);
+				final Button infoButton = new Button();
+				infoButton.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						Widget popupContent = createPreviousAnswersContent(permutationId, answerId);
+
+						// ensure only one previous answers pop-up object is created
+						if (previousAnswersPopup == null) {
+							previousAnswersPopup = new ProblemPopup(TEXT_PREVIOUS_ANSWERS, popupContent);
+						} else {
+							previousAnswersPopup.update(TEXT_PREVIOUS_ANSWERS, popupContent);
+						}
+
+						previousAnswersPopup.center();
+						previousAnswersPopup.show();
+					}
+				});
+				// add style and image to button
+				final Element infoElement = infoButton.getElement();
+				final Image info = new Image(AutograderResources.INSTANCE.info());
+				infoElement.appendChild(info.getElement());
+				LOG.publish(new LogRecord(Level.INFO, "I MADE A QUESTION_WIDGET"));
+				infoElement.getStyle().setPadding(1, Unit.PX);
+				infoElement.getStyle().setHeight(20, Unit.PX);
+				infoElement.getStyle().setDisplay(Display.INLINE_BLOCK);
+				infoElement.getStyle().setVerticalAlign(VerticalAlign.MIDDLE);
+				layout.add(infoButton);
 
 				initWidget(layout);
 			}
@@ -298,11 +297,18 @@ public class ProblemView extends Composite {
 			}
 
 			private void setGradeFlag(final Image gradeFlag) {
+				// Possibly remove current flag
 				if (this.gradeFlag != null) {
 					layout.remove(0);
 				}
+				// Possibly set new flag
+				if (gradeFlag != null) {
+					layout.insert(gradeFlag, 0);
+					gradeFlag.getElement().getStyle().setDisplay(Display.INLINE_BLOCK);
+					gradeFlag.getElement().getStyle().setVerticalAlign(VerticalAlign.MIDDLE);
+				}
+				// record change
 				this.gradeFlag = gradeFlag;
-				layout.insert(gradeFlag, 0);
 			}
 		}
 
@@ -331,10 +337,13 @@ public class ProblemView extends Composite {
 			// update body only if it's different
 			if (!bodyMarkup.equals(markup)) {
 				markup = bodyMarkup;
-				if (questions != null) {
-					for (int i = 0; i < questions.length; ++i) {
-						questions[0] = null;
-					}
+
+				if (questions == null) {
+					// Autograder only supports 10 questions per problem
+					questions = new QuestionWidget[10];
+				}
+				for (int i = 0; i < questions.length; ++i) {
+					questions[0] = null;
 				}
 				renderMarkup(permutation);
 			}
@@ -347,12 +356,15 @@ public class ProblemView extends Composite {
 			toplevel.clear();
 			toplevel.add(panel);
 
-			questions = new QuestionWidget[permutation.getNumAnswers()];
-
 			// Replace answer divs with widgets by ID
-			for(int i = 1; i <= permutation.getNumAnswers(); i++) {
-				final String id = "ans_" + i;
+			for (int ansNum = 1; ansNum <= permutation.getNumAnswers(); ansNum++) {
+				final String id = "ans_" + ansNum;
 				final Element divElement = panel.getElementById(id);
+				if (divElement == null) {
+					reportErrorParsingBody("Error parsing problem body: cannot find element " + id,
+					        "Error loading problem body (Error 76)");
+					return;
+				}
 				final String innerText = divElement.getInnerText();
 
 				final MatchResult matcher = PROCESS_PATTERN.exec(innerText);
@@ -371,9 +383,14 @@ public class ProblemView extends Composite {
 					final String content = matcher.getGroup(2);
 
 					// create QuestionWidget to house each answer field
-					final QuestionWidget widget = new QuestionWidget(type, content, greenCheck);
+					final QuestionWidget widget = new QuestionWidget(permutation.getId(), ansNum, type, content,
+					        new Image(AutograderResources.INSTANCE.redCross()));
 					panel.addAndReplaceElement(widget, id);
-					questions[i - 1] = widget;
+					questions[ansNum - 1] = widget;
+				} else {
+					reportErrorParsingBody("Error parsing problem body: no answer match found for " + id,
+					        "Error loading problem body (Error 50)");
+					return;
 				}
 			}
 		}
@@ -512,7 +529,7 @@ public class ProblemView extends Composite {
 	}
 
 	private void requestPreviousAnswersAsync() {
-		// onSuccess: call header.createPreviousAnswersContent
+		// onSuccess: call #createPreviousAnswersContent
 	}
 
 	private class ProblemPopup extends DialogBox {
@@ -525,11 +542,9 @@ public class ProblemView extends Composite {
 
 		private VerticalPanel toplevel;
 
-		private Widget content;
-
 		private Button closeButton;
 
-		public ProblemPopup(String popupCaption, Widget popupContent) {
+		private ProblemPopup(final String popupCaption, final Widget popupContent) {
 
 			setText(popupCaption);
 
@@ -539,7 +554,6 @@ public class ProblemView extends Composite {
 			// glass background
 			setGlassEnabled(true);
 
-			content = popupContent;
 
 			closeButton = new Button(TEXT_CLOSE_BUTTON);
 			closeButton.setStyleName(STYLE_CLOSE_BUTTON);
@@ -552,10 +566,20 @@ public class ProblemView extends Composite {
 			toplevel = new VerticalPanel();
 			toplevel.setStyleName(STYLE_TOP_LEVEL);
 
-			toplevel.add(content);
+			if (popupContent != null) {
+				toplevel.add(popupContent);
+			}
 			toplevel.add(closeButton);
 
 			setWidget(toplevel);
+		}
+
+		private void update(final String popupCaption, final Widget popupContent) {
+			setText(popupCaption);
+			if (popupContent != null) {
+				toplevel.remove(0);
+				toplevel.insert(popupContent, 0);
+			}
 		}
 	}
 }
