@@ -276,6 +276,8 @@ public class Database {
 		    b.body_text,
 		    COALESCE(uw.points, 0) AS 'uw.points',
 		    perm.perm_id,
+		    perm.num_inputs,
+		    perm.num_answers,
 		    perm.input_1,
 		    perm.input_2,
 		    perm.input_3,
@@ -290,7 +292,7 @@ public class Database {
 		    permutations perm,
 		    body b,
 		    problems prob
-		        LEFT JOIN
+		LEFT JOIN
 		    user_work uw ON prob.problem_id = uw.soln_prob_id
 		WHERE
 		    b.body_prob_id = prob.problem_id
@@ -303,18 +305,16 @@ public class Database {
 		LIMIT 1;
 		  
 		 */
-
-		// TODO: update uw.soln_uid to uw.soln_username = getUsername();
-		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
-				+ "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', b.body_text, COALESCE(uw.points, 0) AS 'uw.points', "
-				+ "perm.perm_id, perm.input_1, perm.input_2, perm.input_3, perm.input_4, perm.input_5, perm.input_6, "
-				+ "perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
+		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
+				+ "prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
+				+ "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', "
+				+ "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', perm.perm_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
+				+ "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
 				+ "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
 				+ "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
 				+ "IF((uw.soln_username = '" + getUsername() + "' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = " + problemId
 				+ " ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
 		try {
-			// TODO process resultset
 			ResultSet rs = query(SQL);
 
 			// get first and only problem
