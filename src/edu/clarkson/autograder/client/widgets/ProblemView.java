@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
@@ -16,7 +17,6 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
@@ -207,11 +207,11 @@ public class ProblemView extends Composite {
 
 			private static final String ANSWER_LIST = "list";
 
-			private final String TYPE;
+			private String type;
 
-			private final String CONTENT;
+			private String content;
 
-			private final HorizontalPanel layout;
+			private final FlowPanel layout;
 
 			private final Widget ANSWER_WIDGET;
 
@@ -246,11 +246,13 @@ public class ProblemView extends Composite {
 			}
 
 			private QuestionWidget(final String type, final String content, Image gradeFlag) {
-				this.TYPE = type;
-				this.CONTENT = content;
+				this.type = type;
+				this.content = content;
 				this.gradeFlag = gradeFlag;
 
-				layout = new HorizontalPanel();
+				// Make QuestionWidget div display inline
+				layout = new FlowPanel();
+				layout.getElement().getStyle().setDisplay(Display.INLINE);
 
 				/*
 				 * Possibly add grade flag (usually green check or red cross)
@@ -262,23 +264,23 @@ public class ProblemView extends Composite {
 				/*
 				 * Add answer widget
 				 */
-				if (TYPE.equals(ANSWER_FIELD)) {
+				if (type.equals(ANSWER_FIELD)) {
 					// simple text field
 					ANSWER_WIDGET = new CustomField();
 
-				} else if (TYPE.equals(ANSWER_BOOLEAN)) {
+				} else if (type.equals(ANSWER_BOOLEAN)) {
 					// true/false drop-down
 					ANSWER_WIDGET = new CustomList("True", "False");
 
-				} else if (TYPE.equals(ANSWER_LIST)) {
+				} else if (type.equals(ANSWER_LIST)) {
 					// custom (content-specified) drop-down
-					final String[] items = CONTENT.split(",");
+					final String[] items = content.split(",");
 					ANSWER_WIDGET = new CustomList(items);
 
 				} else {
 					// not supported
 					ANSWER_WIDGET = null;
-					reportErrorParsingBody("Error parsing problem body: unsupported answer type: " + TYPE,
+					reportErrorParsingBody("Error parsing problem body: unsupported answer type: " + type,
 					        "Error loading problem body (Error 200)");
 				}
 				layout.add(ANSWER_WIDGET);
@@ -329,8 +331,10 @@ public class ProblemView extends Composite {
 			// update body only if it's different
 			if (!bodyMarkup.equals(markup)) {
 				markup = bodyMarkup;
-				for (int i = 0; i < questions.length; ++i) {
-					questions[0] = null;
+				if (questions != null) {
+					for (int i = 0; i < questions.length; ++i) {
+						questions[0] = null;
+					}
 				}
 				renderMarkup(permutation);
 			}
@@ -367,7 +371,7 @@ public class ProblemView extends Composite {
 					final String content = matcher.getGroup(2);
 
 					// create QuestionWidget to house each answer field
-					final QuestionWidget widget = new QuestionWidget(type, content, null);
+					final QuestionWidget widget = new QuestionWidget(type, content, greenCheck);
 					panel.addAndReplaceElement(widget, id);
 					questions[i - 1] = widget;
 				}
