@@ -61,12 +61,6 @@ public class CourseSelectionPage extends Content {
 			panel.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					// TODO (temporary) remove course propagation
-					// course page should ask for the course from courseId on
-					// load
-					// for now, we'll just send the course name over
-					edu.clarkson.autograder.client.Autograder.tempDebugCourseNameSelected = getContent().getTitle();
-
 					History.newItem(getContent().getToken());
 				}
 			});

@@ -15,10 +15,13 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import edu.clarkson.autograder.client.objects.Assignment;
+import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.objects.Problem;
 import edu.clarkson.autograder.client.objects.ProblemData;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
 import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
+import edu.clarkson.autograder.client.services.CourseFromIdService;
+import edu.clarkson.autograder.client.services.CourseFromIdServiceAsync;
 import edu.clarkson.autograder.client.services.SelectedProblemDataService;
 import edu.clarkson.autograder.client.services.SelectedProblemDataServiceAsync;
 import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel;
@@ -30,15 +33,13 @@ import edu.clarkson.autograder.client.widgets.ProblemView;
  */
 public class CoursePage extends Content {
 
-	// interface CoursePageUiBinder extends UiBinder<Widget, CoursePage> {
-	// }
-	//
-	// private static final CoursePageUiBinder uiBinder =
-	// GWT.create(CoursePageUiBinder.class);
-
 	private static SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 
 	private int courseId;
+
+	private VerticalPanel topLevel;
+
+	private Label pageTitle;
 
 	private HorizontalPanel sideBarAndContent;
 
@@ -54,17 +55,17 @@ public class CoursePage extends Content {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#<init> - courseId=" + courseId));
 		this.courseId = courseId;
 
-
 		// Page title
-		Label pageTitle = new Label(edu.clarkson.autograder.client.Autograder.tempDebugCourseNameSelected);
+		pageTitle = new Label();
 		pageTitle.addStyleName("coursePageHeader");
+		requestCourseFromIdAsync();
 
 		// Assemble the course page elements
 		sideBarAndContent = new HorizontalPanel();
 		sideBarAndContent.addStyleName("sideBarAndContent");
 		errorLabel = new Label();
 		errorLabel.addStyleName("errorLabel");
-		VerticalPanel topLevel = new VerticalPanel();
+		topLevel = new VerticalPanel();
 		topLevel.add(pageTitle);
 		topLevel.add(sideBarAndContent);
 
@@ -78,6 +79,29 @@ public class CoursePage extends Content {
 	@Override
 	public String getPrimaryStyleName() {
 		return "coursePage";
+	}
+
+	private void requestCourseFromIdAsync() {
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestCourseFromIdAsync - begin"));
+
+		CourseFromIdServiceAsync courseFromIdService = GWT.create(CourseFromIdService.class);
+		courseFromIdService.fetchCourseFromId(courseId, new AsyncCallback<Course>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				final String failureToLoadCourse = "Failed to load course.";
+				LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestCourseFromIdAsync - onFailure"));
+				topLevel.clear();
+				errorLabel.setText(failureToLoadCourse);
+				topLevel.add(errorLabel);
+			}
+
+			@Override
+			public void onSuccess(Course course) {
+				LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestCourseFromIdAsync - onSuccess"));
+				pageTitle.setText(course.getTitle());
+			}
+		});
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestCourseFromIdAsync - end"));
 	}
 
 	private void requestAssignmentProblemTreeDataAsync() {
@@ -97,7 +121,7 @@ public class CoursePage extends Content {
 			@Override
 			public void onSuccess(SortedMap<Assignment, List<Problem>> treeData) {
 				LOG.publish(new LogRecord(Level.INFO,
-				        "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - onSuccess"));
+				        "CoursePage#requestAssignmentProblemTreeDataAsync - onSuccess"));
 				if (treeData.isEmpty()) {
 					sideBarAndContent.remove(errorLabel);
 					errorLabel.setText("The instructor has not added any assignments to the course.");
@@ -110,7 +134,7 @@ public class CoursePage extends Content {
 
 			}
 		});
-		LOG.publish(new LogRecord(Level.INFO, "AssignmentTreeViewModel#requestAssignmentProblemTreeDataAsync - end"));
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - end"));
 	}
 
 	private void loadSideBar(SortedMap<Assignment, List<Problem>> treeData) {
@@ -120,7 +144,6 @@ public class CoursePage extends Content {
 		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData, new ProblemSelectionCallback()), null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-		// sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
 		sideBar.addStyleName("assignmentSideBar");
 		sideBar.getRootTreeNode().setChildOpen(0, true);
 

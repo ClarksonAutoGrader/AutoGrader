@@ -118,6 +118,15 @@
   </servlet-mapping>
   
   <servlet>
+    <servlet-name>courseFromId</servlet-name>
+    <servlet-class>edu.clarkson.autograder.server.CourseFromIdServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>courseFromId</servlet-name>
+    <url-pattern>/autograder/course_from_id</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>treeData</servlet-name>
     <servlet-class>edu.clarkson.autograder.server.AssignmentProblemTreeDataImpl</servlet-class>
   </servlet>
