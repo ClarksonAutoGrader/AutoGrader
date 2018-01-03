@@ -258,6 +258,32 @@ public class Database {
 		return courseList;
 	}
 
+	Course queryCourseFromId(int courseId) {
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - begin"));
+
+		Course course = null;
+
+		final String SQL = "SELECT c.course_id, c.course_title " + "FROM enrollment e LEFT JOIN courses c "
+		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\" AND c.course_id = "
+		        + courseId + " LIMIT 1;";
+		try {
+			ResultSet rs = query(SQL);
+			rs.next();
+			course = new Course(rs.getInt("course_id"), rs.getString("course_title"));
+			LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - SQLException " + exception));
+			throw new RuntimeException(exception);
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - unexpected exception " + exception));
+			throw new RuntimeException(exception);
+		}
+
+		closeConnection();
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - end"));
+		return course;
+	}
+
 	ProblemData querySelectedProblemData(int problemId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - begin"));
 
