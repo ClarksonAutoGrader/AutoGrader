@@ -36,9 +36,7 @@ public class Database {
 	// Console logging for debugging
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
-	// private static final String DEFAULT_USERNAME = "null";
-	// TODO: remove debug
-	private static final String DEFAULT_USERNAME = "clappdj";
+	private static final String DEFAULT_USERNAME = "null";
 
 	// Database parameters
 	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";

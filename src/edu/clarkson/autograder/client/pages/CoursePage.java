@@ -144,7 +144,6 @@ public class CoursePage extends Content {
 		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData, new ProblemSelectionCallback()), null);
 		sideBar.setAnimationEnabled(true);
 		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-		// sideBar.ensureDebugId("sideBar"); // TODO what is debugId?
 		sideBar.addStyleName("assignmentSideBar");
 		sideBar.getRootTreeNode().setChildOpen(0, true);
 

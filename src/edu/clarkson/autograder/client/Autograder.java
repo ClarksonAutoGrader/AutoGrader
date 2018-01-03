@@ -20,8 +20,6 @@ import edu.clarkson.autograder.client.services.UsernameServiceAsync;
  */
 public class Autograder implements EntryPoint {
 
-	public static String tempDebugCourseNameSelected = "ME310 - Thermodynamics";
-
 	public static final Image loadingImage = new Image(AutograderResources.INSTANCE.loading());
 
 	public static final int ID_TOKEN_WIDTH = 6;
