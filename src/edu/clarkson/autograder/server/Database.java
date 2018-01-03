@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import org.jasig.cas.client.util.AssertionHolder;
+import org.apache.commons.dbutils.DbUtils;
 
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
@@ -45,6 +46,7 @@ public class Database {
 
 	// Instanced database connection
 	private Connection conn;
+	private Statement stmt;
 
 	/**
 	 * Returns user's username (lowercase) from the authentication server, or
@@ -117,7 +119,6 @@ public class Database {
 
 		ResultSet resultSet = null;
 		try {
-			Statement stmt;
 			stmt = conn.createStatement();
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "statement created"));
 			resultSet = stmt.executeQuery(SQL);
@@ -134,7 +135,15 @@ public class Database {
 		return resultSet;
 	}
 
-	private void closeConnection() {
+	private void closeConnection(ResultSet rs) {
+		
+		DbUtils.closeQuietly(rs);
+		DbUtils.closeQuietly(stmt);
+		DbUtils.closeQuietly(conn);
+		
+		LOG.publish(new LogRecord(Level.INFO, "ResultSet, Statement, Connection closed"));
+
+		/*
 		try {
 			if (conn != null && !conn.isClosed()) {
 				conn.close();
@@ -142,6 +151,7 @@ public class Database {
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database failed to close connection " + exception));
 		}
+		*/
 	}
 
 	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
@@ -224,7 +234,7 @@ public class Database {
 			throw new RuntimeException(exception);
 		}
 
-		closeConnection();
+		closeConnection(rs);
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - end"));
 		return map;
 	}
@@ -236,8 +246,9 @@ public class Database {
 
 		final String SQL = "SELECT c.course_id, c.course_title " + "FROM enrollment e LEFT JOIN courses c "
 		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\";";
+		ResultSet rs = null;
 		try {
-			ResultSet rs = query(SQL);
+			rs = query(SQL);
 			while (rs.next()) {
 				courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_title")));
 				LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
@@ -251,7 +262,7 @@ public class Database {
 			throw new RuntimeException(exception);
 		}
 
-		closeConnection();
+		closeConnection(rs);
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
 		return courseList;
 	}
@@ -264,8 +275,10 @@ public class Database {
 		final String SQL = "SELECT c.course_id, c.course_title " + "FROM enrollment e LEFT JOIN courses c "
 		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\" AND c.course_id = "
 		        + courseId + " LIMIT 1;";
+		ResultSet rs;
+		
 		try {
-			ResultSet rs = query(SQL);
+			rs = query(SQL);
 			rs.next();
 			course = new Course(rs.getInt("course_id"), rs.getString("course_title"));
 			LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
@@ -277,7 +290,7 @@ public class Database {
 			throw new RuntimeException(exception);
 		}
 
-		closeConnection();
+		closeConnection(rs);
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - end"));
 		return course;
 	}
@@ -336,8 +349,11 @@ public class Database {
 				+ "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
 				+ "IF((uw.soln_username = '" + getUsername() + "' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = " + problemId
 				+ " ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
+
+		ResultSet rs;
+
 		try {
-			ResultSet rs = query(SQL);
+			rs = query(SQL);
 
 			// get first and only problem
 			rs.next();
@@ -392,7 +408,7 @@ public class Database {
 			throw new RuntimeException(exception);
 		}
 
-		closeConnection();
+		closeConnection(rs);
 		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - end"));
 		return problemData;
 	}
