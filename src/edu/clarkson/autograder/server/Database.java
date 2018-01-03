@@ -143,15 +143,6 @@ public class Database {
 		
 		LOG.publish(new LogRecord(Level.INFO, "ResultSet, Statement, Connection closed"));
 
-		/*
-		try {
-			if (conn != null && !conn.isClosed()) {
-				conn.close();
-			}
-		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database failed to close connection " + exception));
-		}
-		*/
 	}
 
 	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
