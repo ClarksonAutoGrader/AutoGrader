@@ -43,7 +43,7 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet impleme
 	 * Uses groups from RAW_ANSWER_TAG (number, type, and content) to create a
 	 * div element
 	 */
-	static final String CREATE_ANSWER_DIV = "<div id=\"ans_${number}\">type:${type},content:${content}</div>";
+	static final String CREATE_ANSWER_DIV = "<div id=\"ans_${number}\">flag:<flag>,type:${type},content:${content}</div>";
 
 	@Override
 	public ProblemData fetchProblemData(int problemId) {

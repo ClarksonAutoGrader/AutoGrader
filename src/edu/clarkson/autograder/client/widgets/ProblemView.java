@@ -124,22 +124,25 @@ public class ProblemView extends Composite {
 			toplevel.add(problemGrade);
 		}
 
-		private void update(final String title, final double earnedPoints, final double totalPoints) {
-			problemTitle.setText(title);
+		private void update() {
+			problemTitle.setText(problemData.getTitle());
 
-			if (this.earnedPoints != earnedPoints || this.totalPoints != totalPoints) {
+			if (this.earnedPoints != problemData.getEarnedPoints()
+			        || this.totalPoints != problemData.getTotalPoints()) {
 				// 00.00/00.00 (00.00%)
 				StringBuilder builder = new StringBuilder();
 				builder.setLength(0);
-				double earnedFormatted = Autograder.numberPrecision(earnedPoints, decimalPrecision);
+				double earnedFormatted = Autograder.numberPrecision(problemData.getEarnedPoints(), decimalPrecision);
 				builder.append(earnedFormatted);
 				builder.append("/");
-				double totalFormatted = Autograder.numberPrecision(totalPoints, decimalPrecision);
+				double totalFormatted = Autograder.numberPrecision(problemData.getTotalPoints(), decimalPrecision);
 				builder.append(totalFormatted);
 				builder.append(" (");
 				// problems out of zero total points are always 100% complete
 				double percentageFormatted = Autograder
-				        .numberPrecision((totalPoints != 0.0 ? earnedPoints / totalPoints * 100 : 100.0),
+				        .numberPrecision(
+				                (problemData.getTotalPoints() != 0.0
+				                        ? problemData.getEarnedPoints() / problemData.getTotalPoints() * 100 : 100.0),
 				                decimalPrecision);
 				builder.append(percentageFormatted);
 				builder.append("%)");
@@ -157,12 +160,13 @@ public class ProblemView extends Composite {
 		String getAnswer();
 	}
 
-	private Widget createPreviousAnswersContent(final int permutationId, final int answerNumber) {
+	private Widget createPreviousAnswersContent(final int answerNumber) {
 
 		// TODO: call this method at some point in here
 		requestPreviousAnswersAsync();
 
-		Label content = new Label("Previous answers listed below" + " temp: perm=" + permutationId + " ans_" + answerNumber);
+		Label content = new Label(
+		        "Previous answers listed below" + " temp: perm=" + problemData.getPermId() + " ans_" + answerNumber);
 		content.addStyleName("previousAnswersContent");
 		return content;
 	}
@@ -221,7 +225,7 @@ public class ProblemView extends Composite {
 				}
 			}
 
-			private QuestionWidget(final int permutationId, final int answerId, final String type, final String content,
+			private QuestionWidget(final int answerId, final String type, final String content,
 			        Image gradeFlag) {
 				this.gradeFlag = gradeFlag;
 
@@ -275,7 +279,7 @@ public class ProblemView extends Composite {
 				infoButton.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
-						Widget popupContent = createPreviousAnswersContent(permutationId, answerId);
+						Widget popupContent = createPreviousAnswersContent(answerId);
 
 						// ensure only one previous answers pop-up object is created
 						if (previousAnswersPopup == null) {
@@ -324,7 +328,7 @@ public class ProblemView extends Composite {
 		/**
 		 * Reference: http://rubular.com/r/SlPJkHnlY8
 		 */
-		private static final String PROCESS_ANSWER_DIV = "^type:(field|boolean|list)?,content:(.*)$";
+		private static final String PROCESS_ANSWER_DIV = "^flag:(correct|incorrect|null),type:(field|boolean|list)?,content:(.*)$";
 
 		private final RegExp PROCESS_PATTERN = RegExp.compile(PROCESS_ANSWER_DIV);
 
@@ -342,10 +346,10 @@ public class ProblemView extends Composite {
 			toplevel.add(new HTML(TEXT_DEFAULT_MARKUP));
 		}
 
-		private void update(final String bodyMarkup, final Permutation permutation) {
+		private void update() {
 			// update body only if it's different
-			if (!bodyMarkup.equals(markup)) {
-				markup = bodyMarkup;
+			if (!problemData.getBodyMarkup().equals(markup)) {
+				markup = problemData.getBodyMarkup();
 
 				if (questions == null) {
 					// Autograder only supports 10 questions per problem
@@ -354,11 +358,11 @@ public class ProblemView extends Composite {
 				for (int i = 0; i < questions.length; ++i) {
 					questions[0] = null;
 				}
-				renderMarkup(permutation);
+				renderMarkup();
 			}
 		}
 
-		private void renderMarkup(final Permutation permutation) {
+		private void renderMarkup() {
 
 			// Attach to DOM
 			HTMLPanel panel = new HTMLPanel(markup);
@@ -366,7 +370,7 @@ public class ProblemView extends Composite {
 			toplevel.add(panel);
 
 			// Replace answer divs with widgets by ID
-			for (int ansNum = 1; ansNum <= permutation.getNumAnswers(); ansNum++) {
+			for (int ansNum = 1; ansNum <= problemData.getNumAnswers(); ansNum++) {
 				final String id = "ans_" + ansNum;
 				final Element divElement = panel.getElementById(id);
 				if (divElement == null) {
@@ -380,19 +384,35 @@ public class ProblemView extends Composite {
 				final boolean matchFound = matcher != null;
 				if (matchFound) {
 					
-					if (matcher.getGroupCount() != 3) {
-						reportErrorParsingBody("Error parsing problem body: answer match group count is != 3",
+					if (matcher.getGroupCount() != 4) {
+						reportErrorParsingBody("Error parsing problem body: answer match group count is != 4",
 						        "Error loading problem body (Error 100)");
 						return;
 					}
 
-					// group 0 is whole, group 1 type
-					final String type = matcher.getGroup(1);
-					// group 2 content
-					final String content = matcher.getGroup(2);
+					// group 0 is whole, group 1 flag
+					final String flag = matcher.getGroup(1);
+					// group 2 type
+					final String type = matcher.getGroup(2);
+					// group 3 content
+					final String content = matcher.getGroup(3);
+
+					final Image gradeFlag;
+					if (flag.equals("correct")) {
+						gradeFlag = new Image(AutograderResources.INSTANCE.greenCheck());
+					} else if (flag.equals("incorrect")) {
+						gradeFlag = new Image(AutograderResources.INSTANCE.redCross());
+					} else if (flag.equals("null")) {
+						gradeFlag = null;
+					} else {
+						reportErrorParsingBody(
+						        "Error parsing problem body: invalid value for answer group flag, found " + flag,
+						        "Error loading problem body (Error 309)");
+						return;
+					}
 
 					// create QuestionWidget to house each answer field
-					final QuestionWidget widget = new QuestionWidget(permutation.getId(), ansNum, type, content, null);
+					final QuestionWidget widget = new QuestionWidget(ansNum, type, content, gradeFlag);
 					panel.addAndReplaceElement(widget, id);
 					questions[ansNum - 1] = widget;
 				} else {
@@ -485,9 +505,9 @@ public class ProblemView extends Composite {
 			toplevel.add(attemptsRemaining);
 		}
 
-		private void update(final int resets, final int attempts) {
-			resetsRemaining.setText(TEXT_RESETS_REMAINING + resets);
-			attemptsRemaining.setText(TEXT_ATTEMPTS_REMAINING + attempts);
+		private void update() {
+			resetsRemaining.setText(TEXT_RESETS_REMAINING + problemData.getResets());
+			attemptsRemaining.setText(TEXT_ATTEMPTS_REMAINING + problemData.getAttempts());
 		}
 	}
 	
@@ -553,9 +573,9 @@ public class ProblemView extends Composite {
 		
 		problemData = data;
 		
-		header.update(data.getTitle(), data.getEarnedPoints(), data.getTotalPoints());
-		body.update(data.getBodyMarkup(), data.getPermutation());
-		footer.update(data.getResets(), data.getAttempts());
+		header.update();
+		body.update();
+		footer.update();
 	}
 
 	private void requestPreviousAnswersAsync() {

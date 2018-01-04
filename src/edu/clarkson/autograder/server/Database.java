@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jasig.cas.client.util.AssertionHolder;
 
@@ -166,12 +168,12 @@ public class Database {
 			    user_work uw ON uw.soln_prob_id = prob.problem_id
 			WHERE
 			    a.assignment_id = prob.problem_aid
-			        AND a.a_cid = 1 AND IF((uw.soln_username = 'murphycd' OR uw.soln_username IS NULL), TRUE, FALSE);
+			        AND a.a_cid = 1 AND IF((uw.soln_username = 'murphycd' OR uw.soln_username IS NULL), TRUE, FALSE) ORDER BY a.due_date, prob.problem_num;
 		 */
 		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, COALESCE(uw.points, 0) AS 'uw.points' "
 				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id "
 				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " AND IF((uw.soln_username = '" + getUsername()
-				+ "' OR uw.soln_username IS NULL), TRUE, FALSE);";
+		        + "' OR uw.soln_username IS NULL), TRUE, FALSE) ORDER BY a.due_date, prob.problem_num;";
 				
 		final ResultSet rs = query(SQL);
 		try {
@@ -294,11 +296,12 @@ public class Database {
 		    prob.problem_aid,
 		    prob.problem_title,
 		    prob.points_possible,
+		    prob.tolerance,
 		    prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining',
     		prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining',
 		    b.body_text,
 		    COALESCE(uw.points, 0) AS 'uw.points',
-		    perm.perm_id,
+		    COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id',
 		    perm.num_inputs,
 		    perm.num_answers,
 		    perm.input_1,
@@ -310,7 +313,27 @@ public class Database {
 		    perm.input_7,
 		    perm.input_8,
 		    perm.input_9,
-		    perm.input_10
+		    perm.input_10,
+		    perm.answer_1,
+		    perm.answer_2,
+		    perm.answer_3,
+		    perm.answer_4,
+		    perm.answer_5,
+		    perm.answer_6,
+		    perm.answer_7,
+		    perm.answer_8,
+		    perm.answer_9,
+		    perm.answer_10,
+		    uw.user_answer_1,
+		    uw.user_answer_2,
+		    uw.user_answer_3,
+		    uw.user_answer_4,
+		    uw.user_answer_5,
+		    uw.user_answer_6,
+		    uw.user_answer_7,
+		    uw.user_answer_8,
+		    uw.user_answer_9,
+		    uw.user_answer_10
 		FROM
 		    permutations perm,
 		    body b,
@@ -326,13 +349,14 @@ public class Database {
 		        FALSE) AND prob.problem_id = 1
 		ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND())
 		LIMIT 1;
-		  
 		 */
 		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
 				+ "prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
 				+ "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', "
-				+ "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', perm.perm_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
-				+ "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10 "
+		        + "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id', perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
+				+ "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10, perm.answer_1, perm.answer_2, perm.answer_3, perm.answer_4, "
+		        + "perm.answer_5, perm.answer_6, perm.answer_7, perm.answer_8, perm.answer_9, perm.answer_10, uw.user_answer_1, uw.user_answer_2, uw.user_answer_3, uw.user_answer_4, "
+				+ "uw.user_answer_5, uw.user_answer_6, uw.user_answer_7, uw.user_answer_8, uw.user_answer_9, uw.user_answer_10 "
 				+ "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
 				+ "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
 				+ "IF((uw.soln_username = '" + getUsername() + "' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = " + problemId
@@ -343,16 +367,12 @@ public class Database {
 			// get first and only problem
 			rs.next();
 
-			// warn if resultset contains more than one entry
-			if (rs.isAfterLast()) {
-				LOG.publish(new LogRecord(Level.INFO,
-				        "Database#querySelectedProblemData - Unexpected number of rows in ResultSet"));
-			}
-
+			/*
+			 * Store data from ResultSet into local variables
+			 */
 			final Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
 			        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"),
 			        rs.getDouble("uw.points"));
-			
 			final String[] inputs = {
 					rs.getString("perm.input_1"),
 					rs.getString("perm.input_2"),
@@ -365,21 +385,88 @@ public class Database {
 					rs.getString("perm.input_9"),
 					rs.getString("perm.input_10")
 			};
-			
+			final String[] correctAnswers = {
+					rs.getString("perm.answer_1"),
+					rs.getString("perm.answer_2"),
+					rs.getString("perm.answer_3"),
+					rs.getString("perm.answer_4"),
+					rs.getString("perm.answer_5"),
+					rs.getString("perm.answer_6"),
+					rs.getString("perm.answer_7"),
+					rs.getString("perm.answer_8"),
+					rs.getString("perm.answer_9"),
+					rs.getString("perm.answer_10")
+			};
+			final String[] userAnswers = {
+					rs.getString("uw.user_answer_1"),
+					rs.getString("uw.user_answer_2"),
+					rs.getString("uw.user_answer_3"),
+					rs.getString("uw.user_answer_4"),
+					rs.getString("uw.user_answer_5"),
+					rs.getString("uw.user_answer_6"),
+					rs.getString("uw.user_answer_7"),
+					rs.getString("uw.user_answer_8"),
+					rs.getString("uw.user_answer_9"),
+					rs.getString("uw.user_answer_10")
+			};
 			final Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"),
 			        rs.getInt("perm.num_inputs"), rs.getInt("perm.num_answers"), inputs);
-
 			String bodyText = rs.getString("b.body_text");
 
-			// Inject inputs
+			
+			/*
+			 * Inject inputs into problem body markup
+			 */
 			for (int i = 1; i <= permutation.getNumInputs(); i++) {
 				bodyText = bodyText.replaceAll("!in_" + i + "!", permutation.getInputString(i - 1));
 			}
 
-			// Replace answer tags with HTML divs of the proper id
-			final String bodyWithReplacements = bodyText.replaceAll(SelectedProblemDataServiceImpl.RAW_ANSWER_TAG,
-			        SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV);
+			/*
+			 * Replace answer tags with HTML divs of the proper id
+			 */
+			Matcher answerMatch = Pattern.compile(SelectedProblemDataServiceImpl.RAW_ANSWER_TAG).matcher(bodyText);
+			String replaceWithString = SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV;
+			while (answerMatch.find()) {
+				final int number = Integer.parseInt(answerMatch.group("number"));
+				final String type = answerMatch.group("type");
+				String gradeFlag = "null";
+				
+				// check if user answer exists
+				if (userAnswers[number] != null) {
 
+					// evaluate correctness based on type
+					if (type.equals("numeric")) {
+						// numeric types must be checked against tolerance
+						final double tolerance = rs.getDouble("prob.tolerance");
+						try {
+							final double correctAnswer = Double.parseDouble(correctAnswers[number]);
+							final double userAnswer = Double.parseDouble(userAnswers[number]);
+							if (Math.abs(correctAnswer - userAnswer) < (correctAnswer * tolerance)) {
+								gradeFlag = "correct";
+							} else {
+								gradeFlag = "incorrect";
+							}
+						} catch (NumberFormatException exception) {
+							LOG.publish(new LogRecord(Level.INFO,
+							        "Database#querySelectedProblemData - Answer was not numeric: correct="
+							                + correctAnswers[number] + " user=" + userAnswers[number]));
+							throw new RuntimeException(exception);
+						}
+
+					} else {
+						// case: type is text, boolean, list, etc.
+						gradeFlag = userAnswers[number].equals(correctAnswers[number]) ? "correct" : "incorrect";
+					}
+				}
+				
+				replaceWithString = replaceWithString.replaceAll("<flag>", gradeFlag);
+			}
+			
+			final String bodyWithReplacements = answerMatch.replaceAll(replaceWithString);
+
+			/*
+			 * Finalize ProblemData
+			 */
 			problemData = new ProblemData(prob, bodyWithReplacements,
 			        rs.getInt("questions_remaining"),
 			        rs.getInt("checks_remaining"),
