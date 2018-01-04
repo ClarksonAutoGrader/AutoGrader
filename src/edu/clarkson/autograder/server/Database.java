@@ -499,8 +499,8 @@ public class Database {
 
 		final String SQL = "SELECT answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8, answer_9, answer_10 "
 		        + "FROM permutations WHERE perm_id = " + permutationId + ";";
+		final ResultSet rs = query(SQL);
 		try {
-			ResultSet rs = query(SQL);
 			rs.next();
 			
 			for (int col = 0; col < 10; ++col) {
@@ -515,7 +515,7 @@ public class Database {
 			throw new RuntimeException(exception);
 		}
 
-		closeConnection();
+		closeConnection(rs);
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - end"));
 		return answers;
 	}
