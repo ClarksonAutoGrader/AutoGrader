@@ -7,22 +7,24 @@ import java.util.List;
 public class StudentRowData {
 	
 	private String name;
+	private int numGrades;
 	private List<Double> grades = new ArrayList<Double>();
 	
 	public StudentRowData(String studentName, List<Double> studentGrades) {
 		this.name = studentName;
 		this.grades.addAll(studentGrades);
+		this.numGrades = grades.size();
 	}
 	
 	public String getName() {
-		return this.name;
+		return name;
 	}
 	
 	public double getGrade(int index) {
 		return grades.get(index);
 	}
 	
-	public List<Double> getGradeList() {
-		return grades;
+	public int getNumGrades() {
+		return numGrades;
 	}
 }

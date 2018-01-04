@@ -29,7 +29,6 @@ public class GradebookPage extends Content {
 	public DataGrid<StudentRowData> gradebookDataTable = new DataGrid<StudentRowData>();
 	
 	// temporary hardcoded data values
-	private static final int tempNumGrades = 20;
 	
 	private List<StudentRowData> studentList = Arrays.asList(
 			new StudentRowData("woodrj", new ArrayList<Double>(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))),
@@ -57,7 +56,7 @@ public class GradebookPage extends Content {
 		// create assignment grade columns
 		List<TextColumn<StudentRowData>> gradeColumns = new ArrayList<TextColumn<StudentRowData>>();
 		
-			for (int index = 0; index < studentList.get(0).getGradeList().size(); index++)
+			for (int index = 0; index < studentList.get(0).getNumGrades(); index++)
 			{
 				final int currentIndex = index;
 				gradeColumns.add(new TextColumn<StudentRowData>() {
@@ -87,7 +86,6 @@ public class GradebookPage extends Content {
 			gradebookDataTable.setColumnWidth(i, "10em");
 		}
 		
-		LOG.publish(new LogRecord(Level.INFO, "Column widths set successfully."));
 		
 		// add widgets to page
 		LayoutPanel layout = new LayoutPanel();
@@ -95,8 +93,6 @@ public class GradebookPage extends Content {
 		layout.add(gradebookDataTable);
 		
 		initWidget(layout);
-		
-		LOG.publish(new LogRecord(Level.INFO, "Widget initialized."));
 	}
 
 	@Override
