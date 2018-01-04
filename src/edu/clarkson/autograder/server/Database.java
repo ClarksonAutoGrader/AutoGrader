@@ -300,7 +300,6 @@ public class Database {
 		    prob.problem_aid,
 		    prob.problem_title,
 		    prob.points_possible,
-		    prob.tolerance,
 		    prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining',
     		prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining',
 		    b.body_text,
@@ -350,7 +349,7 @@ public class Database {
 		        AND IF((uw.soln_username = 'murphycd'
 		            OR uw.soln_username IS NULL),
 		        TRUE,
-		        FALSE) AND prob.problem_id = 1
+		        FALSE) AND prob.problem_id = 1 AND IF((uw.soln_prob_id IS NULL), TRUE, uw.soln_perm_id = perm.perm_id)
 		ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND())
 		LIMIT 1;
 		 */
@@ -363,8 +362,9 @@ public class Database {
 				+ "uw.user_answer_5, uw.user_answer_6, uw.user_answer_7, uw.user_answer_8, uw.user_answer_9, uw.user_answer_10 "
 				+ "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
 				+ "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
-				+ "IF((uw.soln_username = '" + getUsername() + "' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = " + problemId
-				+ " ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
+				+ "IF((uw.soln_username = '" + getUsername() + "' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = " + problemId + " "
+		        + "AND IF((uw.soln_prob_id IS NULL), TRUE, uw.soln_perm_id = perm.perm_id) "
+				+ "ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
 
 		ResultSet rs;
 
@@ -432,44 +432,86 @@ public class Database {
 			 * Replace answer tags with HTML divs of the proper id
 			 */
 			Matcher answerMatch = Pattern.compile(SelectedProblemDataServiceImpl.RAW_ANSWER_TAG).matcher(bodyText);
-			String replaceWithString = SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV;
+			StringBuffer buffer = new StringBuffer();
+			// iterate through answer tags
 			while (answerMatch.find()) {
-				final int number = Integer.parseInt(answerMatch.group("number"));
-				final String type = answerMatch.group("type");
-				String gradeFlag = "null";
-				
-				// check if user answer exists
-				if (userAnswers[number] != null) {
 
-					// evaluate correctness based on type
+				/*
+				 * Retrieve value of match groups for this iteration
+				 */
+				// note that answer number is one-based and array indices shall
+				// be zero-based
+				final int index = Integer.parseInt(answerMatch.group("number")) - 1;
+				final String type = answerMatch.group("type");
+				final String content = answerMatch.group("content");
+
+				/*
+				 * Evaluate answer (sets value in gradeFlag) Default flag "null"
+				 * renders no flag
+				 */
+				String gradeFlag = "null";
+				// check if user answer exists and evaluate, or skip evaluation
+				// if user supplied no answer
+				if (userAnswers[index] != null) {
+
+					// evaluate correctness based on type:
+					// numeric types must be checked against a tolerance, which
+					// is stored in content group as a positive decimal
 					if (type.equals("numeric")) {
-						// numeric types must be checked against tolerance
-						final double tolerance = rs.getDouble("prob.tolerance");
+						double tolerance = 0;
+						double correctAnswer = 0;
+						double userAnswer = 0;
+						String errorText = "";
+
+						// parse tolerance
 						try {
-							final double correctAnswer = Double.parseDouble(correctAnswers[number]);
-							final double userAnswer = Double.parseDouble(userAnswers[number]);
-							if (Math.abs(correctAnswer - userAnswer) < (correctAnswer * tolerance)) {
-								gradeFlag = "correct";
-							} else {
-								gradeFlag = "incorrect";
-							}
+							tolerance = Double.parseDouble(content);
+						} catch (NumberFormatException | NullPointerException exception) {
+							errorText = "Numeric tolerance could not be parsed: tolerance=\"" + content
+							        + "\", user answer index " + index;
+						}
+
+						// parse correctAnswer
+						try {
+							correctAnswer = Double.parseDouble(correctAnswers[index]);
 						} catch (NumberFormatException exception) {
-							LOG.publish(new LogRecord(Level.INFO,
-							        "Database#querySelectedProblemData - Answer was not numeric: correct="
-							                + correctAnswers[number] + " user=" + userAnswers[number]));
-							throw new RuntimeException(exception);
+							errorText = "correctAnswers[" + index + "] could not be parsed: " + correctAnswers[index];
+						}
+
+						// parse userAnswer
+						try {
+							userAnswer = Double.parseDouble(userAnswers[index]);
+						} catch (NumberFormatException exception) {
+							errorText = "userAnswers[" + index + "] could not be parsed: " + userAnswers[index];
+						}
+
+						// abort on failure
+						if (!errorText.isEmpty()) {
+							LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - " + errorText));
+							throw new NumberFormatException(errorText);
+						}
+
+						// check against tolerance
+						if (Math.abs(correctAnswer - userAnswer) <= (correctAnswer * tolerance)) {
+							gradeFlag = "correct";
+						} else {
+							gradeFlag = "incorrect";
 						}
 
 					} else {
 						// case: type is text, boolean, list, etc.
-						gradeFlag = userAnswers[number].equals(correctAnswers[number]) ? "correct" : "incorrect";
+						gradeFlag = userAnswers[index].equals(correctAnswers[index]) ? "correct" : "incorrect";
 					}
 				}
 				
-				replaceWithString = replaceWithString.replaceAll("<flag>", gradeFlag);
+				/*
+				 * Transform answer tag into answer div using all information
+				 */
+				String answerDivRegex = SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV.replace("${flag}", gradeFlag);
+				answerMatch.appendReplacement(buffer, answerDivRegex);
 			}
-			
-			final String bodyWithReplacements = answerMatch.replaceAll(replaceWithString);
+			answerMatch.appendTail(buffer);
+			String bodyWithReplacements = buffer.toString();
 
 			/*
 			 * Finalize ProblemData

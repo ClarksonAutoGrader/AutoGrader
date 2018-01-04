@@ -31,7 +31,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.AutograderResources;
-import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.ProblemData;
 import edu.clarkson.autograder.client.services.SubmitAnswersService;
 import edu.clarkson.autograder.client.services.SubmitAnswersServiceAsync;
@@ -185,7 +184,9 @@ public class ProblemView extends Composite {
 
 		private final class QuestionWidget extends Composite {
 
-			private static final String ANSWER_FIELD = "field";
+			private static final String ANSWER_NUMERIC = "numeric";
+
+			private static final String ANSWER_TEXT = "text";
 
 			private static final String ANSWER_BOOLEAN = "boolean";
 
@@ -246,7 +247,12 @@ public class ProblemView extends Composite {
 				/*
 				 * Add answer widget
 				 */
-				if (type.equals(ANSWER_FIELD)) {
+				if (type.equals(ANSWER_NUMERIC)) {
+					// simple text field, only allow numeric input
+					// TODO: only allow numeric input
+					ANSWER_WIDGET = new CustomField();
+
+				} else if (type.equals(ANSWER_TEXT)) {
 					// simple text field
 					ANSWER_WIDGET = new CustomField();
 
@@ -328,7 +334,7 @@ public class ProblemView extends Composite {
 		/**
 		 * Reference: http://rubular.com/r/SlPJkHnlY8
 		 */
-		private static final String PROCESS_ANSWER_DIV = "^flag:(correct|incorrect|null),type:(field|boolean|list)?,content:(.*)$";
+		private static final String PROCESS_ANSWER_DIV = "^flag:(correct|incorrect|null),type:(numeric|text|boolean|list)?,content:(.*)$";
 
 		private final RegExp PROCESS_PATTERN = RegExp.compile(PROCESS_ANSWER_DIV);
 
@@ -416,7 +422,8 @@ public class ProblemView extends Composite {
 					panel.addAndReplaceElement(widget, id);
 					questions[ansNum - 1] = widget;
 				} else {
-					reportErrorParsingBody("Error parsing problem body: no answer match found for " + id,
+					reportErrorParsingBody(
+					        "Error parsing problem body: " + id + " has unknown inner text \"" + innerText + "\"",
 					        "Error loading problem body (Error 50)");
 					return;
 				}
