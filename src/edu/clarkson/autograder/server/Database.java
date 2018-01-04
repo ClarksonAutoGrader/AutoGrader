@@ -36,7 +36,8 @@ public class Database {
 	// Console logging for debugging
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
-	private static final String DEFAULT_USERNAME = "null";
+	// private static final String DEFAULT_USERNAME = "null";
+	private static final String DEFAULT_USERNAME = "murphycd";
 
 	// Database parameters
 	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
@@ -395,5 +396,33 @@ public class Database {
 		closeConnection();
 		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - end"));
 		return problemData;
+	}
+
+	String[] queryAnswers(int permutationId) {
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - begin"));
+
+		String[] answers = new String[10];
+
+		final String SQL = "SELECT answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8, answer_9, answer_10 "
+		        + "FROM permutations WHERE perm_id = " + permutationId + ";";
+		try {
+			ResultSet rs = query(SQL);
+			rs.next();
+			
+			for (int col = 0; col < 10; ++col) {
+				answers[col] = rs.getString("answer_" + (col + 1));
+			}
+
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - SQLException " + exception));
+			throw new RuntimeException(exception);
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - unexpected exception " + exception));
+			throw new RuntimeException(exception);
+		}
+
+		closeConnection();
+		LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - end"));
+		return answers;
 	}
 }

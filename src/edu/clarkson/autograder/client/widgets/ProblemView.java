@@ -3,6 +3,7 @@ package edu.clarkson.autograder.client.widgets;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Unit;
@@ -13,6 +14,7 @@ import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -31,6 +33,8 @@ import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.AutograderResources;
 import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.ProblemData;
+import edu.clarkson.autograder.client.services.SubmitAnswersService;
+import edu.clarkson.autograder.client.services.SubmitAnswersServiceAsync;
 
 /**
  * A widget to display all the visual facets of a problem. Each problem includes
@@ -488,7 +492,6 @@ public class ProblemView extends Composite {
 	}
 	
 	private void actionSubmit() {
-		// TODO implement submit action
 		
 		// check if body never completed rendering
 		if (body.questions == null) {
@@ -499,20 +502,28 @@ public class ProblemView extends Composite {
 		for (int i = 0; i < answers.length; ++i) {
 			answers[i] = body.questions[i].getAnswer();
 		}
-		
-		// temporary:
-		String alert = answers[0];
-		for (int i = 1; i < answers.length; ++i) {
-			alert += ", " + answers[i];
-		}
-		Window.alert(alert);
-
-		// temporary: clear gradeFlag for testing purposes
-		for (Body.QuestionWidget question : body.questions) {
-			question.setGradeFlag(null);
-		}
+		requestSubmitAnswersAsync(answers);
 	}
 	
+	private void requestSubmitAnswersAsync(final String[] answers) {
+		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - begin"));
+
+		SubmitAnswersServiceAsync submitAnswersService = GWT.create(SubmitAnswersService.class);
+		submitAnswersService.submitAnswers(problemData.getPermId(), answers, new AsyncCallback<ProblemData>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
+			}
+
+			@Override
+			public void onSuccess(ProblemData problemData) {
+				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onSuccess"));
+				update(problemData);
+			}
+		});
+		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
+	}
+
 	private void actionNewProblem() {
 		// TODO implement new problem action
 
