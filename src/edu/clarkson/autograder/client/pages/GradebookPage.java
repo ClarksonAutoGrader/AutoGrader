@@ -15,7 +15,7 @@ public class GradebookPage extends Content {
 	private int courseID;
 	
 	public GradebookPage(int courseID) {
-		LOG.publish(new LogRecord(Level.INFO, "GradebookPage#<init> - courseId=" + courseID));
+		LOG.publish(new LogRecord(Level.INFO, "GradebookPage#<init> - courseId= " + courseID));
 		this.courseID = courseID;
 		
 		Label pageTitle = new Label(edu.clarkson.autograder.client.Autograder.tempDebugCourseNameSelected);
