@@ -21,4 +21,8 @@ public class StudentRowData {
 	public double getGrade(int index) {
 		return grades.get(index);
 	}
+	
+	public List<Double> getGradeList() {
+		return grades;
+	}
 }

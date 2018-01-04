@@ -33,7 +33,7 @@ public class GradebookPage extends Content {
 	
 	private List<StudentRowData> studentList = Arrays.asList(
 			new StudentRowData("woodrj", new ArrayList<Double>(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))),
-			new StudentRowData("clappdj", new ArrayList<Double>(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))),
+			new StudentRowData("clappdj", new ArrayList<Double>(Arrays.asList(7.0, 8.0, 9.0, 10.0, 11.0, 12.0))),
 			new StudentRowData("murphycd", new ArrayList<Double>(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))),
 			new StudentRowData("sheppa", new ArrayList<Double>(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))),
 			new StudentRowData("belkelk", new ArrayList<Double>(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)))
@@ -57,12 +57,13 @@ public class GradebookPage extends Content {
 		// create assignment grade columns
 		List<TextColumn<StudentRowData>> gradeColumns = new ArrayList<TextColumn<StudentRowData>>();
 		
-			for (int index = 0; index < studentList.size(); index++)
+			for (int index = 0; index < studentList.get(0).getGradeList().size(); index++)
 			{
+				final int currentIndex = index;
 				gradeColumns.add(new TextColumn<StudentRowData>() {
 					@Override
 					public String getValue(StudentRowData currentStudent) {
-						return "testString"; //currentStudent.getGrade().toString();
+						return Double.toString(currentStudent.getGrade(currentIndex));
 					}
 				});
 			}
