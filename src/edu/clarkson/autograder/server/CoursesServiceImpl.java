@@ -1,5 +1,6 @@
 package edu.clarkson.autograder.server;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -15,17 +16,14 @@ public class CoursesServiceImpl extends RemoteServiceServlet implements CoursesS
 	
 	private static ConsoleHandler LOG = new ConsoleHandler();
 	
-	@Override
-	public List<Course> fetchCourses() {
+	private DatabaseQuery db;
+	
+	public List<Course> fetchCourses(){
 		
-		LOG.publish(new LogRecord(Level.INFO, "#fetchCourses - begin"));
+		LOG.publish(new LogRecord(Level.INFO, "#fetchCourses"));
 		
-		Database db = new Database();
-		List<Course> courses = db.queryCourses();
-
-		LOG.publish(new LogRecord(Level.INFO, "#fetchCourses - end"));
-
-		return courses;
+		db = new DatabaseQuery();
+		return db.queryCourses();
 		
 	}
 

@@ -1,62 +1,50 @@
 package edu.clarkson.autograder.client.objects;
 
-import java.io.Serializable;
+import Exceptions.OutOfResetsException;
 
-@SuppressWarnings("serial")
-public class Problem implements Serializable {
+/**
+ * Problem number
+ * Problem body
+ * Problem total points
+ * Points per question
+ * 
+ * DOES NOT INCLUDE:
+ * Problem permutation data
+ * 
+ */
+public class Problem {
 
-	private int id;
-	private int aId;
-	private String title;
-	private double totalPoints;
-	private double earnedPoints;
+	//Problem number
+	private int problemNumber;
+	//Total points possible
+	private int totalPoints;
+	//The problem content containing all numbers and data needed
+	private String problemContent;
+	//The number of resets remaining for the students to use
+	private int resetsRemaining;
 	
-	
-    /**
-	 * Constructor
-	 * 
-	 * @param id
-	 *            unique problem id
-	 * @param aId
-	 *            parent assignment
-	 * @param title
-	 *            name of problem
-	 * @param totalPoints
-	 *            total points possible across all questions
-	 * @param earnedPoints
-	 *            earned points across all questions
-	 */
-	public Problem(int id, int aId, String title, double totalPoints, double earnedPoints) {
-        this.id = id;
-		this.aId = aId;
-        this.title = title;
+	public Problem(int problemNumber, int totalPoints, String problemContent, int resets){
+		this.problemNumber = problemNumber;
 		this.totalPoints = totalPoints;
-		this.earnedPoints = earnedPoints;
-    }
-
-	/**
-	 * Default constructor required for serialization
-	 */
-	public Problem() {
+		this.problemContent = problemContent;
+		resetsRemaining = resets;
 	}
-
-	public int getId() {
-		return id;
+	
+	//Gets all data about a Problem object
+	public int getProblemNumber(){ return problemNumber; }
+	public int getTotalPoints() { return totalPoints; }
+	public String getProblemContent(){ return problemContent; }
+	public int getResetsRemaining() { return resetsRemaining; }
+	
+	//Decrease the value of resetsRemaining by 1
+	//If the user doesn't have any resets remaining, throws OutOfResetsException
+	public void incrementResets(){ 
+		if(resetsRemaining == 0){
+			throw new OutOfResetsException("User out of resets");
+		}
+		else{
+			resetsRemaining--;
+		}
 	}
-
-	public int getaId() {
-		return aId;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public double getTotalPoints() {
-		return totalPoints;
-	}
-
-	public double getEarnedPoints() {
-		return earnedPoints;
-	}
+		
 }

@@ -11,8 +11,4 @@ public class ContentContainer {
         content.setStylePrimaryName(content.getPrimaryStyleName());
         RootPanel.get("content").add(content);
     }
-
-	public static void clearContent() {
-		RootPanel.get("content").clear();
-	}
 }
