@@ -176,11 +176,14 @@ public class Database {
 	 */
 	final static String previousAnswersSql = "SELECT prev_ans_%s FROM previous_answers WHERE prev_ans_username = '%s' AND prev_ans_perm_id = %s;";
 
+<<<<<<< HEAD
 	/**
 	 * Update user_word table
 	 */
 	final static String updateUserWorkPointsEarned = "";
 
+=======
+>>>>>>> refs/heads/51-as-a-user-i-want-the-new-question-button-to-fetch-a-different-problem-permutation
 	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - begin: courseId=" + courseId));
 
