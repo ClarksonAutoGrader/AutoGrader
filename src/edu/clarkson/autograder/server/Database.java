@@ -27,7 +27,7 @@ import edu.clarkson.autograder.client.objects.Problem;
  * transaction. <br>
  * <br>
  * The client should implement specific query methods which call
- * {@link Database#evaluate(String)} to obtain a {@link java.sql.ResultSet},
+ * {@link Database#executeQuery(String)} to obtain a {@link java.sql.ResultSet},
  * process the ResultSet, and finally {@link Database#closeConnection()}.
  */
 public class Database {
@@ -47,26 +47,10 @@ public class Database {
 	private Statement stmt;
 
 	/**
-	 * Returns user's username (lowercase) from the authentication server, or
-	 * DEFAULT_USERNAME if the authentication server cannot provide one.
-	 */
-	static String getUsername() {
-		String username = null;
-		try {
-			username = AssertionHolder.getAssertion().getPrincipal().getName().toLowerCase();
-		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO,
-			        "Database#getUsername - failed to retrieve username from CAS: " + exception));
-
-			username = DEFAULT_USERNAME;
-		}
-		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user=" + username));
-		return username;
-	}
-
-	/**
 	 * Create a new instance. This object allows for one instanced connection
-	 * and the constructor automatically establishes a connection.
+	 * and the constructor automatically establishes a connection. Use
+	 * {@link #query(String)} or {@link #update(String)} and finally end by
+	 * calling {@link #closeConnection()}.
 	 */
 	Database() {
 		establishConnection();
@@ -105,14 +89,15 @@ public class Database {
 	}
 
 	/**
-	 * Uses an existing connection to query the database.
+	 * Uses an existing connection to query the database. Wrapper for
+	 * {@link java.sql.Statement#executeQuery(String)}.
 	 * 
 	 * @param SQL
 	 * @return ResultSet
 	 */
-	private final ResultSet evaluate(final String SQL) {
+	private final ResultSet executeQuery(final String SQL) {
 		// uniquely identify separate calls to Database#query in the log.
-		final String LOG_LOCATION = "Database#evaluate" + SQL.hashCode() + " ";
+		final String LOG_LOCATION = "Database#executeQuery" + SQL.hashCode() + " ";
 		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin " + SQL));
 
 		ResultSet resultSet = null;
@@ -131,16 +116,6 @@ public class Database {
 
 		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
 		return resultSet;
-	}
-
-	private void closeConnection(ResultSet rs) {
-		
-		DbUtils.closeQuietly(rs);
-		DbUtils.closeQuietly(stmt);
-		DbUtils.closeQuietly(conn);
-		
-		LOG.publish(new LogRecord(Level.INFO, "ResultSet, Statement, Connection closed"));
-
 	}
 
 	/*
@@ -176,14 +151,142 @@ public class Database {
 	 */
 	final static String previousAnswersSql = "SELECT prev_ans_%s FROM previous_answers WHERE prev_ans_username = '%s' AND prev_ans_perm_id = %s;";
 
-<<<<<<< HEAD
 	/**
-	 * Update user_word table
+	 * Update user_work table
 	 */
 	final static String updateUserWorkPointsEarned = "";
 
-=======
->>>>>>> refs/heads/51-as-a-user-i-want-the-new-question-button-to-fetch-a-different-problem-permutation
+	/*
+	 * Methods for package use
+	 */
+
+	/**
+	 * Returns user's username (lowercase) from the authentication server, or
+	 * DEFAULT_USERNAME if the authentication server cannot provide one.
+	 */
+	static String getUsername() {
+		String username = null;
+		try {
+			username = AssertionHolder.getAssertion().getPrincipal().getName().toLowerCase();
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO,
+			        "Database#getUsername - failed to retrieve username from CAS: " + exception));
+
+			username = DEFAULT_USERNAME;
+		}
+		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user=" + username));
+		return username;
+	}
+
+	/**
+	 * Uses an existing connection to query the database. Wrapper for
+	 * {@link java.sql.Statement#executeUpdate(String)}.
+	 */
+	private final int executeUpdate(final String SQL) {
+		// uniquely identify separate calls to Database#query in the log.
+		final String LOG_LOCATION = "Database#evaluate" + SQL.hashCode() + " ";
+		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin " + SQL));
+
+		int rowsUpdated = 0;
+		try {
+			stmt = conn.createStatement();
+			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "statement created"));
+
+			rowsUpdated = stmt.executeUpdate(SQL);
+
+			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "updated " + rowsUpdated + " rows"));
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + " " + exception));
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "unexpected exception " + exception));
+		}
+
+		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
+		return rowsUpdated;
+	}
+
+	/**
+	 * This is a wrapper for {@link java.sql.Statement.executeUpdate(String)}
+	 * but with parameterized SQL statement. Parameterization is handled by
+	 * String#format(String,Object...).
+	 * 
+	 * @param parameterizedSql
+	 * @param sqlParameters
+	 * @return number of rows updated
+	 */
+	int update(final String parameterizedSql, final Object... sqlParameters) {
+		LOG.publish(new LogRecord(Level.INFO, "Database#update - begin"));
+
+		final String SQL = String.format(parameterizedSql, sqlParameters);
+		LOG.publish(new LogRecord(Level.INFO, "Database#update - " + SQL));
+
+		int rowsUpdated = executeUpdate(SQL);
+
+		DbUtils.closeQuietly(stmt);
+
+		LOG.publish(new LogRecord(Level.INFO, "Database#update - end"));
+		return rowsUpdated;
+	}
+
+	/**
+	 * This is a wrapper for {@link java.sql.Statement.executeQuery(String)} but
+	 * with parameterized SQL statement. Parameterization is handled by
+	 * String#format(String,Object...).
+	 * 
+	 * @param callback
+	 * @param parameterizedSql
+	 * @param sqlParameters
+	 * @return
+	 */
+	<T> T query(final ProcessResultSetCallback<T> callback, final String parameterizedSql,
+	        final Object... sqlParameters) {
+		LOG.publish(new LogRecord(Level.INFO, "Database#query - begin"));
+
+		final String SQL = String.format(parameterizedSql, sqlParameters);
+		LOG.publish(new LogRecord(Level.INFO, "Database#query - " + SQL));
+		ResultSet rs = executeQuery(SQL);
+		T data = null;
+		try {
+			data = callback.process(rs);
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#query - SQLException " + exception));
+			throw new RuntimeException(exception);
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#query - unexpected exception " + exception));
+			throw new RuntimeException(exception);
+		}
+
+		DbUtils.closeQuietly(rs);
+		DbUtils.closeQuietly(stmt);
+
+		LOG.publish(new LogRecord(Level.INFO, "Database#query - end"));
+		return data;
+	}
+
+	void closeConnection() {
+		DbUtils.closeQuietly(conn);
+	}
+
+	/*
+	 * Old methods waiting to be updated
+	 */
+
+	/**
+	 * @deprecated
+	 */
+	private void closeConnection(ResultSet rs) {
+
+		DbUtils.closeQuietly(rs);
+		DbUtils.closeQuietly(stmt);
+		DbUtils.closeQuietly(conn);
+
+		LOG.publish(new LogRecord(Level.INFO, "ResultSet, Statement, Connection closed"));
+	}
+
+	/**
+	 * @deprecated use
+	 *             {@link #query(ProcessResultSetCallback, String, Object...)}
+	 */
 	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - begin: courseId=" + courseId));
 
@@ -213,7 +316,7 @@ public class Database {
 				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id "
 				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " ORDER BY a.due_date, prob.problem_num;";
 				
-		final ResultSet rs = evaluate(SQL);
+		final ResultSet rs = executeQuery(SQL);
 		try {
 			if (!rs.next()) {
 				return map;
@@ -270,6 +373,10 @@ public class Database {
 		return map;
 	}
 
+	/**
+	 * @deprecated use
+	 *             {@link #query(ProcessResultSetCallback, String, Object...)}
+	 */
 	List<Course> queryCourses() {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - begin"));
 
@@ -279,7 +386,7 @@ public class Database {
 		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\";";
 		ResultSet rs = null;
 		try {
-			rs = evaluate(SQL);
+			rs = executeQuery(SQL);
 			while (rs.next()) {
 				courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_title")));
 				LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
@@ -298,6 +405,10 @@ public class Database {
 		return courseList;
 	}
 
+	/**
+	 * @deprecated use
+	 *             {@link #query(ProcessResultSetCallback, String, Object...)}
+	 */
 	Course queryCourseFromId(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - begin"));
 
@@ -309,7 +420,7 @@ public class Database {
 		ResultSet rs;
 		
 		try {
-			rs = evaluate(SQL);
+			rs = executeQuery(SQL);
 			rs.next();
 			course = new Course(rs.getInt("course_id"), rs.getString("course_title"));
 			LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
@@ -326,30 +437,10 @@ public class Database {
 		return course;
 	}
 
-	<T> T query(final ProcessResultSetCallback<T> callback, final String parameterizedSql,
-	        final Object... sqlParameters) {
-		LOG.publish(new LogRecord(Level.INFO, "Database#query - begin"));
-
-		final String SQL = String.format(parameterizedSql, sqlParameters);
-		LOG.publish(new LogRecord(Level.INFO, "Database#query - " + parameterizedSql));
-		LOG.publish(new LogRecord(Level.INFO, "Database#query - " + SQL));
-		ResultSet rs = evaluate(SQL);
-		T data = null;
-		try {
-			data = callback.process(rs);
-		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#query - SQLException " + exception));
-			throw new RuntimeException(exception);
-		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#query - unexpected exception " + exception));
-			throw new RuntimeException(exception);
-		}
-
-		closeConnection(rs);
-		LOG.publish(new LogRecord(Level.INFO, "Database#query - end"));
-		return data;
-	}
-
+	/**
+	 * @deprecated use
+	 *             {@link #query(ProcessResultSetCallback, String, Object...)}
+	 */
 	String[] queryAnswers(int permutationId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - begin"));
 
@@ -357,7 +448,7 @@ public class Database {
 
 		final String SQL = "SELECT answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8, answer_9, answer_10 "
 		        + "FROM permutations WHERE perm_id = " + permutationId + ";";
-		final ResultSet rs = evaluate(SQL);
+		final ResultSet rs = executeQuery(SQL);
 		try {
 			rs.next();
 			

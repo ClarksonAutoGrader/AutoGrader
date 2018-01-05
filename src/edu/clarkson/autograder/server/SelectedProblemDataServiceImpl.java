@@ -40,7 +40,10 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet impleme
 		        Database.getUsername(),
 		        problemId);
 
-		db.query(Database.updateUserWorkPointsEarned, data.getEarnedPoints());
+		db.update(Database.updateUserWorkPointsEarned, data.getEarnedPoints(), Database.getUsername(),
+		        data.getPermId());
+
+		db.closeConnection();
 
 		LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#fetchProblemData - end"));
 		return data;
