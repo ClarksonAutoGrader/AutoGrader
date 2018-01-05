@@ -1,5 +1,6 @@
 package edu.clarkson.autograder.client.widgets;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -13,6 +14,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -31,7 +34,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.AutograderResources;
+import edu.clarkson.autograder.client.objects.PreviousAnswersRow;
 import edu.clarkson.autograder.client.objects.ProblemData;
+import edu.clarkson.autograder.client.services.PreviousAnswersService;
+import edu.clarkson.autograder.client.services.PreviousAnswersServiceAsync;
 import edu.clarkson.autograder.client.services.SubmitAnswersService;
 import edu.clarkson.autograder.client.services.SubmitAnswersServiceAsync;
 
@@ -160,14 +166,9 @@ public class ProblemView extends Composite {
 	}
 
 	private Widget createPreviousAnswersContent(final int answerNumber) {
-
-		// TODO: call this method at some point in here
-		requestPreviousAnswersAsync();
-
-		Label content = new Label(
-		        "Previous answers listed below" + " temp: perm=" + problemData.getPermId() + " ans_" + answerNumber);
-		content.addStyleName("previousAnswersContent");
-		return content;
+		FlowPanel contentHandle = new FlowPanel();
+		requestPreviousAnswersAsync(contentHandle, answerNumber);
+		return contentHandle;
 	}
 
 	private class Body extends Composite {
@@ -294,8 +295,7 @@ public class ProblemView extends Composite {
 							previousAnswersPopup.update(TEXT_PREVIOUS_ANSWERS, popupContent);
 						}
 
-						previousAnswersPopup.center();
-						previousAnswersPopup.show();
+						previousAnswersPopup.showRelativeTo(layout);
 					}
 				});
 				// add style and image to button
@@ -519,7 +519,7 @@ public class ProblemView extends Composite {
 	}
 	
 	private void actionSubmit() {
-		
+
 		// check if body never completed rendering
 		if (body.questions == null) {
 			Window.alert("Nothing to submit...");
@@ -562,6 +562,8 @@ public class ProblemView extends Composite {
 
 	public ProblemView(final ProblemData data) {
 
+		problemData = data;
+
 		header = new Header();
 		body = new Body();
 		footer = new Footer();
@@ -585,8 +587,74 @@ public class ProblemView extends Composite {
 		footer.update();
 	}
 
-	private void requestPreviousAnswersAsync() {
-		// onSuccess: call #createPreviousAnswersContent
+	private void requestPreviousAnswersAsync(final FlowPanel layout, int answerNumber) {
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - begin"));
+
+		PreviousAnswersServiceAsync requestPreviousAnswers = GWT.create(PreviousAnswersService.class);
+		requestPreviousAnswers.fetchPreviousAnswers(problemData.getPermId(), answerNumber,
+		        new AsyncCallback<List<PreviousAnswersRow>>() {
+			        @Override
+			        public void onFailure(Throwable caught) {
+				        LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestPreviousAnswersAsync - onFailure"));
+				        onError();
+			        }
+
+			        @Override
+			        public void onSuccess(List<PreviousAnswersRow> previousAnswers) {
+				        LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestPreviousAnswersAsync - onSuccess"));
+
+				        if (previousAnswers == null) {
+					        onError();
+				        }
+
+				        CellTable<PreviousAnswersRow> table = new CellTable<PreviousAnswersRow>();
+				        table.addStyleName("previousAnswersContent");
+
+				        // Add a numeric column index previous answers
+				        TextColumn<PreviousAnswersRow> indexColumn = new TextColumn<PreviousAnswersRow>() {
+					        @Override
+					        public String getValue(PreviousAnswersRow object) {
+						        return "" + object.getSequenceValue();
+					        }
+				        };
+				        table.addColumn(indexColumn, "#");
+
+				        // Add a text column to show the user's previous
+				        // attempts
+				        TextColumn<PreviousAnswersRow> userAnswerColumn = new TextColumn<PreviousAnswersRow>() {
+					        @Override
+					        public String getValue(PreviousAnswersRow object) {
+						        return object.getPreviousUserAnswer();
+					        }
+				        };
+				        table.addColumn(userAnswerColumn, "Attempt");
+
+				        // Add a text column to show the correct answer
+				        // corresponding to the user's attempt.
+				        TextColumn<PreviousAnswersRow> correctAnswerColumn = new TextColumn<PreviousAnswersRow>() {
+					        @Override
+					        public String getValue(PreviousAnswersRow object) {
+						        return object.getPreviousCorrectAnswer();
+					        }
+				        };
+				        // This only applies to instructors, otherwise the
+				        // correctAnswer field will be null.
+				        if (previousAnswers.get(0) != null) {
+					        table.addColumn(correctAnswerColumn, "Key");
+				        }
+
+				        table.setRowCount(previousAnswers.size(), true);
+				        table.setRowData(0, previousAnswers);
+				        layout.add(table);
+			        }
+
+			        private void onError() {
+				        Label errorLabel = new Label("Error loading previous answers.");
+				        errorLabel.addStyleName("errorLabel");
+				        layout.add(errorLabel);
+			        }
+		        });
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - end"));
 	}
 
 	private class ProblemPopup extends DialogBox {
