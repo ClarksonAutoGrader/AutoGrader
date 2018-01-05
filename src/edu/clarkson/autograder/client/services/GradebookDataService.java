@@ -5,9 +5,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import edu.clarkson.autograder.client.objects.GradebookData;
 
-@RemoteServiceRelativePath("stockPrices")
+@RemoteServiceRelativePath("gradebook_data")
 public interface GradebookDataService extends RemoteService {
-	
-	GradebookData getGradebookData(int courseid);
-	
+	GradebookData getGradebookData(int courseId) throws IllegalArgumentException;
 }

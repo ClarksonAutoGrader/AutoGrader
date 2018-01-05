@@ -133,6 +133,15 @@
       <url-pattern>/autograder/username</url-pattern>
   </servlet-mapping>
   
+    <servlet>
+    <servlet-name>gradebookData</servlet-name>
+    <servlet-class>edu.clarkson.autograder.server.GradebookDataServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>gradebookData</servlet-name>
+      <url-pattern>/autograder/gradebook_data</url-pattern>
+  </servlet-mapping>
+
   <servlet>
     <servlet-name>remoteLogging</servlet-name>
     <servlet-class>com.google.gwt.logging.server.RemoteLoggingServiceImpl</servlet-class>
