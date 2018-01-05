@@ -12,26 +12,22 @@ import java.util.TreeMap;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.jasig.cas.client.util.AssertionHolder;
 import org.apache.commons.dbutils.DbUtils;
+import org.jasig.cas.client.util.AssertionHolder;
 
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
-import edu.clarkson.autograder.client.objects.Permutation;
 import edu.clarkson.autograder.client.objects.Problem;
-import edu.clarkson.autograder.client.objects.ProblemData;
 
 /**
  * JDBC database class. Each instance of this class manages one active
  * transaction. <br>
  * <br>
  * The client should implement specific query methods which call
- * {@link Database#query(String)} to obtain a {@link java.sql.ResultSet},
+ * {@link Database#evaluate(String)} to obtain a {@link java.sql.ResultSet},
  * process the ResultSet, and finally {@link Database#closeConnection()}.
  */
 public class Database {
@@ -115,9 +111,9 @@ public class Database {
 	 * @param SQL
 	 * @return ResultSet
 	 */
-	private final ResultSet query(final String SQL) {
+	private final ResultSet evaluate(final String SQL) {
 		// uniquely identify separate calls to Database#query in the log.
-		final String LOG_LOCATION = "Database#query" + SQL.hashCode() + " ";
+		final String LOG_LOCATION = "Database#evaluate" + SQL.hashCode() + " ";
 		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin " + SQL));
 
 		ResultSet resultSet = null;
@@ -148,6 +144,27 @@ public class Database {
 
 	}
 
+	/*
+	 * SQL queries
+	 */
+
+	/**
+	 * Returns data needed to create
+	 * {@link edu.clarkson.autograder.client.objects.ProblemData} object.
+	 */
+	final static String selectedProblemDataSql = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
+	        + "prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
+	        + "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', "
+	        + "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id', perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
+	        + "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10, perm.answer_1, perm.answer_2, perm.answer_3, perm.answer_4, "
+	        + "perm.answer_5, perm.answer_6, perm.answer_7, perm.answer_8, perm.answer_9, perm.answer_10, uw.user_answer_1, uw.user_answer_2, uw.user_answer_3, uw.user_answer_4, "
+	        + "uw.user_answer_5, uw.user_answer_6, uw.user_answer_7, uw.user_answer_8, uw.user_answer_9, uw.user_answer_10 "
+	        + "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
+	        + "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
+	        + "IF((uw.soln_username = '%s' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = %s "
+	        + "AND IF((uw.soln_prob_id IS NULL), TRUE, uw.soln_perm_id = perm.perm_id) "
+	        + "ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
+
 	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - begin: courseId=" + courseId));
 
@@ -176,7 +193,7 @@ public class Database {
 				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " AND IF((uw.soln_username = '" + getUsername()
 		        + "' OR uw.soln_username IS NULL), TRUE, FALSE) ORDER BY a.due_date, prob.problem_num;";
 				
-		final ResultSet rs = query(SQL);
+		final ResultSet rs = evaluate(SQL);
 		try {
 			if (!rs.next()) {
 				return map;
@@ -242,7 +259,7 @@ public class Database {
 		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\";";
 		ResultSet rs = null;
 		try {
-			rs = query(SQL);
+			rs = evaluate(SQL);
 			while (rs.next()) {
 				courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_title")));
 				LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
@@ -272,7 +289,7 @@ public class Database {
 		ResultSet rs;
 		
 		try {
-			rs = query(SQL);
+			rs = evaluate(SQL);
 			rs.next();
 			course = new Course(rs.getInt("course_id"), rs.getString("course_title"));
 			LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
@@ -289,249 +306,28 @@ public class Database {
 		return course;
 	}
 
-	ProblemData querySelectedProblemData(int problemId) {
-		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - begin"));
+	<T> T query(final ProcessResultSetCallback<T> callback, final String parameterizedSql,
+	        final Object... sqlParameters) {
+		LOG.publish(new LogRecord(Level.INFO, "Database#query - begin"));
 
-		ProblemData problemData = null;
-		
-		/*
-		 SELECT 
-		    prob.problem_id,
-		    prob.problem_aid,
-		    prob.problem_title,
-		    prob.points_possible,
-		    prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining',
-    		prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining',
-		    b.body_text,
-		    COALESCE(uw.points, 0) AS 'uw.points',
-		    COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id',
-		    perm.num_inputs,
-		    perm.num_answers,
-		    perm.input_1,
-		    perm.input_2,
-		    perm.input_3,
-		    perm.input_4,
-		    perm.input_5,
-		    perm.input_6,
-		    perm.input_7,
-		    perm.input_8,
-		    perm.input_9,
-		    perm.input_10,
-		    perm.answer_1,
-		    perm.answer_2,
-		    perm.answer_3,
-		    perm.answer_4,
-		    perm.answer_5,
-		    perm.answer_6,
-		    perm.answer_7,
-		    perm.answer_8,
-		    perm.answer_9,
-		    perm.answer_10,
-		    uw.user_answer_1,
-		    uw.user_answer_2,
-		    uw.user_answer_3,
-		    uw.user_answer_4,
-		    uw.user_answer_5,
-		    uw.user_answer_6,
-		    uw.user_answer_7,
-		    uw.user_answer_8,
-		    uw.user_answer_9,
-		    uw.user_answer_10
-		FROM
-		    permutations perm,
-		    body b,
-		    problems prob
-		LEFT JOIN
-		    user_work uw ON prob.problem_id = uw.soln_prob_id
-		WHERE
-		    b.body_prob_id = prob.problem_id
-		        AND perm.perm_prob_id = prob.problem_id
-		        AND IF((uw.soln_username = 'murphycd'
-		            OR uw.soln_username IS NULL),
-		        TRUE,
-		        FALSE) AND prob.problem_id = 1 AND IF((uw.soln_prob_id IS NULL), TRUE, uw.soln_perm_id = perm.perm_id)
-		ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND())
-		LIMIT 1;
-		 */
-		final String SQL = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
-				+ "prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
-				+ "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', "
-		        + "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id', perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
-				+ "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10, perm.answer_1, perm.answer_2, perm.answer_3, perm.answer_4, "
-		        + "perm.answer_5, perm.answer_6, perm.answer_7, perm.answer_8, perm.answer_9, perm.answer_10, uw.user_answer_1, uw.user_answer_2, uw.user_answer_3, uw.user_answer_4, "
-				+ "uw.user_answer_5, uw.user_answer_6, uw.user_answer_7, uw.user_answer_8, uw.user_answer_9, uw.user_answer_10 "
-				+ "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
-				+ "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
-				+ "IF((uw.soln_username = '" + getUsername() + "' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = " + problemId + " "
-		        + "AND IF((uw.soln_prob_id IS NULL), TRUE, uw.soln_perm_id = perm.perm_id) "
-				+ "ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
-
-		ResultSet rs;
-
+		final String SQL = String.format(parameterizedSql, sqlParameters);
+		LOG.publish(new LogRecord(Level.INFO, "Database#query - " + parameterizedSql));
+		LOG.publish(new LogRecord(Level.INFO, "Database#query - " + SQL));
+		ResultSet rs = evaluate(SQL);
+		T data = null;
 		try {
-			rs = query(SQL);
-
-			// get first and only problem
-			rs.next();
-
-			/*
-			 * Store data from ResultSet into local variables
-			 */
-			final Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
-			        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"),
-			        rs.getDouble("uw.points"));
-			final String[] inputs = {
-					rs.getString("perm.input_1"),
-					rs.getString("perm.input_2"),
-					rs.getString("perm.input_3"),
-					rs.getString("perm.input_4"),
-					rs.getString("perm.input_5"),
-					rs.getString("perm.input_6"),
-					rs.getString("perm.input_7"),
-					rs.getString("perm.input_8"),
-					rs.getString("perm.input_9"),
-					rs.getString("perm.input_10")
-			};
-			final String[] correctAnswers = {
-					rs.getString("perm.answer_1"),
-					rs.getString("perm.answer_2"),
-					rs.getString("perm.answer_3"),
-					rs.getString("perm.answer_4"),
-					rs.getString("perm.answer_5"),
-					rs.getString("perm.answer_6"),
-					rs.getString("perm.answer_7"),
-					rs.getString("perm.answer_8"),
-					rs.getString("perm.answer_9"),
-					rs.getString("perm.answer_10")
-			};
-			final String[] userAnswers = {
-					rs.getString("uw.user_answer_1"),
-					rs.getString("uw.user_answer_2"),
-					rs.getString("uw.user_answer_3"),
-					rs.getString("uw.user_answer_4"),
-					rs.getString("uw.user_answer_5"),
-					rs.getString("uw.user_answer_6"),
-					rs.getString("uw.user_answer_7"),
-					rs.getString("uw.user_answer_8"),
-					rs.getString("uw.user_answer_9"),
-					rs.getString("uw.user_answer_10")
-			};
-			final Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"),
-			        rs.getInt("perm.num_inputs"), rs.getInt("perm.num_answers"), inputs);
-			String bodyText = rs.getString("b.body_text");
-
-			
-			/*
-			 * Inject inputs into problem body markup
-			 */
-			for (int i = 1; i <= permutation.getNumInputs(); i++) {
-				bodyText = bodyText.replaceAll("!in_" + i + "!", permutation.getInputString(i - 1));
-			}
-
-			/*
-			 * Replace answer tags with HTML divs of the proper id
-			 */
-			Matcher answerMatch = Pattern.compile(SelectedProblemDataServiceImpl.RAW_ANSWER_TAG).matcher(bodyText);
-			StringBuffer buffer = new StringBuffer();
-			// iterate through answer tags
-			while (answerMatch.find()) {
-
-				/*
-				 * Retrieve value of match groups for this iteration
-				 */
-				// note that answer number is one-based and array indices shall
-				// be zero-based
-				final int index = Integer.parseInt(answerMatch.group("number")) - 1;
-				final String type = answerMatch.group("type");
-				final String content = answerMatch.group("content");
-
-				/*
-				 * Evaluate answer (sets value in gradeFlag) Default flag "null"
-				 * renders no flag
-				 */
-				String gradeFlag = "null";
-				// check if user answer exists and evaluate, or skip evaluation
-				// if user supplied no answer
-				if (userAnswers[index] != null) {
-
-					// evaluate correctness based on type:
-					// numeric types must be checked against a tolerance, which
-					// is stored in content group as a positive decimal
-					if (type.equals("numeric")) {
-						double tolerance = 0;
-						double correctAnswer = 0;
-						double userAnswer = 0;
-						String errorText = "";
-
-						// parse tolerance
-						try {
-							tolerance = Double.parseDouble(content);
-						} catch (NumberFormatException | NullPointerException exception) {
-							errorText = "Numeric tolerance could not be parsed: tolerance=\"" + content
-							        + "\", user answer index " + index;
-						}
-
-						// parse correctAnswer
-						try {
-							correctAnswer = Double.parseDouble(correctAnswers[index]);
-						} catch (NumberFormatException exception) {
-							errorText = "correctAnswers[" + index + "] could not be parsed: " + correctAnswers[index];
-						}
-
-						// parse userAnswer
-						try {
-							userAnswer = Double.parseDouble(userAnswers[index]);
-						} catch (NumberFormatException exception) {
-							errorText = "userAnswers[" + index + "] could not be parsed: " + userAnswers[index];
-						}
-
-						// abort on failure
-						if (!errorText.isEmpty()) {
-							LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - " + errorText));
-							throw new NumberFormatException(errorText);
-						}
-
-						// check against tolerance
-						if (Math.abs(correctAnswer - userAnswer) <= (correctAnswer * tolerance)) {
-							gradeFlag = "correct";
-						} else {
-							gradeFlag = "incorrect";
-						}
-
-					} else {
-						// case: type is text, boolean, list, etc.
-						gradeFlag = userAnswers[index].equals(correctAnswers[index]) ? "correct" : "incorrect";
-					}
-				}
-				
-				/*
-				 * Transform answer tag into answer div using all information
-				 */
-				String answerDivRegex = SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV.replace("${flag}", gradeFlag);
-				answerMatch.appendReplacement(buffer, answerDivRegex);
-			}
-			answerMatch.appendTail(buffer);
-			String bodyWithReplacements = buffer.toString();
-
-			/*
-			 * Finalize ProblemData
-			 */
-			problemData = new ProblemData(prob, bodyWithReplacements,
-			        rs.getInt("questions_remaining"),
-			        rs.getInt("checks_remaining"),
-			        permutation);
-				
+			data = callback.process(rs);
 		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - SQLException " + exception));
+			LOG.publish(new LogRecord(Level.INFO, "Database#query - SQLException " + exception));
 			throw new RuntimeException(exception);
 		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - unexpected exception " + exception));
+			LOG.publish(new LogRecord(Level.INFO, "Database#query - unexpected exception " + exception));
 			throw new RuntimeException(exception);
 		}
 
 		closeConnection(rs);
-		LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - end"));
-		return problemData;
+		LOG.publish(new LogRecord(Level.INFO, "Database#query - end"));
+		return data;
 	}
 
 	String[] queryAnswers(int permutationId) {
@@ -541,7 +337,7 @@ public class Database {
 
 		final String SQL = "SELECT answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8, answer_9, answer_10 "
 		        + "FROM permutations WHERE perm_id = " + permutationId + ";";
-		final ResultSet rs = query(SQL);
+		final ResultSet rs = evaluate(SQL);
 		try {
 			rs.next();
 			
