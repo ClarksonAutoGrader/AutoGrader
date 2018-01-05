@@ -129,6 +129,7 @@ div#footer a:active { color: #F0CA0C; }
 .errorLabel {
 	color: red;
 	text-align: center;
+	margin: 2vw;
 }
 
 .listingStyle {
@@ -151,12 +152,19 @@ div#footer a:active { color: #F0CA0C; }
 	padding-left: 1em;
 }
 
+.coursePage {
+	display: block;
+}
+
 div#submitted {
 	color: green;
 }
 
 div#notSubmitted {
 	color: red;
+}
+
+.sideBarAndContent {
 }
 
 .assignmentSideBar {
@@ -166,7 +174,7 @@ div#notSubmitted {
 	padding-bottom: 2em;
 }
 
-.problemContent {
+.problemView {
 	padding: 2em 2em 0;
 }
 
@@ -178,21 +186,56 @@ div#notSubmitted {
 	width: 100px;
 }
 
-.problemFlowPanel div {
-	float: left;
-	padding-right: 1em;
-	padding-bottom: 0.5em;
-	font-size: 22px;
+.problemHeader {
+	padding-bottom: 1em;
 }
 
-.problemBodyText div {
-	float: left;
+.problemTitleInlineLabel {
+	padding: 4px 7px 4px 0px;
+	font-size: 130%
 }
 
-.buttons {
+.problemGradeInlineLabel {
+	padding: 4px 7px 4px 7px;
+	font-size: 130%
+}
+
+.previousAnswersButton {
+	margin-left: 7px !important;
+}
+
+.problemPopup button {
+	float: center;
+}
+
+.problemPopupCloseButton {
+	display: block;
+    margin: 0.5em auto 0.5em auto;
+}
+
+.problemBody {
+}
+
+.problemFooter {
+	padding-top: 1em;
+}
+
+.newProblemButton {
+	float: left;
 	margin-right: 1em !important;
 }
 
-.problemFlowPanel-footer {
-	padding-top: 1em;
+.resetsRemainingInlineLabel {
+	float: left;
+	padding: 5px;
+}
+
+.attemptsRemainingInlineLabel {
+	float: right;
+	padding: 5px;
+}
+
+.problemSubmitButton {
+	float: right;
+	margin-left: 1em !important;
 }
