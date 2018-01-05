@@ -7,6 +7,7 @@ import com.google.gwt.user.client.History;
 import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.pages.CoursePage;
 import edu.clarkson.autograder.client.pages.CourseSelectionPage;
+import edu.clarkson.autograder.client.pages.GradebookPage;
 
 public final class State implements ValueChangeHandler<String> {
 
@@ -52,6 +53,8 @@ public final class State implements ValueChangeHandler<String> {
             History.replaceItem("courses");
             return;
         }
-		ContentContainer.setContent(new CoursePage(courseId));
+
+//		ContentContainer.setContent(new CoursePage(courseId));
+		ContentContainer.setContent(new GradebookPage(courseId));
     }
 }

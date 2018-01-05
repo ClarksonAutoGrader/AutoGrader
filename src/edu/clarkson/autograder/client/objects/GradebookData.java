@@ -1,9 +1,11 @@
 package edu.clarkson.autograder.client.objects;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GradebookData {
+@SuppressWarnings("serial")
+public class GradebookData implements Serializable {
 	private List<String> assignmentNames = new ArrayList<String>();
 	
 	private List<StudentRowData> studentGrades = new ArrayList<StudentRowData>();
@@ -11,6 +13,12 @@ public class GradebookData {
 	public GradebookData(List<String> assignmentNames, List<StudentRowData> studentGrades) {
 		this.assignmentNames.addAll(assignmentNames);
 		this.studentGrades.addAll(studentGrades);
+	}
+	
+	/**
+	 * Default constructor required for serialization
+	 */
+	public GradebookData() {
 	}
 	
 	public List<String> getAssignmentNames() {

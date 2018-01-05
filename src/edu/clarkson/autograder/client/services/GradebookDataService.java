@@ -7,5 +7,5 @@ import edu.clarkson.autograder.client.objects.GradebookData;
 
 @RemoteServiceRelativePath("gradebook_data")
 public interface GradebookDataService extends RemoteService {
-	GradebookData getGradebookData(int courseId) throws IllegalArgumentException;
+	GradebookData fetchGradebookData(int courseId) throws IllegalArgumentException;
 }

@@ -115,8 +115,9 @@ div#footer a:active { color: #F0CA0C; }
 }
 
 .gradebookPageTitle {
-	margin: 1vw;
-	font-size: 200%;
+	margin-top: 0.5em;
+	margin-left: 0.50em;
+	font-size: 150%;
 	font-weight: bold;
 }
 
