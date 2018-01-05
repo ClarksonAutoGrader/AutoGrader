@@ -163,6 +163,15 @@
   </servlet-mapping>
   
   <servlet>
+      <servlet-name>submitAnswers</servlet-name>
+      <servlet-class>edu.clarkson.autograder.server.SubmitAnswersServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>submitAnswers</servlet-name>
+      <url-pattern>/autograder/submit_answers</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>remoteLogging</servlet-name>
     <servlet-class>com.google.gwt.logging.server.RemoteLoggingServiceImpl</servlet-class>
   </servlet>

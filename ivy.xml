@@ -46,7 +46,7 @@
 		<dependency org="mysql" name="mysql-connector-java" rev="5.1.44" conf="runtime->default"/>
 		
 		<!-- https://mvnrepository.com/artifact/commons-dbutils/commons-dbutils -->
-		<dependency org="commons-dbutils" name="commons-dbutils" rev="1.5"/>
+		<dependency org="commons-dbutils" name="commons-dbutils" rev="1.5" conf="runtime->default"/>
 		
     </dependencies>
 </ivy-module>
