@@ -1,5 +1,7 @@
 package edu.clarkson.autograder.server;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -16,14 +18,20 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 
 	@Override
 	public ProblemData submitAnswers(int permutationId, String[] userAnswers) {
-		LOG.publish(new LogRecord(Level.INFO, "#submitAnswers - begin"));
+		LOG.publish(new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - begin"));
 
 		Database db = new Database();
-		String[] correctAnswers = db.queryAnswers(permutationId);
+		ProblemData data = db.query(processResultSetcallback, "some query", permutationId);
 
-		ProblemData problemData = new ProblemData();
-
-		LOG.publish(new LogRecord(Level.INFO, "#submitAnswers - end"));
-		return problemData;
+		LOG.publish(new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - end"));
+		return data;
 	}
+
+	private ProcessResultSetCallback<ProblemData> processResultSetcallback = new ProcessResultSetCallback<ProblemData>() {
+
+		@Override
+		public ProblemData process(ResultSet rs) throws SQLException {
+			return null;
+		}
+	};
 }
