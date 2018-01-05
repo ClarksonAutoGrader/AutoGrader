@@ -166,13 +166,9 @@ public class ProblemView extends Composite {
 	}
 
 	private Widget createPreviousAnswersContent(final int answerNumber) {
-		
-		CellTable<PreviousAnswersRow> table = new CellTable<PreviousAnswersRow>();
-		table.addStyleName("previousAnswersContent");
-		
-		requestPreviousAnswersAsync(table, answerNumber);
-
-		return table;
+		FlowPanel contentHandle = new FlowPanel();
+		requestPreviousAnswersAsync(contentHandle, answerNumber);
+		return contentHandle;
 	}
 
 	private class Body extends Composite {
@@ -299,8 +295,7 @@ public class ProblemView extends Composite {
 							previousAnswersPopup.update(TEXT_PREVIOUS_ANSWERS, popupContent);
 						}
 
-						previousAnswersPopup.center();
-						previousAnswersPopup.show();
+						previousAnswersPopup.showRelativeTo(layout);
 					}
 				});
 				// add style and image to button
@@ -524,7 +519,7 @@ public class ProblemView extends Composite {
 	}
 	
 	private void actionSubmit() {
-		
+
 		// check if body never completed rendering
 		if (body.questions == null) {
 			Window.alert("Nothing to submit...");
@@ -590,50 +585,64 @@ public class ProblemView extends Composite {
 		footer.update();
 	}
 
-	private void requestPreviousAnswersAsync(final CellTable<PreviousAnswersRow> previousAnswersTable,
-	        int answerNumber) {
+	private void requestPreviousAnswersAsync(final FlowPanel layout, int answerNumber) {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - begin"));
 
 		PreviousAnswersServiceAsync requestPreviousAnswers = GWT.create(PreviousAnswersService.class);
 		requestPreviousAnswers.fetchPreviousAnswers(problemData.getPermId(), answerNumber,
 		        new AsyncCallback<List<PreviousAnswersRow>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestPreviousAnswersAsync - onFailure"));
-			}
+			        @Override
+			        public void onFailure(Throwable caught) {
+				        LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestPreviousAnswersAsync - onFailure"));
+				        Label errorLabel = new Label("Error loading previous answers.");
+				        errorLabel.addStyleName("errorLabel");
+				        layout.add(errorLabel);
+			        }
 
-			@Override
-			public void onSuccess(List<PreviousAnswersRow> previousAnswers) {
-				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestPreviousAnswersAsync - onSuccess"));
+			        @Override
+			        public void onSuccess(List<PreviousAnswersRow> previousAnswers) {
+				        LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestPreviousAnswersAsync - onSuccess"));
 
-				// Add a numeric column index previous answers
-				TextColumn<PreviousAnswersRow> indexColumn = new TextColumn<PreviousAnswersRow>() {
-					@Override
-					public String getValue(PreviousAnswersRow object) {
-						return "" + object.getSequenceValue();
-					}
-				};
-				previousAnswersTable.addColumn(indexColumn, "#");
-				
-				// Add a text column to show the user's previous attempts
-				TextColumn<PreviousAnswersRow> userAnswerColumn = new TextColumn<PreviousAnswersRow>() {
-					@Override
-					public String getValue(PreviousAnswersRow object) {
-						return object.getPreviousUserAnswer();
-					}
-				};
-				previousAnswersTable.addColumn(userAnswerColumn, "Attempt");
-				
-				// Add a text column to show the correct answer corresponding to the user's attempt
-				TextColumn<PreviousAnswersRow> correctAnswerColumn = new TextColumn<PreviousAnswersRow>() {
-					@Override
-					public String getValue(PreviousAnswersRow object) {
-						return object.getPreviousCorrectAnswer();
-					}
-				};
-				previousAnswersTable.addColumn(correctAnswerColumn, "Key");
-			}
-		});
+				        CellTable<PreviousAnswersRow> table = new CellTable<PreviousAnswersRow>();
+				        table.addStyleName("previousAnswersContent");
+
+				        // Add a numeric column index previous answers
+				        TextColumn<PreviousAnswersRow> indexColumn = new TextColumn<PreviousAnswersRow>() {
+					        @Override
+					        public String getValue(PreviousAnswersRow object) {
+						        return "" + object.getSequenceValue();
+					        }
+				        };
+				        table.addColumn(indexColumn, "#");
+
+				        // Add a text column to show the user's previous
+				        // attempts
+				        TextColumn<PreviousAnswersRow> userAnswerColumn = new TextColumn<PreviousAnswersRow>() {
+					        @Override
+					        public String getValue(PreviousAnswersRow object) {
+						        return object.getPreviousUserAnswer();
+					        }
+				        };
+				        table.addColumn(userAnswerColumn, "Attempt");
+
+				        // Add a text column to show the correct answer
+				        // corresponding to the user's attempt
+				        TextColumn<PreviousAnswersRow> correctAnswerColumn = new TextColumn<PreviousAnswersRow>() {
+					        @Override
+					        public String getValue(PreviousAnswersRow object) {
+						        return object.getPreviousCorrectAnswer();
+					        }
+				        };
+				        table.addColumn(correctAnswerColumn, "Key");
+
+				        table.setRowCount(previousAnswers.size(), true);
+				        table.setRowData(0, previousAnswers);
+
+				        layout.add(table);
+
+				        previousAnswersPopup.center();
+			        }
+		        });
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - end"));
 	}
 
