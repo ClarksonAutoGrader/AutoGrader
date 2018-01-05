@@ -1,8 +1,12 @@
 package edu.clarkson.autograder.client.services;
 
+import java.util.List;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public interface PreviousAnswersServiceAsync {
+import edu.clarkson.autograder.client.objects.PreviousAnswersRow;
 
-	void fetchPreviousAnswers(int permutationId, AsyncCallback<String[]> callback) throws IllegalArgumentException;
+public interface PreviousAnswersServiceAsync {
+	void fetchPreviousAnswers(int permutationId, int answerNumber, AsyncCallback<List<PreviousAnswersRow>> callback)
+	        throws IllegalArgumentException;
 }
