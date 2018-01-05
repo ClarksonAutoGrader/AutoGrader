@@ -8,6 +8,6 @@ import edu.clarkson.autograder.client.objects.Course;
 
 public interface CoursesServiceAsync {
 
-	void fetchCourses(AsyncCallback<List<Course>> callback);
+	void fetchCourses(AsyncCallback<List<Course>> callback) throws IllegalArgumentException;
 	
 }
