@@ -97,6 +97,29 @@ div#footer a:active { color: #F0CA0C; }
 	margin-right: auto;
 }
 
+.gradebookPage {
+	width: 100%;
+	height: 90vh;
+}
+
+.gradebookWrapper {
+	position: absolute !important;
+    top: 3em;
+    bottom: 4.5em;
+    left: 0;
+    right: 0px;
+}
+
+.gradebookPage th {
+    white-space: normal !important;
+}
+
+.gradebookPageTitle {
+	margin: 1vw;
+	font-size: 200%;
+	font-weight: bold;
+}
+
 .courseSelectionPageTitle, .coursePageTitle {
 	margin-bottom: 1vw;
 	font-size: 200%;
