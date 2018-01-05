@@ -163,6 +163,15 @@
   </servlet-mapping>
   
   <servlet>
+      <servlet-name>userRole</servlet-name>
+      <servlet-class>edu.clarkson.autograder.server.UserRoleServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>userRole</servlet-name>
+      <url-pattern>/autograder/user_role</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>gradebookData</servlet-name>
     <servlet-class>edu.clarkson.autograder.server.GradebookDataServiceImpl</servlet-class>
   </servlet>

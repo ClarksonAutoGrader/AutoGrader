@@ -164,6 +164,11 @@ public class Database {
 	        + "IF((uw.soln_username = '%s' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = %s "
 	        + "AND IF((uw.soln_prob_id IS NULL), TRUE, uw.soln_perm_id = perm.perm_id) "
 	        + "ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
+	
+	/**
+	 * Returns the user role as String given a username. 
+	 */
+	final static String userRoleSql = "SELECT user_role FROM users WHERE username = '%s';";
 
 	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - begin: courseId=" + courseId));
