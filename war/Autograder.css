@@ -101,14 +101,22 @@ div#footer a:active { color: #F0CA0C; }
 	height: 90vh;
 }
 
+.gradebookWrapper {
+	position: absolute !important;
+    top: 3em;
+    bottom: 4.5em;
+    left: 0;
+    right: 0px;
+}
+
 .gradebookPage th {
     white-space: normal !important;
 }
 
 .gradebookPageTitle {
-	text-align: center;
+	margin: 1vw;
 	font-size: 200%;
-	margin-bottom: 1vw;	
+	font-weight: bold;
 }
 
 .courseSelectionPageTitle, .coursePageTitle {

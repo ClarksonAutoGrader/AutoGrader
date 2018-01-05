@@ -6,21 +6,26 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 import edu.clarkson.autograder.client.objects.GradebookData;
 import edu.clarkson.autograder.client.objects.StudentRowData;
+import edu.clarkson.autograder.client.services.GradebookDataService;
 import edu.clarkson.autograder.client.widgets.Content;
 
 public class GradebookPage extends Content {
 	
 	private static SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 	
-	public DataGrid<StudentRowData> gradebookDataTable = new DataGrid<StudentRowData>();
+	private DataGrid<StudentRowData> gradebookDataTable = new DataGrid<StudentRowData>();
 	
 	// temporary hardcoded data values
 	private GradebookData studentData = new GradebookData(
@@ -30,6 +35,18 @@ public class GradebookPage extends Content {
 			Arrays.asList(
 					new StudentRowData("woodrj", new double[] {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}),
 					new StudentRowData("woodrj", new double[] {11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
+					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
 					new StudentRowData("woodrj", new double[] {21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0}),
 					new StudentRowData("woodrj", new double[] {31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0, 38.0, 39.0, 40.0})
 			));
@@ -63,10 +80,9 @@ public class GradebookPage extends Content {
 				});
 			}
 			
-		int x = 0;
+		int currentIndex = 0;
 		for(TextColumn<StudentRowData> assignColumn : gradeColumns) {
-			gradebookDataTable.addColumn(assignColumn, studentData.getAssignmentNames().get(x));
-			x++;
+			gradebookDataTable.addColumn(assignColumn, studentData.getAssignmentNames().get(currentIndex++));
 		}
 		
 		// populate gradebookDataTable with temp hardcoded values
@@ -78,19 +94,29 @@ public class GradebookPage extends Content {
 		
 		LOG.publish(new LogRecord(Level.INFO, "DataTable populated successfully."));
 		
-		gradebookDataTable.setStyleName("gradebookDataTable");
-		
 		for(int i = 0; i < gradeColumns.size(); i++) {
 			gradebookDataTable.setColumnWidth(i, "10em");
 		}
 		
-		
 		// add widgets to page
+		Label courseName = new Label("Course Name");
+		courseName.setStyleName("gradebookPageTitle");
+		FlowPanel toplevel = new FlowPanel();
+		
 		LayoutPanel layout = new LayoutPanel();
-		layout.ensureDebugId("layoutPanel");
+		layout.addStyleName("gradebookWrapper");
 		layout.add(gradebookDataTable);
 		
-		initWidget(layout);
+		toplevel.add(layout);
+		toplevel.add(courseName);
+		
+		
+		initWidget(toplevel);
+	}
+	
+	private void populateGradebookAsync() {
+		GradebookDataServiceAsync GradebookDataSvc = GWT.create(GradebookDataService.class);
+		
 	}
 
 	@Override
