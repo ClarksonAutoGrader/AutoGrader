@@ -35,8 +35,7 @@ public class Database {
 	// Console logging for debugging
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
-	// private static final String DEFAULT_USERNAME = "null";
-	private static final String DEFAULT_USERNAME = "clappdj";
+	private static final String DEFAULT_USERNAME = "null";
 
 	// Database parameters
 	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
@@ -150,7 +149,9 @@ public class Database {
 
 	/**
 	 * Returns data needed to create
-	 * {@link edu.clarkson.autograder.client.objects.ProblemData} object.
+	 * {@link edu.clarkson.autograder.client.objects.ProblemData} object.<br>
+	 * <br>
+	 * Required inputs are username and problem ID (in that order).
 	 */
 	final static String selectedProblemDataSql = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
 	        + "prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
@@ -169,6 +170,16 @@ public class Database {
 	 * Returns the user role as String given a username. 
 	 */
 	final static String userRoleSql = "SELECT user_role FROM users WHERE username = '%s';";
+
+	/**
+	 * Returns previous answers as a
+	 * {@link edu.clarkson.autograder.client.objects.PreviousAnswersRow}
+	 * object.<br>
+	 * <br>
+	 * Required inputs are answer number, username and permutation ID (in that
+	 * order).
+	 */
+	final static String previousAnswersSql = "SELECT prev_ans_%s FROM previous_answers WHERE prev_ans_username = '%s' AND prev_ans_perm_id = %s;";
 
 	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - begin: courseId=" + courseId));

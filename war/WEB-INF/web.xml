@@ -82,12 +82,12 @@
     <filter-name>CAS Validation Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-<!-- 
+
   <filter-mapping>
     <filter-name>CAS Authentication Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
- -->
+
   <filter-mapping>
     <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
     <url-pattern>/*</url-pattern>
@@ -142,6 +142,15 @@
   <servlet-mapping>
     <servlet-name>problemData</servlet-name>
     <url-pattern>/autograder/problem_data</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+      <servlet-name>previousAnswers</servlet-name>
+      <servlet-class>edu.clarkson.autograder.server.PreviousAnswersImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>previousAnswers</servlet-name>
+      <url-pattern>/autograder/previous_answers</url-pattern>
   </servlet-mapping>
   
   <servlet>
