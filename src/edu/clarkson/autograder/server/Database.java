@@ -178,7 +178,7 @@ public class Database {
 			    prob.problem_id,
 			    prob.problem_title,
 			    prob.points_possible,
-			    COALESCE(uw.points, 0) AS uw.points
+			    IF(uw.soln_username = 'clappdj', uw.points, 0) AS 'uw.points'
 			FROM
 			    assignments a,
 			    problems prob
@@ -186,12 +186,13 @@ public class Database {
 			    user_work uw ON uw.soln_prob_id = prob.problem_id
 			WHERE
 			    a.assignment_id = prob.problem_aid
-			        AND a.a_cid = 1 AND IF((uw.soln_username = 'murphycd' OR uw.soln_username IS NULL), TRUE, FALSE) ORDER BY a.due_date, prob.problem_num;
+			        AND a.a_cid = 1
+			ORDER BY a.due_date, prob.problem_num;
 		 */
-		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, COALESCE(uw.points, 0) AS 'uw.points' "
+		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, IF(uw.soln_username = '"
+		        + getUsername() + "', uw.points, 0) AS 'uw.points' "
 				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id "
-				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " AND IF((uw.soln_username = '" + getUsername()
-		        + "' OR uw.soln_username IS NULL), TRUE, FALSE) ORDER BY a.due_date, prob.problem_num;";
+				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " ORDER BY a.due_date, prob.problem_num;";
 				
 		final ResultSet rs = evaluate(SQL);
 		try {
