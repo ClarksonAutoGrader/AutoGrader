@@ -531,25 +531,6 @@ public class ProblemView extends Composite {
 		}
 		requestSubmitAnswersAsync(answers);
 	}
-	
-	private void requestSubmitAnswersAsync(final String[] answers) {
-		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - begin"));
-
-		SubmitAnswersServiceAsync submitAnswersService = GWT.create(SubmitAnswersService.class);
-		submitAnswersService.submitAnswers(problemData.getPermId(), answers, new AsyncCallback<ProblemData>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
-			}
-
-			@Override
-			public void onSuccess(ProblemData problemData) {
-				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onSuccess"));
-				update(problemData);
-			}
-		});
-		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
-	}
 
 	private void actionNewProblem() {
 		// TODO implement new problem action
@@ -587,6 +568,25 @@ public class ProblemView extends Composite {
 
 	private void requestPreviousAnswersAsync() {
 		// onSuccess: call #createPreviousAnswersContent
+	}
+
+	private void requestSubmitAnswersAsync(final String[] answers) {
+		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - begin"));
+
+		SubmitAnswersServiceAsync submitAnswersService = GWT.create(SubmitAnswersService.class);
+		submitAnswersService.submitAnswers(problemData.getPermId(), answers, new AsyncCallback<ProblemData>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
+			}
+
+			@Override
+			public void onSuccess(ProblemData problemData) {
+				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onSuccess"));
+				update(problemData);
+			}
+		});
+		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
 	}
 
 	private class ProblemPopup extends DialogBox {

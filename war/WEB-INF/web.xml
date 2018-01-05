@@ -145,6 +145,15 @@
   </servlet-mapping>
   
   <servlet>
+      <servlet-name>previousAnswers</servlet-name>
+      <servlet-class>edu.clarkson.autograder.server.PreviousAnswersImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>previousAnswers</servlet-name>
+      <url-pattern>/autograder/previous_answers</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>username</servlet-name>
     <servlet-class>edu.clarkson.autograder.server.UsernameServiceImpl</servlet-class>
   </servlet>

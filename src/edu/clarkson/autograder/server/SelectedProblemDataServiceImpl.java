@@ -16,8 +16,7 @@ import edu.clarkson.autograder.client.objects.ProblemData;
 import edu.clarkson.autograder.client.services.SelectedProblemDataService;
 
 @SuppressWarnings("serial")
-public class SelectedProblemDataServiceImpl extends RemoteServiceServlet
-        implements SelectedProblemDataService {
+public class SelectedProblemDataServiceImpl extends RemoteServiceServlet implements SelectedProblemDataService {
 
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
@@ -35,147 +34,167 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet
 	@Override
 	public ProblemData fetchProblemData(int problemId) {
 		LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#fetchProblemData - begin"));
-		
+
 		Database db = new Database();
-		ProblemData data = db.query(processResultSetcallback, Database.selectedProblemDataSql, Database.getUsername(),
+		ProblemData data = db.query(processResultSetForProblemData, Database.selectedProblemDataSql,
+		        Database.getUsername(),
 		        problemId);
+
+		db.query(Database.updateUserWorkPointsEarned, data.getEarnedPoints());
 
 		LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#fetchProblemData - end"));
 		return data;
 	}
-	
-	private ProcessResultSetCallback<ProblemData> processResultSetcallback = new ProcessResultSetCallback<ProblemData>() {
 
-	@Override
+	private ProcessResultSetCallback<ProblemData> processResultSetForProblemData = new ProcessResultSetCallback<ProblemData>() {
+
+		@Override
 		public ProblemData process(ResultSet rs) throws SQLException {
-		LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#process - begin"));
+			LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#process - begin"));
 
-		ProblemData problemData = null;
+			ProblemData problemData = null;
 
-		// get first and only problem
-		rs.next();
-
-		/*
-		 * Store data from ResultSet into local variables
-		 */
-		final Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
-		        rs.getString("prob.problem_title"), rs.getDouble("prob.points_possible"), rs.getDouble("uw.points"));
-		final String[] inputs = { rs.getString("perm.input_1"), rs.getString("perm.input_2"),
-		        rs.getString("perm.input_3"), rs.getString("perm.input_4"), rs.getString("perm.input_5"),
-		        rs.getString("perm.input_6"), rs.getString("perm.input_7"), rs.getString("perm.input_8"),
-		        rs.getString("perm.input_9"), rs.getString("perm.input_10") };
-		final String[] correctAnswers = { rs.getString("perm.answer_1"), rs.getString("perm.answer_2"),
-		        rs.getString("perm.answer_3"), rs.getString("perm.answer_4"), rs.getString("perm.answer_5"),
-		        rs.getString("perm.answer_6"), rs.getString("perm.answer_7"), rs.getString("perm.answer_8"),
-		        rs.getString("perm.answer_9"), rs.getString("perm.answer_10") };
-		final String[] userAnswers = { rs.getString("uw.user_answer_1"), rs.getString("uw.user_answer_2"),
-		        rs.getString("uw.user_answer_3"), rs.getString("uw.user_answer_4"), rs.getString("uw.user_answer_5"),
-		        rs.getString("uw.user_answer_6"), rs.getString("uw.user_answer_7"), rs.getString("uw.user_answer_8"),
-		        rs.getString("uw.user_answer_9"), rs.getString("uw.user_answer_10") };
-		final Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"),
-		        rs.getInt("perm.num_inputs"), rs.getInt("perm.num_answers"), inputs);
-		String bodyText = rs.getString("b.body_text");
-
-		/*
-		 * Inject inputs into problem body markup
-		 */
-		for (int i = 1; i <= permutation.getNumInputs(); i++) {
-			bodyText = bodyText.replaceAll("!in_" + i + "!", permutation.getInputString(i - 1));
-		}
-
-		/*
-		 * Replace answer tags with HTML divs of the proper id
-		 */
-		Matcher answerMatch = Pattern.compile(SelectedProblemDataServiceImpl.RAW_ANSWER_TAG).matcher(bodyText);
-		StringBuffer buffer = new StringBuffer();
-		// iterate through answer tags
-		while (answerMatch.find()) {
+			// get first and only problem
+			rs.next();
 
 			/*
-			 * Retrieve value of match groups for this iteration
+			 * Store data from ResultSet into local variables
 			 */
-			// note that answer number is one-based and array indices shall
-			// be zero-based
-			final int index = Integer.parseInt(answerMatch.group("number")) - 1;
-			final String type = answerMatch.group("type");
-			final String content = answerMatch.group("content");
+			final String[] inputs = { rs.getString("perm.input_1"), rs.getString("perm.input_2"),
+			        rs.getString("perm.input_3"), rs.getString("perm.input_4"), rs.getString("perm.input_5"),
+			        rs.getString("perm.input_6"), rs.getString("perm.input_7"), rs.getString("perm.input_8"),
+			        rs.getString("perm.input_9"), rs.getString("perm.input_10") };
+			final String[] correctAnswers = { rs.getString("perm.answer_1"), rs.getString("perm.answer_2"),
+			        rs.getString("perm.answer_3"), rs.getString("perm.answer_4"), rs.getString("perm.answer_5"),
+			        rs.getString("perm.answer_6"), rs.getString("perm.answer_7"), rs.getString("perm.answer_8"),
+			        rs.getString("perm.answer_9"), rs.getString("perm.answer_10") };
+			final String[] userAnswers = { rs.getString("uw.user_answer_1"), rs.getString("uw.user_answer_2"),
+			        rs.getString("uw.user_answer_3"), rs.getString("uw.user_answer_4"),
+			        rs.getString("uw.user_answer_5"), rs.getString("uw.user_answer_6"),
+			        rs.getString("uw.user_answer_7"), rs.getString("uw.user_answer_8"),
+			        rs.getString("uw.user_answer_9"), rs.getString("uw.user_answer_10") };
+			final Permutation permutation = new Permutation(rs.getInt("perm.perm_id"), rs.getInt("prob.problem_id"),
+			        rs.getInt("perm.num_inputs"), rs.getInt("perm.num_answers"), inputs);
+			String bodyText = rs.getString("b.body_text");
 
 			/*
-			 * Evaluate answer (sets value in gradeFlag) Default flag "null"
-			 * renders no flag
+			 * Inject inputs into problem body markup
 			 */
-			String gradeFlag = "null";
-			// check if user answer exists and evaluate, or skip evaluation
-			// if user supplied no answer
-			if (userAnswers[index] != null) {
-
-				// evaluate correctness based on type:
-				// numeric types must be checked against a tolerance, which
-				// is stored in content group as a positive decimal
-				if (type.equals("numeric")) {
-					double tolerance = 0;
-					double correctAnswer = 0;
-					double userAnswer = 0;
-					String errorText = "";
-
-					// parse tolerance
-					try {
-						tolerance = Double.parseDouble(content);
-					} catch (NumberFormatException | NullPointerException exception) {
-						errorText = "Numeric tolerance could not be parsed: tolerance=\"" + content
-						        + "\", user answer index " + index;
-					}
-
-					// parse correctAnswer
-					try {
-						correctAnswer = Double.parseDouble(correctAnswers[index]);
-					} catch (NumberFormatException exception) {
-						errorText = "correctAnswers[" + index + "] could not be parsed: " + correctAnswers[index];
-					}
-
-					// parse userAnswer
-					try {
-						userAnswer = Double.parseDouble(userAnswers[index]);
-					} catch (NumberFormatException exception) {
-						errorText = "userAnswers[" + index + "] could not be parsed: " + userAnswers[index];
-					}
-
-					// abort on failure
-					if (!errorText.isEmpty()) {
-						LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - " + errorText));
-						throw new NumberFormatException(errorText);
-					}
-
-					// check against tolerance
-					if (Math.abs(correctAnswer - userAnswer) <= (correctAnswer * tolerance)) {
-						gradeFlag = "correct";
-					} else {
-						gradeFlag = "incorrect";
-					}
-
-				} else {
-					// case: type is text, boolean, list, etc.
-					gradeFlag = userAnswers[index].equals(correctAnswers[index]) ? "correct" : "incorrect";
-				}
+			for (int i = 1; i <= permutation.getNumInputs(); i++) {
+				bodyText = bodyText.replaceAll("!in_" + i + "!", permutation.getInputString(i - 1));
 			}
 
 			/*
-			 * Transform answer tag into answer div using all information
+			 * Replace answer tags with HTML divs of the proper id
 			 */
-			String answerDivRegex = SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV.replace("${flag}", gradeFlag);
-			answerMatch.appendReplacement(buffer, answerDivRegex);
+			Matcher answerMatch = Pattern.compile(SelectedProblemDataServiceImpl.RAW_ANSWER_TAG).matcher(bodyText);
+			StringBuffer buffer = new StringBuffer();
+			// iterate through answer tags, evaluating as we go
+			String[] gradeResult = new String[10];
+			while (answerMatch.find()) {
+
+				/*
+				 * Retrieve value of match groups for this iteration
+				 */
+				// note that answer number is one-based and array indices shall
+				// be zero-based
+				final int index = Integer.parseInt(answerMatch.group("number")) - 1;
+				final String type = answerMatch.group("type");
+				final String content = answerMatch.group("content");
+
+				/*
+				 * Evaluate answer (sets value in gradeFlag) Default flag "null"
+				 * renders no flag
+				 */
+				String gradeFlag = "null";
+				// check if user answer exists and evaluate, or skip evaluation
+				// if user supplied no answer
+				if (userAnswers[index] != null) {
+
+					// evaluate correctness based on type:
+					// numeric types must be checked against a tolerance, which
+					// is stored in content group as a positive decimal
+					if (type.equals("numeric")) {
+						double tolerance = 0;
+						double correctAnswer = 0;
+						double userAnswer = 0;
+						String errorText = "";
+
+						// parse tolerance
+						try {
+							tolerance = Double.parseDouble(content);
+						} catch (NumberFormatException | NullPointerException exception) {
+							errorText = "Numeric tolerance could not be parsed: tolerance=\"" + content
+							        + "\", user answer index " + index;
+						}
+
+						// parse correctAnswer
+						try {
+							correctAnswer = Double.parseDouble(correctAnswers[index]);
+						} catch (NumberFormatException exception) {
+							errorText = "correctAnswers[" + index + "] could not be parsed: " + correctAnswers[index];
+						}
+
+						// parse userAnswer
+						try {
+							userAnswer = Double.parseDouble(userAnswers[index]);
+						} catch (NumberFormatException exception) {
+							errorText = "userAnswers[" + index + "] could not be parsed: " + userAnswers[index];
+						}
+
+						// abort on failure
+						if (!errorText.isEmpty()) {
+							LOG.publish(new LogRecord(Level.INFO, "Database#querySelectedProblemData - " + errorText));
+							throw new NumberFormatException(errorText);
+						}
+
+						// check against tolerance
+						if (Math.abs(correctAnswer - userAnswer) <= (correctAnswer * tolerance)) {
+							gradeFlag = "correct";
+						} else {
+							gradeFlag = "incorrect";
+						}
+
+					} else {
+						// case: type is text, boolean, list, etc.
+						gradeFlag = userAnswers[index].equals(correctAnswers[index]) ? "correct" : "incorrect";
+					}
+				}
+				// store grade result
+				gradeResult[index] = gradeFlag;
+
+				/*
+				 * Transform answer tag into answer div using all information
+				 */
+				String answerDivRegex = SelectedProblemDataServiceImpl.CREATE_ANSWER_DIV.replace("${flag}", gradeFlag);
+				answerMatch.appendReplacement(buffer, answerDivRegex);
+			}
+			answerMatch.appendTail(buffer);
+			String bodyWithReplacements = buffer.toString();
+
+			/*
+			 * Create problem object
+			 */
+			double pointsPossible = rs.getDouble("prob.points_possible");
+			double pointsPerQuestion = pointsPossible / permutation.getNumAnswers();
+
+			double pointsEarned = 0;
+			for (int index = 0; index < gradeResult.length; index++) {
+				if (gradeResult[index].equals("correct")) {
+					pointsEarned += pointsPerQuestion;
+				}
+			}
+			final Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
+			        rs.getString("prob.problem_title"), pointsPossible, pointsEarned);
+
+			/*
+			 * Finalize ProblemData
+			 */
+			problemData = new ProblemData(prob, bodyWithReplacements, rs.getInt("questions_remaining"),
+			        rs.getInt("checks_remaining"), permutation);
+
+			LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#process - end"));
+			return problemData;
 		}
-		answerMatch.appendTail(buffer);
-		String bodyWithReplacements = buffer.toString();
-
-		/*
-		 * Finalize ProblemData
-		 */
-		problemData = new ProblemData(prob, bodyWithReplacements, rs.getInt("questions_remaining"),
-		        rs.getInt("checks_remaining"), permutation);
-
-		LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#process - end"));
-		return problemData;
-	}
 	};
 }
