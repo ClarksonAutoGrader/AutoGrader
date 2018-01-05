@@ -562,6 +562,8 @@ public class ProblemView extends Composite {
 
 	public ProblemView(final ProblemData data) {
 
+		problemData = data;
+
 		header = new Header();
 		body = new Body();
 		footer = new Footer();
