@@ -596,14 +596,16 @@ public class ProblemView extends Composite {
 			        @Override
 			        public void onFailure(Throwable caught) {
 				        LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestPreviousAnswersAsync - onFailure"));
-				        Label errorLabel = new Label("Error loading previous answers.");
-				        errorLabel.addStyleName("errorLabel");
-				        layout.add(errorLabel);
+				        onError();
 			        }
 
 			        @Override
 			        public void onSuccess(List<PreviousAnswersRow> previousAnswers) {
 				        LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestPreviousAnswersAsync - onSuccess"));
+
+				        if (previousAnswers == null) {
+					        onError();
+				        }
 
 				        CellTable<PreviousAnswersRow> table = new CellTable<PreviousAnswersRow>();
 				        table.addStyleName("previousAnswersContent");
@@ -628,21 +630,28 @@ public class ProblemView extends Composite {
 				        table.addColumn(userAnswerColumn, "Attempt");
 
 				        // Add a text column to show the correct answer
-				        // corresponding to the user's attempt
+				        // corresponding to the user's attempt.
 				        TextColumn<PreviousAnswersRow> correctAnswerColumn = new TextColumn<PreviousAnswersRow>() {
 					        @Override
 					        public String getValue(PreviousAnswersRow object) {
 						        return object.getPreviousCorrectAnswer();
 					        }
 				        };
-				        table.addColumn(correctAnswerColumn, "Key");
+				        // This only applies to instructors, otherwise the
+				        // correctAnswer field will be null.
+				        if (previousAnswers.get(0) != null) {
+					        table.addColumn(correctAnswerColumn, "Key");
+				        }
 
 				        table.setRowCount(previousAnswers.size(), true);
 				        table.setRowData(0, previousAnswers);
-
 				        layout.add(table);
+			        }
 
-				        previousAnswersPopup.center();
+			        private void onError() {
+				        Label errorLabel = new Label("Error loading previous answers.");
+				        errorLabel.addStyleName("errorLabel");
+				        layout.add(errorLabel);
 			        }
 		        });
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - end"));

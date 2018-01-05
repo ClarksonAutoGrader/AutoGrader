@@ -146,7 +146,7 @@
   
   <servlet>
       <servlet-name>previousAnswers</servlet-name>
-      <servlet-class>edu.clarkson.autorgader.server.PreviousAnswersImpl</servlet-class>
+      <servlet-class>edu.clarkson.autograder.server.PreviousAnswersImpl</servlet-class>
   </servlet>
   <servlet-mapping>
       <servlet-name>previousAnswers</servlet-name>

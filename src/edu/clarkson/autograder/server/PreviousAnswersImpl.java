@@ -41,7 +41,7 @@ public class PreviousAnswersImpl extends RemoteServiceServlet implements Previou
 				data.add(item);
 			}
 
-			return null;
+			return data;
 		}
 	};
 
