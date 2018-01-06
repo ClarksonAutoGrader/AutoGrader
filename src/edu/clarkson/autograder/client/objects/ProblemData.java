@@ -8,10 +8,10 @@ public class ProblemData implements Serializable {
 	private Problem problem;
 
 	private String bodyMarkup;
-	private int resets;
-	private int attempts;
 
 	private Permutation permutation;
+
+	private UserWork userWork;
 
 	/**
 	 * Constructor
@@ -21,17 +21,23 @@ public class ProblemData implements Serializable {
 	 *            within this data object
 	 * @param bodyMarkup
 	 *            raw markup used to render the problem body on the clientside
-	 * @param resets
-	 *            number of resets (new questions) available to the user
-	 * @param attempts
-	 *            number of attempts (submissions) available to the user
+	 * @param permutation
+	 *            problem permutation
+	 * @param userWork
+	 *            contains unique user work ID and user answers
 	 */
-	public ProblemData(Problem problem, String bodyMarkup, int resets, int attempts, Permutation permutation) {
+	public ProblemData(Problem problem, String bodyMarkup, Permutation permutation, UserWork userWork) {
 		this.problem = problem;
 		this.bodyMarkup = bodyMarkup;
-		this.resets = resets;
-		this.attempts = attempts;
 		this.permutation = permutation;
+		this.userWork = userWork;
+	}
+
+	/**
+	 * @return true if the state of this object is consistent
+	 */
+	public boolean isValid() {
+		return true;
 	}
 
 	/**
@@ -43,19 +49,20 @@ public class ProblemData implements Serializable {
 	/**
 	 * Wraps {@link edu.clarkson.autograder.client.objects.Problem#getId()}
 	 */
-	public int getpId() {
+	public int getProblemId() {
 		return problem.getId();
 	}
 
 	/**
-	 * Wraps {@link edu.clarkson.autograder.client.objects.Problem#getaId()()}
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Problem#getAssignmentId()}
 	 */
-	public int getaId() {
-		return problem.getaId();
+	public int getAssignmentId() {
+		return problem.getAssignmentId();
 	}
 
 	/**
-	 * Wraps {@link edu.clarkson.autograder.client.objects.Problem#getTitle()()}
+	 * Wraps {@link edu.clarkson.autograder.client.objects.Problem#getTitle()}
 	 */
 	public String getTitle() {
 		return problem.getTitle();
@@ -63,18 +70,26 @@ public class ProblemData implements Serializable {
 
 	/**
 	 * Wraps
-	 * {@link edu.clarkson.autograder.client.objects.Problem#getTotalPoints()()}
+	 * {@link edu.clarkson.autograder.client.objects.Problem#getPointsPossible()}
 	 */
-	public double getTotalPoints() {
-		return problem.getTotalPoints();
+	public double getPointsPossible() {
+		return problem.getPointsPossible();
 	}
 
 	/**
 	 * Wraps
-	 * {@link edu.clarkson.autograder.client.objects.Problem#getEarnedPoints()()}
+	 * {@link edu.clarkson.autograder.client.objects.Problem#getResetsAllowed()}
 	 */
-	public double getEarnedPoints() {
-		return problem.getEarnedPoints();
+	public double getResetsAllowed() {
+		return problem.getResetsAllowed();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.Problem#getAttemptsAllowed()}
+	 */
+	public double getAttemptsAllowed() {
+		return problem.getAttemptsAllowed();
 	}
 
 	/**
@@ -85,32 +100,10 @@ public class ProblemData implements Serializable {
 	}
 
 	/**
-	 * @return number of resets (new questions) available to the user
-	 */
-	public int getResets() {
-		return resets;
-	}
-
-	/**
-	 * @return number of attempts (submissions) available to the user
-	 */
-	public int getAttempts() {
-		return attempts;
-	}
-
-	/**
 	 * Wraps {@link edu.clarkson.autograder.client.objects.Permutation#getId()}
 	 */
-	public int getPermId() {
+	public int getPermutationId() {
 		return permutation.getId();
-	}
-
-	/**
-	 * Wraps
-	 * {@link edu.clarkson.autograder.client.objects.Permutation#getProblemId()}
-	 */
-	public int getProblemId() {
-		return permutation.getpId();
 	}
 
 	/**
@@ -138,9 +131,40 @@ public class ProblemData implements Serializable {
 	}
 
 	/**
-	 * @return Permutation wrapped by this ProblemData
+	 * Wraps {@link edu.clarkson.autograder.client.objects.UserWork#getId()}
 	 */
-	public final Permutation getPermutation() {
-		return permutation;
+	public int getUserWorkId() {
+		return userWork.getId();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.UserWork#getAttemptsUsed()}
+	 */
+	public int getAttemptsUsed() {
+		return userWork.getAttemptsUsed();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.UserWork#getResetsUsed()}
+	 */
+	public int getResetsUsed() {
+		return userWork.getResetsUsed();
+	}
+
+	/**
+	 * Wraps {@link edu.clarkson.autograder.client.objects.UserWork#getPoints()}
+	 */
+	public double getPointsEarned() {
+		return userWork.getPoints();
+	}
+
+	/**
+	 * Wraps
+	 * {@link edu.clarkson.autograder.client.objects.UserWork#getUserAnswers()}
+	 */
+	public String[] getUserAnswers() {
+		return userWork.getUserAnswers();
 	}
 }

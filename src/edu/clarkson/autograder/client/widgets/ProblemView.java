@@ -36,6 +36,7 @@ import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.AutograderResources;
 import edu.clarkson.autograder.client.objects.PreviousAnswersRow;
 import edu.clarkson.autograder.client.objects.ProblemData;
+import edu.clarkson.autograder.client.objects.UserWork;
 import edu.clarkson.autograder.client.services.PreviousAnswersService;
 import edu.clarkson.autograder.client.services.PreviousAnswersServiceAsync;
 import edu.clarkson.autograder.client.services.SubmitAnswersService;
@@ -132,22 +133,23 @@ public class ProblemView extends Composite {
 		private void update() {
 			problemTitle.setText(problemData.getTitle());
 
-			if (this.earnedPoints != problemData.getEarnedPoints()
-			        || this.totalPoints != problemData.getTotalPoints()) {
+			if (this.earnedPoints != problemData.getPointsEarned()
+			        || this.totalPoints != problemData.getPointsPossible()) {
 				// 00.00/00.00 (00.00%)
 				StringBuilder builder = new StringBuilder();
 				builder.setLength(0);
-				double earnedFormatted = Autograder.numberPrecision(problemData.getEarnedPoints(), decimalPrecision);
+				double earnedFormatted = Autograder.numberPrecision(problemData.getPointsEarned(), decimalPrecision);
 				builder.append(earnedFormatted);
 				builder.append("/");
-				double totalFormatted = Autograder.numberPrecision(problemData.getTotalPoints(), decimalPrecision);
+				double totalFormatted = Autograder.numberPrecision(problemData.getPointsPossible(), decimalPrecision);
 				builder.append(totalFormatted);
 				builder.append(" (");
 				// problems out of zero total points are always 100% complete
 				double percentageFormatted = Autograder
 				        .numberPrecision(
-				                (problemData.getTotalPoints() != 0.0
-				                        ? problemData.getEarnedPoints() / problemData.getTotalPoints() * 100 : 100.0),
+				                (problemData.getPointsPossible() != 0.0
+				                        ? problemData.getPointsEarned() / problemData.getPointsPossible() * 100
+				                        : 100.0),
 				                decimalPrecision);
 				builder.append(percentageFormatted);
 				builder.append("%)");
@@ -520,8 +522,10 @@ public class ProblemView extends Composite {
 		}
 
 		private void update() {
-			resetsRemaining.setText(TEXT_RESETS_REMAINING + problemData.getResets());
-			attemptsRemaining.setText(TEXT_ATTEMPTS_REMAINING + problemData.getAttempts());
+			resetsRemaining
+			        .setText(TEXT_RESETS_REMAINING + (problemData.getResetsAllowed() - problemData.getResetsUsed()));
+			attemptsRemaining.setText(
+			        TEXT_ATTEMPTS_REMAINING + (problemData.getAttemptsAllowed() - problemData.getAttemptsAllowed()));
 		}
 
 		/**
@@ -553,7 +557,7 @@ public class ProblemView extends Composite {
 		}
 
 		// poll answers from QuestionWidgets
-		String[] answers = new String[body.questions.length];
+		String[] answers = new String[10];
 		boolean somethingToSubmit = false;
 		for (int i = 0; i < body.questions.length; i++) {
 
@@ -570,6 +574,10 @@ public class ProblemView extends Composite {
 				somethingToSubmit = true;
 			}
 		}
+		// pad answers to length 10 with null
+		for (int i = body.questions.length; i < 10; i++) {
+			answers[i] = null;
+		}
 
 		// do not submit if all answer fields were empty
 		if (!somethingToSubmit) {
@@ -581,8 +589,13 @@ public class ProblemView extends Composite {
 		footer.setEnabled(false);
 		footer.setSubmitButtonLoading(true);
 		
+		// Create userWork object
+		UserWork userWork = new UserWork(problemData.getUserWorkId(), problemData.getProblemId(),
+		        problemData.getPermutationId(), problemData.getResetsUsed(), problemData.getAttemptsUsed(),
+		        problemData.getPointsEarned(), answers);
+
 		// push to server
-		requestSubmitAnswersAsync(answers);
+		requestSubmitAnswersAsync(userWork);
 	}
 
 	private void actionNewProblem() {
@@ -625,7 +638,7 @@ public class ProblemView extends Composite {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - begin"));
 
 		PreviousAnswersServiceAsync requestPreviousAnswers = GWT.create(PreviousAnswersService.class);
-		requestPreviousAnswers.fetchPreviousAnswers(problemData.getPermId(), answerNumber,
+		requestPreviousAnswers.fetchPreviousAnswers(problemData.getPermutationId(), answerNumber,
 		        new AsyncCallback<List<PreviousAnswersRow>>() {
 			        @Override
 			        public void onFailure(Throwable caught) {
@@ -691,11 +704,11 @@ public class ProblemView extends Composite {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - end"));
 	}
 
-	private void requestSubmitAnswersAsync(final String[] answers) {
+	private void requestSubmitAnswersAsync(UserWork userWork) {
 		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - begin"));
 
 		SubmitAnswersServiceAsync submitAnswersService = GWT.create(SubmitAnswersService.class);
-		submitAnswersService.submitAnswers(problemData.getPermId(), answers, new AsyncCallback<ProblemData>() {
+		submitAnswersService.submitAnswers(userWork, new AsyncCallback<ProblemData>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
@@ -714,7 +727,7 @@ public class ProblemView extends Composite {
 			}
 
 			private void onError() {
-				Window.alert("Unable to submit problem. Error 10." + problemData.getPermId());
+				Window.alert("Unable to submit problem. Error 10." + problemData.getPermutationId());
 				restoreState();
 			}
 

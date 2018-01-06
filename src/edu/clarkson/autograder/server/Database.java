@@ -35,9 +35,6 @@ public class Database {
 	// Console logging for debugging
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
-	// private static final String DEFAULT_USERNAME = "null";
-	private static final String DEFAULT_USERNAME = "murphycd";
-
 	// Database parameters
 	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
 	private static final String user = "autograder_dev";
@@ -91,6 +88,33 @@ public class Database {
 
 	/**
 	 * Uses an existing connection to query the database. Wrapper for
+	 * {@link java.sql.Statement#executeUpdate(String)}.
+	 */
+	private final int executeUpdate(final String SQL) {
+		// uniquely identify separate calls to Database#query in the log.
+		final String LOG_LOCATION = "Database#evaluate" + SQL.hashCode() + " ";
+		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin: " + SQL));
+
+		int rowsUpdated = 0;
+		try {
+			stmt = conn.createStatement();
+			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "statement created"));
+
+			rowsUpdated = stmt.executeUpdate(SQL);
+
+			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "updated " + rowsUpdated + " rows"));
+		} catch (SQLException exception) {
+			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + " " + exception));
+		} catch (Exception exception) {
+			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "unexpected exception " + exception));
+		}
+
+		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
+		return rowsUpdated;
+	}
+
+	/**
+	 * Uses an existing connection to query the database. Wrapper for
 	 * {@link java.sql.Statement#executeQuery(String)}.
 	 * 
 	 * @param SQL
@@ -99,7 +123,7 @@ public class Database {
 	private final ResultSet executeQuery(final String SQL) {
 		// uniquely identify separate calls to Database#query in the log.
 		final String LOG_LOCATION = "Database#executeQuery" + SQL.hashCode() + " ";
-		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin " + SQL));
+		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin: " + SQL));
 
 		ResultSet resultSet = null;
 		try {
@@ -129,12 +153,12 @@ public class Database {
 	 * <br>
 	 * Required inputs are username and problem ID (in that order).
 	 */
-	final static String selectedProblemDataSql = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
-	        + "prob.num_check_allowed - COALESCE(uw.num_check_used, 0) AS 'checks_remaining', "
-	        + "prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'questions_remaining', "
-	        + "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id', perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
+	final static String selectProblemDataSql = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
+	        + "prob.num_check_allowed, COALESCE(uw.num_check_used, 0) AS 'uw.num_check_used', "
+	        + "prob.num_new_questions_allowed, COALESCE(uw.num_new_questions_used, 0) AS 'uw.num_new_questions_used', "
+	        + "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id', perm.perm_prob_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
 	        + "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10, perm.answer_1, perm.answer_2, perm.answer_3, perm.answer_4, "
-	        + "perm.answer_5, perm.answer_6, perm.answer_7, perm.answer_8, perm.answer_9, perm.answer_10, uw.user_answer_1, uw.user_answer_2, uw.user_answer_3, uw.user_answer_4, "
+	        + "perm.answer_5, perm.answer_6, perm.answer_7, perm.answer_8, perm.answer_9, perm.answer_10, COALESCE(uw.soln_id, 0) AS 'uw.soln_id', uw.soln_prob_id, uw.soln_perm_id, uw.user_answer_1, uw.user_answer_2, uw.user_answer_3, uw.user_answer_4, "
 	        + "uw.user_answer_5, uw.user_answer_6, uw.user_answer_7, uw.user_answer_8, uw.user_answer_9, uw.user_answer_10 "
 	        + "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
 	        + "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
@@ -165,64 +189,25 @@ public class Database {
 	/**
 	 * Requires parameters for all columns being inserted
 	 */
-	final static String insertUserWork = "INSERT INTO user_work (soln_prob_id, "
+	final static String insertUserWork = "INSERT INTO user_work (soln_id, soln_prob_id, "
 	        + "soln_username, soln_perm_id, num_new_questions_used, num_check_used, "
 	        + "user_answer_1, user_answer_2, user_answer_3, user_answer_4, user_answer_5, "
 	        + "user_answer_6, user_answer_7, user_answer_8, user_answer_9, user_answer_10) "
-	        + "VALUES (%s, '%s', %s, %s, %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, %s);";
+	        + "VALUES (%s, %s, '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+	        + "ON DUPLICATE KEY UPDATE soln_prob_id = %s, soln_username = '%s', soln_perm_id = %s, "
+	        + "num_new_questions_used = %s, num_check_used = %s, user_answer_1 = %s, "
+	        + "user_answer_2 = %s, user_answer_3 = %s, user_answer_4 = %s, "
+	        + "user_answer_5 = %s, user_answer_6 = %s, user_answer_7 = %s, "
+	        + "user_answer_8 = %s, user_answer_9 = null, user_answer_10 = null;";
 
 	/*
 	 * Methods for package use
 	 */
 
 	/**
-	 * Returns user's username (lowercase) from the authentication server, or
-	 * DEFAULT_USERNAME if the authentication server cannot provide one.
-	 */
-	static String getUsername() {
-		String username = null;
-		try {
-			username = AssertionHolder.getAssertion().getPrincipal().getName().toLowerCase();
-		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO,
-			        "Database#getUsername - failed to retrieve username from CAS: " + exception));
-
-			username = DEFAULT_USERNAME;
-		}
-		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user=" + username));
-		return username;
-	}
-
-	/**
-	 * Uses an existing connection to query the database. Wrapper for
-	 * {@link java.sql.Statement#executeUpdate(String)}.
-	 */
-	private final int executeUpdate(final String SQL) {
-		// uniquely identify separate calls to Database#query in the log.
-		final String LOG_LOCATION = "Database#evaluate" + SQL.hashCode() + " ";
-		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin " + SQL));
-
-		int rowsUpdated = 0;
-		try {
-			stmt = conn.createStatement();
-			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "statement created"));
-
-			rowsUpdated = stmt.executeUpdate(SQL);
-
-			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "updated " + rowsUpdated + " rows"));
-		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + " " + exception));
-		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "unexpected exception " + exception));
-		}
-
-		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
-		return rowsUpdated;
-	}
-
-	/**
-	 * This is a wrapper for {@link java.sql.Statement.executeUpdate(String)}
-	 * but with parameterized SQL statement. Parameterization is handled by
+	 * Typically used for INSERT, UPDATE, or DELETE statements. This is a
+	 * wrapper for {@link java.sql.Statement.executeUpdate(String)} but with
+	 * parameterized SQL statement. Parameterization is handled by
 	 * String#format(String,Object...).
 	 * 
 	 * @param parameterizedSql
@@ -233,8 +218,6 @@ public class Database {
 		LOG.publish(new LogRecord(Level.INFO, "Database#update - begin"));
 
 		final String SQL = String.format(parameterizedSql, sqlParameters);
-		LOG.publish(new LogRecord(Level.INFO, "Database#update - " + SQL));
-
 		int rowsUpdated = executeUpdate(SQL);
 
 		DbUtils.closeQuietly(stmt);
@@ -244,8 +227,9 @@ public class Database {
 	}
 
 	/**
-	 * This is a wrapper for {@link java.sql.Statement.executeQuery(String)} but
-	 * with parameterized SQL statement. Parameterization is handled by
+	 * Typically used for SELECT statements. This is a wrapper for
+	 * {@link java.sql.Statement.executeQuery(String)} but with parameterized
+	 * SQL statement. Parameterization is handled by
 	 * String#format(String,Object...).
 	 * 
 	 * @param callback
@@ -258,7 +242,6 @@ public class Database {
 		LOG.publish(new LogRecord(Level.INFO, "Database#query - begin"));
 
 		final String SQL = String.format(parameterizedSql, sqlParameters);
-		LOG.publish(new LogRecord(Level.INFO, "Database#query - " + SQL));
 		ResultSet rs = executeQuery(SQL);
 		T data = null;
 		try {
@@ -326,8 +309,8 @@ public class Database {
 			        AND a.a_cid = 1
 			ORDER BY a.due_date, prob.problem_num;
 		 */
-		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, IF(uw.soln_username = '"
-		        + getUsername() + "', uw.points, 0) AS 'uw.points' "
+		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, prob.num_new_questions_allowed, prob.num_check_allowed, IF(uw.soln_username = '"
+		        + ServerUtils.getUsername() + "', uw.points, 0) AS 'uw.points' "
 				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id "
 				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " ORDER BY a.due_date, prob.problem_num;";
 				
@@ -344,11 +327,11 @@ public class Database {
 			int currentAssignId = -1;
 			int previousAssignId = -1;
 			while (rs.next()) {
-				currentAssignId = Integer.parseInt(rs.getString("a.assignment_id"));
-				final Problem currentProb = new Problem(Integer.parseInt(rs.getString("prob.problem_id")),
+				currentAssignId = rs.getInt("a.assignment_id");
+				final Problem currentProb = new Problem(rs.getInt("prob.problem_id"),
 				        currentAssignId, rs.getString("prob.problem_title"),
-				        Double.parseDouble(rs.getString("prob.points_possible")),
-				        Double.parseDouble(rs.getString("uw.points")));
+				        rs.getDouble("prob.points_possible"), rs.getDouble("uw.points"),
+				        rs.getInt("prob.num_new_questions_allowed"), rs.getInt("prob.num_check_allowed"));
 
 				if (currentAssignId == previousAssignId) {
 					// add problem to the problem set for the assignment currently being processed
@@ -363,7 +346,7 @@ public class Database {
 					}
 
 					// create the new assignment
-					assign = new Assignment(Integer.parseInt(rs.getString("a.assignment_id")), courseId,
+					assign = new Assignment(currentAssignId, courseId,
 					        rs.getString("a.assignment_title"), rs.getDate("a.due_date"));
 					previousAssignId = currentAssignId;
 
@@ -374,8 +357,6 @@ public class Database {
 			}
 			map.put(assign, problemSet);
 
-		} catch (NumberFormatException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - course_id NaN"));
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - SQLException " + exception));
 		} catch (Exception exception) {
@@ -398,7 +379,7 @@ public class Database {
 		List<Course> courseList = new ArrayList<Course>();
 
 		final String SQL = "SELECT c.course_id, c.course_title " + "FROM enrollment e LEFT JOIN courses c "
-		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\";";
+		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + ServerUtils.getUsername() + "\";";
 		ResultSet rs = null;
 		try {
 			rs = executeQuery(SQL);
@@ -430,7 +411,8 @@ public class Database {
 		Course course = null;
 
 		final String SQL = "SELECT c.course_id, c.course_title " + "FROM enrollment e LEFT JOIN courses c "
-		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + getUsername() + "\" AND c.course_id = "
+		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + ServerUtils.getUsername()
+		        + "\" AND c.course_id = "
 		        + courseId + " LIMIT 1;";
 		ResultSet rs;
 		

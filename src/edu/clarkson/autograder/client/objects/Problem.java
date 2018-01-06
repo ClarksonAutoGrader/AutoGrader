@@ -6,33 +6,44 @@ import java.io.Serializable;
 public class Problem implements Serializable {
 
 	private int id;
-	private int aId;
+	private int assignmentId;
 	private String title;
-	private double totalPoints;
-	private double earnedPoints;
-	
-	
-    /**
+	private double pointsPossible;
+	private double pointsEarned;
+	private int numResetsAllowed;
+	private int numAttemptsAllowed;
+
+	/**
 	 * Constructor
 	 * 
 	 * @param id
 	 *            unique problem id
-	 * @param aId
+	 * @param assignmentId
 	 *            parent assignment
 	 * @param title
 	 *            name of problem
-	 * @param totalPoints
+	 * @param pointsPossible
 	 *            total points possible across all questions
 	 * @param earnedPoints
 	 *            earned points across all questions
+	 * @param numResetsAllowed
+	 *            total allowable resets (new question permutations) the user
+	 *            may request for this problem
+	 * @param numAttemptsAllowed
+	 *            total allowable attempts (submissions) the user may request
+	 *            for this problem
 	 */
-	public Problem(int id, int aId, String title, double totalPoints, double earnedPoints) {
-        this.id = id;
-		this.aId = aId;
-        this.title = title;
-		this.totalPoints = totalPoints;
-		this.earnedPoints = earnedPoints;
-    }
+	public Problem(int id, int assignmentId, String title, double pointsPossible, double pointsEarned,
+	        int numResetsAllowed,
+	        int numAttemptsAllowed) {
+		this.id = id;
+		this.assignmentId = assignmentId;
+		this.title = title;
+		this.pointsPossible = pointsPossible;
+		this.pointsEarned = pointsEarned;
+		this.numResetsAllowed = numResetsAllowed;
+		this.numAttemptsAllowed = numAttemptsAllowed;
+	}
 
 	/**
 	 * Default constructor required for serialization
@@ -44,19 +55,27 @@ public class Problem implements Serializable {
 		return id;
 	}
 
-	public int getaId() {
-		return aId;
+	public int getAssignmentId() {
+		return assignmentId;
 	}
 
 	public String getTitle() {
 		return title;
 	}
 
-	public double getTotalPoints() {
-		return totalPoints;
+	public double getPointsPossible() {
+		return pointsPossible;
 	}
 
-	public double getEarnedPoints() {
-		return earnedPoints;
+	public double getPointsEarned() {
+		return pointsEarned;
+	}
+
+	public int getResetsAllowed() {
+		return numResetsAllowed;
+	}
+
+	public int getAttemptsAllowed() {
+		return numAttemptsAllowed;
 	}
 }
