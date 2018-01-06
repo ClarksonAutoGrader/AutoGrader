@@ -36,7 +36,7 @@ public class Database {
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
 	private static final String DEFAULT_USERNAME = "null";
-
+	
 	// Database parameters
 	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
 	private static final String user = "autograder_dev";
@@ -61,7 +61,8 @@ public class Database {
 			username = DEFAULT_USERNAME;
 		}
 		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user=" + username));
-		return username;
+		//return username;
+		return "woodrj";
 	}
 
 	/**
@@ -218,6 +219,8 @@ public class Database {
 
 			// put resultSet into map
 			Assignment assign = null;
+			double assignmentPointsPossible = 0;
+			double assignmentPointsEarned = 0;
 			List<Problem> problemSet = new ArrayList<Problem>();
 			int currentAssignId = -1;
 			int previousAssignId = -1;
@@ -231,18 +234,20 @@ public class Database {
 				if (currentAssignId == previousAssignId) {
 					// add problem to the problem set for the assignment currently being processed
 					problemSet.add(currentProb);
+					assignmentPointsPossible += currentProb.getTotalPoints();
+					assignmentPointsEarned += currentProb.getEarnedPoints();
 
 				} else {
 					// this must be a new assignment-problem set
 
 					// commit previous set to map, unless its the first assignment processed
 					if (!rs.isFirst()) {
+						// create the new assignment
+						assign = new Assignment(Integer.parseInt(rs.getString("a.assignment_id")), courseId,
+						        rs.getString("a.assignment_title"), rs.getDate("a.due_date"), assignmentPointsEarned, assignmentPointsPossible);
 						map.put(assign, problemSet);
 					}
-
-					// create the new assignment
-					assign = new Assignment(Integer.parseInt(rs.getString("a.assignment_id")), courseId,
-					        rs.getString("a.assignment_title"), rs.getDate("a.due_date"));
+					
 					previousAssignId = currentAssignId;
 
 					// create the new problemSet

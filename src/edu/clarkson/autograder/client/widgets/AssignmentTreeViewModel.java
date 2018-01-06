@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.SortedMap;
 
 import com.google.gwt.cell.client.AbstractCell;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.view.client.ListDataProvider;
@@ -13,6 +14,7 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
 
+import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Problem;
 import edu.clarkson.autograder.client.pages.CoursePage;
@@ -110,6 +112,14 @@ public final class AssignmentTreeViewModel implements TreeViewModel {
 		Date getDueDate() {
 			return assignment.getDueDate();
 		}
+		
+		double getTotalPoints() {
+			return assignment.getTotalPoints();
+		}
+		
+		double getEarnedPoints() {
+			return assignment.getEarnedPoints();
+		}
 
 		/**
 		 * Get the node info for the children under this node.
@@ -170,25 +180,27 @@ public final class AssignmentTreeViewModel implements TreeViewModel {
 		@Override
 		public void render(Context context, AssignmentNode value, SafeHtmlBuilder sb) {
 			if (value != null) {
-				sb.appendEscaped(value.getName());
-				// TODO add information to AssignmentNode Cell...
-				// such as at-a-glance progress (% pts. earned / total
-				// assignment pts.)
-				int percentComplete = Math.min(100, 25 * ((int) (Math.random() * 6)));
-				String cssTag = "";
-				String submissionDiv = "";
-				if (percentComplete == 100) {
-					cssTag = "submitted";
-					submissionDiv = "Submitted";
-				} else {
-					cssTag = "notSubmitted";
-					submissionDiv = "Not Submitted";
-				}
+
+				// Assignment Title
+				String assignmentTitleCssStyle = "font-size:22px";
+				sb.appendHtmlConstant("<span style=\"" + assignmentTitleCssStyle + ";\">")
+						.appendEscaped(value.getName()).appendHtmlConstant("</span>");
 
 				sb.appendHtmlConstant("<br>");
-				sb.appendEscaped(percentComplete + "% Complete");
-				sb.appendHtmlConstant("<br><div id=\"").appendEscaped(cssTag).appendHtmlConstant("\">")
-				        .appendEscaped(submissionDiv).appendHtmlConstant("</div>");
+
+				// Due date
+				String datePattern = "EEE, M/dd, h:mm a";
+				String dueDate = "Due: " + DateTimeFormat.getFormat(datePattern).format(value.getDueDate());
+				String dueDateCssStyle = "font-size:16px";
+				sb.appendHtmlConstant("<div style=\"" + dueDateCssStyle + ";\">").appendEscaped(dueDate)
+						.appendHtmlConstant("</div>");
+
+				// Grade string: 00.00/00.00 (00.00%)
+				String gradeString = Autograder.formatGrade(value.getEarnedPoints(), value.getTotalPoints(), 2);
+
+				String gradeCssStyle = "font-size:16px";
+				sb.appendHtmlConstant("<div style=\"" + gradeCssStyle + ";\">").appendEscaped(gradeString)
+						.appendHtmlConstant("</div>");
 			}
 		}
 	}
