@@ -157,6 +157,20 @@ public class Database {
 	 */
 	final static String updateUserWorkPointsEarned = "UPDATE user_work SET points = %s WHERE soln_username = '%s' AND soln_perm_id = %s;";
 
+	/**
+	 * Requires username and permutation ID
+	 */
+	final static String deleteUserWorkRecord = "DELETE FROM user_work WHERE soln_username = '%s' AND soln_perm_id = %s;";
+
+	/**
+	 * Requires parameters for all columns being inserted
+	 */
+	final static String insertUserWork = "INSERT INTO user_work (soln_prob_id, "
+	        + "soln_username, soln_perm_id, num_new_questions_used, num_check_used, "
+	        + "user_answer_1, user_answer_2, user_answer_3, user_answer_4, user_answer_5, "
+	        + "user_answer_6, user_answer_7, user_answer_8, user_answer_9, user_answer_10) "
+	        + "VALUES (%s, '%s', %s, %s, %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, %s);";
+
 	/*
 	 * Methods for package use
 	 */
