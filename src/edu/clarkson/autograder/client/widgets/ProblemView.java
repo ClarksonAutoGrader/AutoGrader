@@ -134,24 +134,7 @@ public class ProblemView extends Composite {
 
 			if (this.earnedPoints != problemData.getEarnedPoints()
 			        || this.totalPoints != problemData.getTotalPoints()) {
-				// 00.00/00.00 (00.00%)
-				StringBuilder builder = new StringBuilder();
-				builder.setLength(0);
-				double earnedFormatted = Autograder.numberPrecision(problemData.getEarnedPoints(), decimalPrecision);
-				builder.append(earnedFormatted);
-				builder.append("/");
-				double totalFormatted = Autograder.numberPrecision(problemData.getTotalPoints(), decimalPrecision);
-				builder.append(totalFormatted);
-				builder.append(" (");
-				// problems out of zero total points are always 100% complete
-				double percentageFormatted = Autograder
-				        .numberPrecision(
-				                (problemData.getTotalPoints() != 0.0
-				                        ? problemData.getEarnedPoints() / problemData.getTotalPoints() * 100 : 100.0),
-				                decimalPrecision);
-				builder.append(percentageFormatted);
-				builder.append("%)");
-				problemGrade.setText(builder.toString());
+				problemGrade.setText(Autograder.formatGrade(problemData.getEarnedPoints(), problemData.getTotalPoints(), decimalPrecision));
 			}
 		}
 

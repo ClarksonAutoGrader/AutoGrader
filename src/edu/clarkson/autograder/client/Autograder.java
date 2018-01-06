@@ -51,6 +51,34 @@ public class Autograder implements EntryPoint {
 		double precision = Math.pow(10, decimalPlaces);
 		return (int) (unformatted * precision + 0.5) / precision;
 	}
+	
+	/**
+	 * Returns a formatted string showing the earned / total points and a
+	 * percentage. If decimalPrecision is 2, the format will be as follows:<br>
+	 * <code>00.00/00.00 (00.00%)</code><br>
+	 * Problems out of zero total points are marked as 100% complete.
+	 * 
+	 * @param earnedPoints
+	 * @param totalPoints
+	 * @param decimalPrecision
+	 * @return formatted grade string
+	 */
+	public static String formatGrade(double earnedPoints, double totalPoints, int decimalPrecision) {
+		StringBuilder builder = new StringBuilder();
+		builder.setLength(0);
+		double earnedFormatted = Autograder.numberPrecision(earnedPoints, decimalPrecision);
+		builder.append(earnedFormatted);
+		builder.append("/");
+		double totalFormatted = Autograder.numberPrecision(totalPoints, decimalPrecision);
+		builder.append(totalFormatted);
+		builder.append(" points (");
+		// problems out of zero total points are always 100% complete
+		double percentageFormatted = Autograder.numberPrecision(
+				(totalPoints != 0.0 ? earnedPoints / totalPoints * 100 : 100.0), decimalPrecision);
+		builder.append(percentageFormatted);
+		builder.append("%)");
+		return builder.toString();
+	}
 
     /**
      * This is the entry point method.
