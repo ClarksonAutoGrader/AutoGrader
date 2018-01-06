@@ -466,6 +466,8 @@ public class ProblemView extends Composite {
 
 		private InlineLabel attemptsRemaining;
 		private Button submit;
+		
+		private Element loadingIcon;
 
 		private Footer() {
 			toplevel = new FlowPanel();
@@ -478,7 +480,12 @@ public class ProblemView extends Composite {
 		 */
 		private void create() {
 
+			loadingIcon = new Image(AutograderResources.INSTANCE.loading()).getElement();
+			loadingIcon.getStyle().setPaddingLeft(3, Unit.PX);
+			loadingIcon.getStyle().setPaddingRight(3, Unit.PX);
+
 			toplevel.setStylePrimaryName(STYLE_TOP_LEVEL);
+
 
 			newProblem = new Button(TEXT_NEW_PROBLEM);
 			newProblem.addStyleName(STYLE_NEW_PROBLEM);
@@ -516,6 +523,25 @@ public class ProblemView extends Composite {
 			resetsRemaining.setText(TEXT_RESETS_REMAINING + problemData.getResets());
 			attemptsRemaining.setText(TEXT_ATTEMPTS_REMAINING + problemData.getAttempts());
 		}
+
+		/**
+		 * Set the enable state of buttons in the footer
+		 */
+		private void setEnabled(boolean enabled) {
+			submit.setEnabled(enabled);
+			newProblem.setEnabled(enabled);
+		}
+		
+		/**
+		 * Whether to add loading icon to submit button
+		 */
+		private void setSubmitButtonLoading(boolean loading) {
+			if (loading) {
+				submit.getElement().appendChild(loadingIcon);
+			} else {
+				submit.getElement().removeChild(loadingIcon);
+			}
+		}
 	}
 	
 	private void actionSubmit() {
@@ -525,10 +551,37 @@ public class ProblemView extends Composite {
 			Window.alert("Nothing to submit...");
 			return;
 		}
-		String[] answers = new String[problemData.getNumAnswers()];
-		for (int i = 0; i < answers.length; ++i) {
-			answers[i] = body.questions[i].getAnswer();
+
+		// poll answers from QuestionWidgets
+		String[] answers = new String[body.questions.length];
+		boolean somethingToSubmit = false;
+		for (int i = 0; i < body.questions.length; i++) {
+
+			if (body.questions[i] != null) {
+				answers[i] = body.questions[i].getAnswer();
+			}
+
+			LOG.publish(new LogRecord(Level.INFO,
+			        "ANSWER " + i + " =\"" + answers[i] + "\" isEmpty? "
+			                + (answers[i] != null ? answers[i].isEmpty() : "null")));
+
+			// calculate if there is at least one answer to submit
+			if (!somethingToSubmit && answers[i] != null && !answers[i].isEmpty()) {
+				somethingToSubmit = true;
+			}
 		}
+
+		// do not submit if all answer fields were empty
+		if (!somethingToSubmit) {
+			Window.alert("Nothing to submit...");
+			return;
+		}
+		
+		// prepare footer for longer server response times
+		footer.setEnabled(false);
+		footer.setSubmitButtonLoading(true);
+		
+		// push to server
 		requestSubmitAnswersAsync(answers);
 	}
 
@@ -646,12 +699,28 @@ public class ProblemView extends Composite {
 			@Override
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
+				onError();
 			}
 
 			@Override
 			public void onSuccess(ProblemData problemData) {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onSuccess"));
+				if (problemData == null) {
+					onError();
+					return;
+				}
 				update(problemData);
+				restoreState();
+			}
+
+			private void onError() {
+				Window.alert("Unable to submit problem. Error 10." + problemData.getPermId());
+				restoreState();
+			}
+
+			private void restoreState() {
+				footer.setEnabled(true);
+				footer.setSubmitButtonLoading(false);
 			}
 		});
 		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
