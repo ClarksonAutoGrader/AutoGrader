@@ -35,7 +35,8 @@ public class Database {
 	// Console logging for debugging
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
-	private static final String DEFAULT_USERNAME = "null";
+	// private static final String DEFAULT_USERNAME = "null";
+	private static final String DEFAULT_USERNAME = "murphycd";
 
 	// Database parameters
 	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
@@ -154,7 +155,7 @@ public class Database {
 	/**
 	 * Update user_work table
 	 */
-	final static String updateUserWorkPointsEarned = "";
+	final static String updateUserWorkPointsEarned = "UPDATE user_work SET points = %s WHERE soln_username = '%s' AND soln_perm_id = %s;";
 
 	/*
 	 * Methods for package use

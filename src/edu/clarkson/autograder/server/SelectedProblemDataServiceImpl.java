@@ -183,7 +183,7 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet impleme
 
 			double pointsEarned = 0;
 			for (int index = 0; index < gradeResult.length; index++) {
-				if (gradeResult[index].equals("correct")) {
+				if (gradeResult[index] != null && gradeResult[index].equals("correct")) {
 					pointsEarned += pointsPerQuestion;
 				}
 			}
