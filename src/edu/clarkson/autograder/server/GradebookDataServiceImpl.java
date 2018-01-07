@@ -2,7 +2,9 @@ package edu.clarkson.autograder.server;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -47,11 +49,11 @@ public class GradebookDataServiceImpl extends RemoteServiceServlet implements Gr
 
 		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - begin"));
 
-//		Database db = new Database();
-//		GradebookData data = db.query(processResultSetcallback, "some query");
+		Database db = new Database();
+		GradebookData data = db.query(processResultSetcallback, Database.gradebookDataSql, courseId);
 
 		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - end"));
-		return temp; // TODO: return data, not temp
+		return data;
 	}
 
 	private ProcessResultSetCallback<GradebookData> processResultSetcallback = new ProcessResultSetCallback<GradebookData>() {
@@ -59,7 +61,24 @@ public class GradebookDataServiceImpl extends RemoteServiceServlet implements Gr
 		@Override
 		public GradebookData process(ResultSet rs) throws SQLException {
 			
-			GradebookData gradebookData = null;
+			List<String> assignmentNames = new ArrayList<String>();
+			List<StudentRowData> studentGrades = new ArrayList<StudentRowData>();
+			
+			String currentUser = "";
+			String lastUser = "initial value";
+			
+			// iterate on rows
+			while (rs.next()) {
+				if (!currentUser.equals(lastUser)) {
+					currentUser = rs.getString("enr.username");
+					//studentGrades.add(new StudentRowData("currentUser", ))
+				}
+				
+				
+				rs.getDouble("uw.points");
+			}
+			
+			GradebookData gradebookData = new GradebookData(assignmentNames, studentGrades);
 			
 			return gradebookData;
 		}
