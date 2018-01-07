@@ -1,6 +1,7 @@
 package edu.clarkson.autograder.client.objects;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * This class holds the name and list of grades for one student
@@ -9,12 +10,11 @@ import java.io.Serializable;
 public class StudentRowData implements Serializable {
 	
 	private String name;
-	//private List<Double> grades = new ArrayList<Double>();
-	private double[] grades;
+	private List<Double> grades;
 	
-	public StudentRowData(String studentName, double[] studentGrades) {
+	public StudentRowData(String studentName, List<Double> studentGrades) {
 		this.name = studentName;
-		this.grades = studentGrades;
+		this.grades = new java.util.ArrayList<Double>(studentGrades);
 	}
 	
 	/**
@@ -28,10 +28,10 @@ public class StudentRowData implements Serializable {
 	}
 	
 	public double getGrade(int index) {
-		return grades[index];
+		return grades.get(index);
 	}
 	
 	public int getNumGrades() {
-		return grades.length;
+		return grades.size();
 	}
 }
