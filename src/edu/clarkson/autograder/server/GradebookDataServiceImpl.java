@@ -57,22 +57,40 @@ public class GradebookDataServiceImpl extends RemoteServiceServlet implements Gr
 		@Override
 		public GradebookData process(ResultSet rs) throws SQLException {
 			
+			LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#process - begin"));
+			
 			List<String> assignmentNames = new ArrayList<String>();
 			List<StudentRowData> studentGrades = new ArrayList<StudentRowData>();
 			
 			String currentUser = "";
 			String lastUser = "initial value";
 			
+			List<Double> currentStudentPoints = new ArrayList<Double>();
+			
 			// iterate on rows
 			while (rs.next()) {
-				if (!currentUser.equals(lastUser)) {
-					currentUser = rs.getString("enr.username");
-					//studentGrades.add(new StudentRowData("currentUser", ))
+				currentUser = rs.getString("enr_username");
+				// test if a new user
+				if (currentUser.equals(lastUser)) {
+					currentStudentPoints.add(rs.getDouble("uw.points"));
+				}
+				else {
+					if(!rs.isFirst()) {
+						studentGrades.add(new StudentRowData(currentUser, currentStudentPoints));
+					}
+				}
+				// add assignment names to list
+				if (!assignmentNames.contains(rs.getString("assignment_title"))) {
+					assignmentNames.add(rs.getString("assignment_title"));
 				}
 				
+				lastUser = currentUser;
 				
-				rs.getDouble("uw.points");
+				currentStudentPoints = new ArrayList<Double>();
+				currentStudentPoints.add(rs.getDouble("uw.points"));
+				
 			}
+			
 			
 			GradebookData gradebookData = new GradebookData(assignmentNames, studentGrades);
 			
