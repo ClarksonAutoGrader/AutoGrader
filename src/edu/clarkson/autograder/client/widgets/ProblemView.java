@@ -164,7 +164,15 @@ public class ProblemView extends Composite {
 	 * obtaining their current value.
 	 */
 	private interface Answer {
+
 		String getAnswer();
+
+		/**
+		 * @param value
+		 *            answer to put in field
+		 * @return whether operation succeeded
+		 */
+		boolean setAnswer(String value);
 	}
 
 	private Widget createPreviousAnswersContent(final int answerNumber) {
@@ -211,6 +219,17 @@ public class ProblemView extends Composite {
 				public String getAnswer() {
 					return getValue();
 				}
+
+				@Override
+				public boolean setAnswer(String value) {
+					boolean successful = true;
+					try {
+						setValue(value);
+					} catch (RuntimeException e) {
+						successful = false;
+					}
+					return successful;
+				}
 			}
 
 			private final class CustomList extends ListBox implements Answer {
@@ -226,6 +245,19 @@ public class ProblemView extends Composite {
 				@Override
 				public String getAnswer() {
 					return getSelectedItemText();
+				}
+
+				@Override
+				public boolean setAnswer(String value) {
+					boolean found = false;
+					for (int index = 0; index < getItemCount(); index++) {
+						if (value.equals(getItemText(index))) {
+							setSelectedIndex(index);
+							found = true;
+							break;
+						}
+					}
+					return found;
 				}
 			}
 
@@ -317,6 +349,10 @@ public class ProblemView extends Composite {
 				return ((Answer) ANSWER_WIDGET).getAnswer();
 			}
 
+			private boolean setAnswer(String value) {
+				return ((Answer) ANSWER_WIDGET).setAnswer(value);
+			}
+
 			private void setGradeFlag(final Image gradeFlag) {
 				// Possibly remove current flag
 				if (this.gradeFlag != null) {
@@ -364,10 +400,28 @@ public class ProblemView extends Composite {
 					questions = new QuestionWidget[10];
 				}
 				for (int i = 0; i < questions.length; ++i) {
-					questions[0] = null;
+					questions[i] = null;
 				}
 				renderMarkup();
 			}
+
+			// populate question widgets with answers from user work
+			final String[] answers = problemData.getUserAnswers();
+			if (answers == null) {
+				reportErrorParsingBody("Error loading problem body: previous work corrupt (Error 5)",
+				        "Error loading problem body: previous work corrupt (Error 5)");
+			}
+			for (int i = 0; i < body.questions.length; i++) {
+
+				if (body.questions[i] != null && answers[i] != null) {
+					boolean success = body.questions[i].setAnswer(answers[i]);
+					if (!success) {
+						reportErrorParsingBody("Error loading problem body: previous work corrupt (Error 6)",
+						        "Error loading problem body: previous work corrupt (Error 6)");
+					}
+				}
+			}
+
 		}
 
 		private void renderMarkup() {
