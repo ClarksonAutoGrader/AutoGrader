@@ -61,8 +61,7 @@ public class Database {
 			username = DEFAULT_USERNAME;
 		}
 		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user=" + username));
-		//return username;
-		return "woodrj";
+		return "username";
 	}
 
 	/**
