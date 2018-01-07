@@ -525,7 +525,7 @@ public class ProblemView extends Composite {
 			resetsRemaining
 			        .setText(TEXT_RESETS_REMAINING + (problemData.getResetsAllowed() - problemData.getResetsUsed()));
 			attemptsRemaining.setText(
-			        TEXT_ATTEMPTS_REMAINING + (problemData.getAttemptsAllowed() - problemData.getAttemptsAllowed()));
+			        TEXT_ATTEMPTS_REMAINING + (problemData.getAttemptsAllowed() - problemData.getAttemptsUsed()));
 		}
 
 		/**

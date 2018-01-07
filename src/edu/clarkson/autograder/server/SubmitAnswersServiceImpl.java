@@ -48,7 +48,7 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 		params[2] = ServerUtils.getUsername();
 		params[3] = str + userWork.getPermutationId();
 		params[4] = str + userWork.getResetsUsed();
-		params[5] = str + userWork.getAttemptsUsed();
+		params[5] = str + (userWork.getAttemptsUsed() + 1);
 		for (int index = 6; index <= 15; index++) {
 			String param = userWork.getUserAnswers()[index - 6];
 			params[index] = param != null ? tick + param + tick : param;
