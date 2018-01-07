@@ -40,7 +40,7 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 		 * [29]<-[14], [30]<-[15]
 		 * 
 		 */
-		Object[] params = new Object[15];
+		Object[] params = new Object[31];
 		final String str = "";
 		final String tick = "'";
 		params[0] = str + userWork.getId();

@@ -34,16 +34,16 @@ public class ProblemData implements Serializable {
 	}
 
 	/**
+	 * Default constructor required for serialization
+	 */
+	public ProblemData() {
+	}
+
+	/**
 	 * @return true if the state of this object is consistent
 	 */
 	public boolean isValid() {
 		return true;
-	}
-
-	/**
-	 * Default constructor required for serialization
-	 */
-	public ProblemData() {
 	}
 
 	/**

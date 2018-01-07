@@ -46,7 +46,8 @@ public class ServerUtils {
 		        problemId);
 
 		if (data.getUserWorkId() != 0) {
-			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), data.getUserWorkId());
+			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), getUsername(),
+			        data.getPermutationId());
 		}
 
 		return data;
@@ -149,14 +150,16 @@ public class ServerUtils {
 						try {
 							correctAnswer = Double.parseDouble(correctAnswers[index]);
 						} catch (NumberFormatException exception) {
-							errorText = "correctAnswers[" + index + "] could not be parsed: " + correctAnswers[index];
+							errorText = "correctAnswers[" + index + "] could not be parsed: \"" + correctAnswers[index]
+							        + "\"";
 						}
 
 						// parse userAnswer
 						try {
 							userAnswer = Double.parseDouble(userAnswers[index]);
 						} catch (NumberFormatException exception) {
-							errorText = "userAnswers[" + index + "] could not be parsed: " + userAnswers[index];
+							errorText = "userAnswers[" + index + "] could not be parsed: \"" + userAnswers[index]
+							        + "\"";
 						}
 
 						// abort on failure

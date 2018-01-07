@@ -24,7 +24,7 @@ public class PreviousAnswersImpl extends RemoteServiceServlet implements Previou
 
 		Database db = new Database();
 		List<PreviousAnswersRow> previousAnswers = db.query(processResultSetcallback, Database.previousAnswersSql,
-		        answerNumber, Database.getUsername(), permutationId);
+		        answerNumber, ServerUtils.getUsername(), permutationId);
 
 		LOG.publish(new LogRecord(Level.INFO, "PreviousAnswersImpl#fetchPreviousAnswers - end"));
 		return previousAnswers;

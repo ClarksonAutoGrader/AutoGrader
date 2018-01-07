@@ -561,7 +561,7 @@ public class ProblemView extends Composite {
 		boolean somethingToSubmit = false;
 		for (int i = 0; i < body.questions.length; i++) {
 
-			if (body.questions[i] != null) {
+			if (body.questions[i] != null && !body.questions[i].getAnswer().isEmpty()) {
 				answers[i] = body.questions[i].getAnswer();
 			}
 
@@ -684,13 +684,17 @@ public class ProblemView extends Composite {
 						        return object.getPreviousCorrectAnswer();
 					        }
 				        };
-				        // This only applies to instructors, otherwise the
-				        // correctAnswer field will be null.
-				        if (previousAnswers.get(0) != null) {
-					        table.addColumn(correctAnswerColumn, "Key");
+				        // Only display the "Key" column if at least one cell
+				        // contains data
+				        for (PreviousAnswersRow row : previousAnswers) {
+					        if (row.getPreviousCorrectAnswer() != null && !row.getPreviousCorrectAnswer().isEmpty()) {
+						        table.addColumn(correctAnswerColumn, "Key");
+						        break;
+					        }
 				        }
 
 				        table.setRowCount(previousAnswers.size(), true);
+				        table.setVisibleRange(0, previousAnswers.size());
 				        table.setRowData(0, previousAnswers);
 				        layout.add(table);
 			        }

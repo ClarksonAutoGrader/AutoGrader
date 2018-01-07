@@ -178,6 +178,9 @@ div#notSubmitted {
 	margin-left: 7px !important;
 }
 
+.previousAnswersContent {
+}
+
 .problemPopup button {
 	float: center;
 }

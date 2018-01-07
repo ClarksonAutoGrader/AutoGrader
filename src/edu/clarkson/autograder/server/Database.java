@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -14,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.jasig.cas.client.util.AssertionHolder;
 
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
@@ -217,8 +217,14 @@ public class Database {
 	int update(final String parameterizedSql, final Object... sqlParameters) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#update - begin"));
 
-		final String SQL = String.format(parameterizedSql, sqlParameters);
-		int rowsUpdated = executeUpdate(SQL);
+		int rowsUpdated = -1;
+		try {
+			final String SQL = String.format(parameterizedSql, sqlParameters);
+			rowsUpdated = executeUpdate(SQL);
+		} catch (IllegalFormatException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#update - failed to format query " + exception));
+			throw new RuntimeException(exception);
+		}
 
 		DbUtils.closeQuietly(stmt);
 
@@ -241,8 +247,14 @@ public class Database {
 	        final Object... sqlParameters) {
 		LOG.publish(new LogRecord(Level.INFO, "Database#query - begin"));
 
-		final String SQL = String.format(parameterizedSql, sqlParameters);
-		ResultSet rs = executeQuery(SQL);
+		ResultSet rs;
+		try {
+			final String SQL = String.format(parameterizedSql, sqlParameters);
+			rs = executeQuery(SQL);
+		} catch (IllegalFormatException exception) {
+			LOG.publish(new LogRecord(Level.INFO, "Database#update - failed to format query " + exception));
+			throw new RuntimeException(exception);
+		}
 		T data = null;
 		try {
 			data = callback.process(rs);
@@ -291,28 +303,22 @@ public class Database {
 		SortedMap<Assignment, List<Problem>> map = new TreeMap<Assignment, List<Problem>>();
 
 		/*
-			SELECT 
-			    a.assignment_id,
-			    a.assignment_title,
-			    a.due_date,
-			    prob.problem_id,
-			    prob.problem_title,
-			    prob.points_possible,
-			    IF(uw.soln_username = 'clappdj', uw.points, 0) AS 'uw.points'
-			FROM
-			    assignments a,
-			    problems prob
-			        LEFT JOIN
-			    user_work uw ON uw.soln_prob_id = prob.problem_id
-			WHERE
-			    a.assignment_id = prob.problem_aid
-			        AND a.a_cid = 1
-			ORDER BY a.due_date, prob.problem_num;
+		 * SELECT a.assignment_id, a.assignment_title, a.due_date,
+		 * prob.problem_id, prob.problem_title, prob.points_possible,
+		 * prob.num_new_questions_allowed, prob.num_check_allowed,
+		 * uw.soln_username, IF(uw.soln_username = 'murphycd', uw.points, 0) AS
+		 * 'uw.points' FROM assignments a, problems prob LEFT JOIN user_work uw
+		 * ON uw.soln_prob_id = prob.problem_id WHERE a.assignment_id =
+		 * prob.problem_aid AND a.a_cid = 1 AND IF((uw.soln_username =
+		 * 'murphycd' OR uw.soln_username IS NULL), TRUE, FALSE) ORDER BY
+		 * a.due_date , prob.problem_num;
 		 */
 		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, prob.num_new_questions_allowed, prob.num_check_allowed, IF(uw.soln_username = '"
 		        + ServerUtils.getUsername() + "', uw.points, 0) AS 'uw.points' "
 				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id "
-				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " ORDER BY a.due_date, prob.problem_num;";
+		        + "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId
+		        + " AND IF((uw.soln_username = '" + ServerUtils.getUsername() + "' OR uw.soln_username IS NULL), "
+		        + "TRUE, FALSE) ORDER BY a.due_date, prob.problem_num;";
 				
 		final ResultSet rs = executeQuery(SQL);
 		try {
