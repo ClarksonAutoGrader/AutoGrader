@@ -105,8 +105,10 @@ public class Database {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "updated " + rowsUpdated + " rows"));
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + " " + exception));
+			throw new RuntimeException(exception);
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "unexpected exception " + exception));
+			throw new RuntimeException(exception);
 		}
 
 		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
@@ -135,8 +137,10 @@ public class Database {
 			resultSet.beforeFirst();
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "failed to return RS " + exception));
+			throw new RuntimeException(exception);
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "unexpected exception " + exception));
+			throw new RuntimeException(exception);
 		}
 
 		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
@@ -351,9 +355,10 @@ public class Database {
 		 */
 		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, prob.num_new_questions_allowed, "
 				+ "prob.num_check_allowed, IF(uw.soln_username = '" + ServerUtils.getUsername() + "', uw.points, 0) AS 'uw.points' "
-				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON IF(uw.soln_username = '"
-				+ ServerUtils.getUsername() + "', uw.soln_prob_id = prob.problem_id, FALSE) "
-				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " ORDER BY a.due_date , prob.problem_num;";
+		        + "FROM assignments a, problems prob LEFT JOIN user_work uw ON IF(uw.soln_username = '"
+		        + ServerUtils.getUsername() + "', uw.soln_prob_id = prob.problem_id, FALSE) "
+		        + "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId
+		        + " ORDER BY a.due_date , prob.problem_num;";
 				
 		final ResultSet rs = executeQuery(SQL);
 		try {
