@@ -120,7 +120,7 @@
   </target>
   
   <target name="clean-ivy" description="clean the ivy installation">
-    <delete includeemptydirs="true">
+    <delete includeemptydirs="true" failonerror="false">
     	<fileset dir="${ivy.dir}">
     		<exclude name="ivy.jar"/>
     	</fileset>

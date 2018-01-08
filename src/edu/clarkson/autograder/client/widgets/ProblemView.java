@@ -133,27 +133,11 @@ public class ProblemView extends Composite {
 		private void update() {
 			problemTitle.setText(problemData.getTitle());
 
-			if (this.earnedPoints != problemData.getPointsEarned()
-			        || this.totalPoints != problemData.getPointsPossible()) {
-				// 00.00/00.00 (00.00%)
-				StringBuilder builder = new StringBuilder();
-				builder.setLength(0);
-				double earnedFormatted = Autograder.numberPrecision(problemData.getPointsEarned(), decimalPrecision);
-				builder.append(earnedFormatted);
-				builder.append("/");
-				double totalFormatted = Autograder.numberPrecision(problemData.getPointsPossible(), decimalPrecision);
-				builder.append(totalFormatted);
-				builder.append(" (");
-				// problems out of zero total points are always 100% complete
-				double percentageFormatted = Autograder
-				        .numberPrecision(
-				                (problemData.getPointsPossible() != 0.0
-				                        ? problemData.getPointsEarned() / problemData.getPointsPossible() * 100
-				                        : 100.0),
-				                decimalPrecision);
-				builder.append(percentageFormatted);
-				builder.append("%)");
-				problemGrade.setText(builder.toString());
+			if (this.earnedPoints != problemData.getEarnedPoints()
+			        || this.totalPoints != problemData.getTotalPoints()) {
+				problemGrade.setText(Autograder.formatGrade(problemData.getEarnedPoints(), problemData.getTotalPoints(), decimalPrecision));
+				earnedPoints = problemData.getEarnedPoints();
+				totalPoints = problemData.getTotalPoints();
 			}
 		}
 
@@ -541,7 +525,6 @@ public class ProblemView extends Composite {
 			loadingIcon.getStyle().setPaddingRight(3, Unit.PX);
 
 			toplevel.setStylePrimaryName(STYLE_TOP_LEVEL);
-
 
 			newProblem = new Button(TEXT_NEW_PROBLEM);
 			newProblem.addStyleName(STYLE_NEW_PROBLEM);

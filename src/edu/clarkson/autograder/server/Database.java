@@ -165,6 +165,11 @@ public class Database {
 	        + "IF((uw.soln_username = '%s' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = %s "
 	        + "AND IF((uw.soln_prob_id IS NULL), TRUE, uw.soln_perm_id = perm.perm_id) "
 	        + "ORDER BY IF((uw.soln_perm_id IS NOT NULL), uw.soln_perm_id, RAND()) LIMIT 1;";
+	
+	/**
+	 * Returns the user role as String given a username. 
+	 */
+	final static String userRoleSql = "SELECT user_role FROM users WHERE username = '%s';";
 
 	/**
 	 * Returns previous answers as a
@@ -175,6 +180,18 @@ public class Database {
 	 * order).
 	 */
 	final static String previousAnswersSql = "SELECT prev_ans_%s FROM previous_answers WHERE prev_ans_username = '%s' AND prev_ans_perm_id = %s;";
+	
+	/**
+	 * Returns data needed to create
+	 * {@link edu.clarkson.autograder.client.objects.GradebookData} object. <br>
+	 * <br>
+	 * Required input is the course ID.
+	 */
+	final static String gradebookDataSql = "SELECT c.course_title, e.enr_username, a.assignment_title, SUM(COALESCE(uw.points, 0)) AS 'uw.points', "
+		    + "SUM(COALESCE(prob.points_possible, 0)) AS 'prob.points_possible' FROM enrollment e RIGHT JOIN courses c ON e.enr_cid = c.course_id "
+		    + "RIGHT JOIN assignments a ON c.course_id = a.a_cid LEFT JOIN problems prob ON prob.problem_aid = a.assignment_id "
+		    + "LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id AND e.enr_username = uw.soln_username "
+		    + "WHERE c.course_id = %s GROUP BY e.enr_username, a.assignment_id;";
 
 	/**
 	 * Update user_work table
@@ -329,6 +346,8 @@ public class Database {
 
 			// put resultSet into map
 			Assignment assign = null;
+			double assignmentPointsPossible = 0;
+			double assignmentPointsEarned = 0;
 			List<Problem> problemSet = new ArrayList<Problem>();
 			int currentAssignId = -1;
 			int previousAssignId = -1;
@@ -342,18 +361,19 @@ public class Database {
 				if (currentAssignId == previousAssignId) {
 					// add problem to the problem set for the assignment currently being processed
 					problemSet.add(currentProb);
+					assignmentPointsPossible += currentProb.getTotalPoints();
+					assignmentPointsEarned += currentProb.getEarnedPoints();
 
 				} else {
 					// this must be a new assignment-problem set
 
 					// commit previous set to map, unless its the first assignment processed
 					if (!rs.isFirst()) {
+						// create the new assignment
+						assign = new Assignment(Integer.parseInt(rs.getString("a.assignment_id")), courseId,
+						        rs.getString("a.assignment_title"), rs.getDate("a.due_date"), assignmentPointsEarned, assignmentPointsPossible);
 						map.put(assign, problemSet);
 					}
-
-					// create the new assignment
-					assign = new Assignment(currentAssignId, courseId,
-					        rs.getString("a.assignment_title"), rs.getDate("a.due_date"));
 					previousAssignId = currentAssignId;
 
 					// create the new problemSet

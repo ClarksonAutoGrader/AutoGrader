@@ -82,12 +82,12 @@
     <filter-name>CAS Validation Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-  
+
   <filter-mapping>
     <filter-name>CAS Authentication Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-  
+
   <filter-mapping>
     <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
     <url-pattern>/*</url-pattern>
@@ -169,6 +169,24 @@
   <servlet-mapping>
       <servlet-name>submitAnswers</servlet-name>
       <url-pattern>/autograder/submit_answers</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+      <servlet-name>userRole</servlet-name>
+      <servlet-class>edu.clarkson.autograder.server.UserRoleServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>userRole</servlet-name>
+      <url-pattern>/autograder/user_role</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>gradebookData</servlet-name>
+    <servlet-class>edu.clarkson.autograder.server.GradebookDataServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>gradebookData</servlet-name>
+      <url-pattern>/autograder/gradebook_data</url-pattern>
   </servlet-mapping>
   
   <servlet>
