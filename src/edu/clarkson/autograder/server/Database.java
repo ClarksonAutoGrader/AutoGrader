@@ -160,7 +160,7 @@ public class Database {
 	        + "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10, perm.answer_1, perm.answer_2, perm.answer_3, perm.answer_4, "
 	        + "perm.answer_5, perm.answer_6, perm.answer_7, perm.answer_8, perm.answer_9, perm.answer_10, COALESCE(uw.soln_id, 0) AS 'uw.soln_id', uw.soln_prob_id, uw.soln_perm_id, uw.user_answer_1, uw.user_answer_2, uw.user_answer_3, uw.user_answer_4, "
 	        + "uw.user_answer_5, uw.user_answer_6, uw.user_answer_7, uw.user_answer_8, uw.user_answer_9, uw.user_answer_10 "
-	        + "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id "
+			+ "FROM permutations perm, body b, problems prob LEFT JOIN user_work uw ON IF(uw.soln_username = '%s' AND prob.problem_id = uw.soln_prob_id, TRUE, FALSE) "
 	        + "WHERE b.body_prob_id = prob.problem_id AND perm.perm_prob_id = prob.problem_id AND "
 	        + "IF((uw.soln_username = '%s' OR uw.soln_username IS NULL), TRUE, FALSE) AND prob.problem_id = %s "
 	        + "AND IF((uw.soln_prob_id IS NULL), TRUE, uw.soln_perm_id = perm.perm_id) "
@@ -320,22 +320,33 @@ public class Database {
 		SortedMap<Assignment, List<Problem>> map = new TreeMap<Assignment, List<Problem>>();
 
 		/*
-		 * SELECT a.assignment_id, a.assignment_title, a.due_date,
-		 * prob.problem_id, prob.problem_title, prob.points_possible,
-		 * prob.num_new_questions_allowed, prob.num_check_allowed,
-		 * uw.soln_username, IF(uw.soln_username = 'murphycd', uw.points, 0) AS
-		 * 'uw.points' FROM assignments a, problems prob LEFT JOIN user_work uw
-		 * ON uw.soln_prob_id = prob.problem_id WHERE a.assignment_id =
-		 * prob.problem_aid AND a.a_cid = 1 AND IF((uw.soln_username =
-		 * 'murphycd' OR uw.soln_username IS NULL), TRUE, FALSE) ORDER BY
-		 * a.due_date , prob.problem_num;
+		 * SELECT 
+		    a.assignment_id,
+		    a.assignment_title,
+		    a.due_date,
+		    prob.problem_id,
+		    prob.problem_title,
+		    prob.points_possible,
+		    prob.num_new_questions_allowed,
+    		prob.num_check_allowed,
+		    IF(uw.soln_username = 'clappdj',
+		        uw.points,
+		        0) AS 'uw.points'
+		FROM
+		    assignments a,
+		    problems prob
+		        LEFT JOIN
+		    user_work uw ON IF(uw.soln_username = 'clappdj', uw.soln_prob_id = prob.problem_id, FALSE)
+		WHERE
+		    a.assignment_id = prob.problem_aid
+		        AND a.a_cid = 1
+		ORDER BY a.due_date , prob.problem_num;
 		 */
-		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, prob.num_new_questions_allowed, prob.num_check_allowed, IF(uw.soln_username = '"
-		        + ServerUtils.getUsername() + "', uw.points, 0) AS 'uw.points' "
-				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON uw.soln_prob_id = prob.problem_id "
-		        + "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId
-		        + " AND IF((uw.soln_username = '" + ServerUtils.getUsername() + "' OR uw.soln_username IS NULL), "
-		        + "TRUE, FALSE) ORDER BY a.due_date, prob.problem_num;";
+		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, prob.num_new_questions_allowed, "
+				+ "prob.num_check_allowed, IF(uw.soln_username = '" + ServerUtils.getUsername() + "', uw.points, 0) AS 'uw.points' "
+				+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON IF(uw.soln_username = '"
+				+ ServerUtils.getUsername() + "', uw.soln_prob_id = prob.problem_id, FALSE) "
+				+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId + " ORDER BY a.due_date , prob.problem_num;";
 				
 		final ResultSet rs = executeQuery(SQL);
 		try {
