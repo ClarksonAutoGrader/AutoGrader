@@ -361,19 +361,27 @@ public class Database {
 				if (currentAssignId == previousAssignId) {
 					// add problem to the problem set for the assignment currently being processed
 					problemSet.add(currentProb);
-					assignmentPointsPossible += currentProb.getTotalPoints();
-					assignmentPointsEarned += currentProb.getEarnedPoints();
+
+					assignmentPointsPossible += currentProb.getPointsPossible();
+					assignmentPointsEarned += currentProb.getPointsEarned();
 
 				} else {
 					// this must be a new assignment-problem set
 
 					// commit previous set to map, unless its the first assignment processed
 					if (!rs.isFirst()) {
-						// create the new assignment
-						assign = new Assignment(Integer.parseInt(rs.getString("a.assignment_id")), courseId,
-						        rs.getString("a.assignment_title"), rs.getDate("a.due_date"), assignmentPointsEarned, assignmentPointsPossible);
+						// update assignment with point totals
+						assign = new Assignment(assign.getId(), assign.getcId(), assign.getTitle(), assign.getDueDate(),
+						        assignmentPointsPossible, assignmentPointsEarned);
 						map.put(assign, problemSet);
 					}
+
+					assignmentPointsPossible = currentProb.getPointsPossible();
+					assignmentPointsEarned = currentProb.getPointsEarned();
+
+					// create the new assignment with placeholder points
+					assign = new Assignment(currentAssignId, courseId, rs.getString("a.assignment_title"),
+					        rs.getDate("a.due_date"), 0.0, 0.0);
 					previousAssignId = currentAssignId;
 
 					// create the new problemSet

@@ -133,11 +133,12 @@ public class ProblemView extends Composite {
 		private void update() {
 			problemTitle.setText(problemData.getTitle());
 
-			if (this.earnedPoints != problemData.getEarnedPoints()
-			        || this.totalPoints != problemData.getTotalPoints()) {
-				problemGrade.setText(Autograder.formatGrade(problemData.getEarnedPoints(), problemData.getTotalPoints(), decimalPrecision));
-				earnedPoints = problemData.getEarnedPoints();
-				totalPoints = problemData.getTotalPoints();
+			if (this.earnedPoints != problemData.getPointsEarned()
+			        || this.totalPoints != problemData.getPointsPossible()) {
+				problemGrade.setText(Autograder.formatGrade(problemData.getPointsEarned(),
+				        problemData.getPointsPossible(), decimalPrecision));
+				earnedPoints = problemData.getPointsEarned();
+				totalPoints = problemData.getPointsPossible();
 			}
 		}
 
