@@ -19,8 +19,7 @@ public class ServerUtils {
 
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
-	// private static final String DEFAULT_USERNAME = "null";
-	private static final String DEFAULT_USERNAME = "murphycd";
+	private static final String DEFAULT_USERNAME = "null";
 
 	/**
 	 * Returns user's username (lowercase) from the authentication server, or
