@@ -18,8 +18,11 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet impleme
 	public ProblemData fetchProblemData(int problemId) {
 		LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#fetchProblemData - begin"));
 
+		// assume zero resets used if no user work is present
+		final int defaultResetsUsed = 0;
+
 		Database db = new Database();
-		ProblemData data = ServerUtils.createProblemData(db, problemId);
+		ProblemData data = ServerUtils.createProblemData(db, problemId, defaultResetsUsed);
 		db.closeConnection();
 
 		LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#fetchProblemData - end"));

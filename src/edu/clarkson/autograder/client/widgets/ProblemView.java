@@ -37,6 +37,8 @@ import edu.clarkson.autograder.client.AutograderResources;
 import edu.clarkson.autograder.client.objects.PreviousAnswersRow;
 import edu.clarkson.autograder.client.objects.ProblemData;
 import edu.clarkson.autograder.client.objects.UserWork;
+import edu.clarkson.autograder.client.services.NewProblemService;
+import edu.clarkson.autograder.client.services.NewProblemServiceAsync;
 import edu.clarkson.autograder.client.services.PreviousAnswersService;
 import edu.clarkson.autograder.client.services.PreviousAnswersServiceAsync;
 import edu.clarkson.autograder.client.services.SubmitAnswersService;
@@ -192,8 +194,6 @@ public class ProblemView extends Composite {
 
 			private final Widget ANSWER_WIDGET;
 
-			private Image gradeFlag;
-
 			private final class CustomField extends TextBox implements Answer {
 
 				private CustomField() {
@@ -248,7 +248,6 @@ public class ProblemView extends Composite {
 
 			private QuestionWidget(final int answerId, final String type, final String content,
 			        Image gradeFlag) {
-				this.gradeFlag = gradeFlag;
 
 				// Make QuestionWidget div display inline
 				layout = new FlowPanel();
@@ -336,21 +335,6 @@ public class ProblemView extends Composite {
 
 			private boolean setAnswer(String value) {
 				return ((Answer) ANSWER_WIDGET).setAnswer(value);
-			}
-
-			private void setGradeFlag(final Image gradeFlag) {
-				// Possibly remove current flag
-				if (this.gradeFlag != null) {
-					layout.remove(0);
-				}
-				// Possibly set new flag
-				if (gradeFlag != null) {
-					layout.insert(gradeFlag, 0);
-					gradeFlag.getElement().getStyle().setDisplay(Display.INLINE_BLOCK);
-					gradeFlag.getElement().getStyle().setVerticalAlign(VerticalAlign.MIDDLE);
-				}
-				// record change
-				this.gradeFlag = gradeFlag;
 			}
 		}
 
@@ -584,6 +568,17 @@ public class ProblemView extends Composite {
 				submit.getElement().removeChild(loadingIcon);
 			}
 		}
+
+		/**
+		 * Whether to add loading icon to New Problem button
+		 */
+		private void setNewProblemButtonLoading(boolean loading) {
+			if (loading) {
+				newProblem.getElement().appendChild(loadingIcon);
+			} else {
+				newProblem.getElement().removeChild(loadingIcon);
+			}
+		}
 	}
 	
 	private void actionSubmit() {
@@ -637,12 +632,18 @@ public class ProblemView extends Composite {
 	}
 
 	private void actionNewProblem() {
-		// TODO implement new problem action
 
-		// temporary: change gradeFlag for testing purposes
-		for (Body.QuestionWidget question : body.questions) {
-			question.setGradeFlag(new Image(AutograderResources.INSTANCE.redCross()));
-		}
+		// prepare footer for longer server response times
+		footer.setEnabled(false);
+		footer.setNewProblemButtonLoading(true);
+
+		// Create userWork object, null answers
+		UserWork userWork = new UserWork(problemData.getUserWorkId(), problemData.getProblemId(),
+		        problemData.getPermutationId(), problemData.getResetsUsed(), problemData.getAttemptsUsed(),
+		        problemData.getPointsEarned(), null);
+
+		// push to server
+		requestNewProblemAsync(userWork);
 	}
 
 	public ProblemView(final ProblemData data) {
@@ -779,6 +780,50 @@ public class ProblemView extends Composite {
 			}
 		});
 		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
+	}
+
+	private void requestNewProblemAsync(UserWork userWork) {
+		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - begin"));
+
+		NewProblemServiceAsync newProblemService = GWT.create(NewProblemService.class);
+		newProblemService.fetchNewProblem(userWork, new AsyncCallback<ProblemData>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - onFailure"));
+				onError();
+			}
+
+			@Override
+			public void onSuccess(ProblemData problemData) {
+				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - onSuccess"));
+				if (problemData == null) {
+					onError();
+					return;
+				}
+				update(problemData);
+				restoreState();
+			}
+
+			private void onError() {
+				String errorText = "";
+				if ((problemData.getResetsAllowed() - problemData.getResetsUsed()) <= 0) {
+					// guess at cause of failure: this check is performed after
+					// failure, and even then it's only a guess, in case client
+					// had previous spoofed the number of resets
+					errorText = "Unable to load new problem: No resets remaining.";
+				} else {
+					errorText = "Unable to load new problem. Error 11." + problemData.getPermutationId();
+				}
+				Window.alert(errorText);
+				restoreState();
+			}
+
+			private void restoreState() {
+				footer.setEnabled(true);
+				footer.setNewProblemButtonLoading(false);
+			}
+		});
+		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - end"));
 	}
 
 	private class ProblemPopup extends DialogBox {

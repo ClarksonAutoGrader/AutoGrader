@@ -39,9 +39,10 @@ public class ServerUtils {
 		return username;
 	}
 
-	static ProblemData createProblemData(Database db, int problemId) {
+	static ProblemData createProblemData(Database db, int problemId, int defaultResetsUsed) {
 
-		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, getUsername(),
+		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed,
+		        getUsername(),
 		        problemId);
 
 		if (data.getUserWorkId() != 0) {

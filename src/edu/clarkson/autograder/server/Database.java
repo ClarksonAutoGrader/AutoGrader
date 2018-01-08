@@ -148,6 +148,11 @@ public class Database {
 	 */
 
 	/**
+	 * Returns the number of resets remaining for a user and permutation ID.
+	 */
+	final static String selectResetsRemaining = "SELECT stuff";
+
+	/**
 	 * Returns data needed to create
 	 * {@link edu.clarkson.autograder.client.objects.ProblemData} object.<br>
 	 * <br>
@@ -155,7 +160,7 @@ public class Database {
 	 */
 	final static String selectProblemDataSql = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
 	        + "prob.num_check_allowed, COALESCE(uw.num_check_used, 0) AS 'uw.num_check_used', "
-	        + "prob.num_new_questions_allowed, COALESCE(uw.num_new_questions_used, 0) AS 'uw.num_new_questions_used', "
+	        + "prob.num_new_questions_allowed, COALESCE(uw.num_new_questions_used, %s) AS 'uw.num_new_questions_used', "
 	        + "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id', perm.perm_prob_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
 	        + "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10, perm.answer_1, perm.answer_2, perm.answer_3, perm.answer_4, "
 	        + "perm.answer_5, perm.answer_6, perm.answer_7, perm.answer_8, perm.answer_9, perm.answer_10, COALESCE(uw.soln_id, 0) AS 'uw.soln_id', uw.soln_prob_id, uw.soln_perm_id, uw.user_answer_1, uw.user_answer_2, uw.user_answer_3, uw.user_answer_4, "
