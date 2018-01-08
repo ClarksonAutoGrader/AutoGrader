@@ -6,7 +6,7 @@ import java.io.Serializable;
 public class Permutation implements Serializable {
 
 	private int id;
-	private int pId;
+	private int problemId;
 	private int numInputs;
 	private int numAnswers;
 	private String[] inputs;
@@ -16,7 +16,7 @@ public class Permutation implements Serializable {
 	 * 
 	 * @param id
 	 *            unique permutation id
-	 * @param pId
+	 * @param problemId
 	 *            enclosing problem
 	 * @param numInputs
 	 *            number of valid indices in String[] inputs
@@ -25,9 +25,9 @@ public class Permutation implements Serializable {
 	 * @param inputs
 	 *            data to be injected into problem body
 	 */
-	public Permutation(int id, int pId, int numInputs, int numAnswers, String[] inputs) {
+	public Permutation(int id, int problemId, int numInputs, int numAnswers, String[] inputs) {
         this.id = id;
-		this.pId = pId;
+		this.problemId = problemId;
 		this.numInputs = numInputs;
 		this.numAnswers = numAnswers;
 		this.inputs = inputs;
@@ -43,8 +43,8 @@ public class Permutation implements Serializable {
 		return id;
 	}
 
-	public int getpId() {
-		return pId;
+	public int getProblemId() {
+		return problemId;
 	}
 
 	public int getNumInputs() {

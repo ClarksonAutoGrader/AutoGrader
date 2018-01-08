@@ -19,7 +19,8 @@ public class UserRoleServiceImpl extends RemoteServiceServlet implements UserRol
 	public String fetchUserRole() {
 		LOG.publish(new LogRecord(Level.INFO, "UserRoleServiceImpl#fetchUserRole - begin"));
 		Database db = new Database();
-		String data = db.query(processResultSetcallback, Database.userRoleSql, Database.getUsername());
+		String data = db.query(processResultSetcallback, Database.userRoleSql, ServerUtils.getUsername());
+		db.closeConnection();
 		LOG.publish(new LogRecord(Level.INFO, "UserRoleServiceImpl#fetchUserRole - end"));
 		return data;
 	}	

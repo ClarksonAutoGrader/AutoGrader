@@ -36,6 +36,7 @@ import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.AutograderResources;
 import edu.clarkson.autograder.client.objects.PreviousAnswersRow;
 import edu.clarkson.autograder.client.objects.ProblemData;
+import edu.clarkson.autograder.client.objects.UserWork;
 import edu.clarkson.autograder.client.services.PreviousAnswersService;
 import edu.clarkson.autograder.client.services.PreviousAnswersServiceAsync;
 import edu.clarkson.autograder.client.services.SubmitAnswersService;
@@ -132,9 +133,12 @@ public class ProblemView extends Composite {
 		private void update() {
 			problemTitle.setText(problemData.getTitle());
 
-			if (this.earnedPoints != problemData.getEarnedPoints()
-			        || this.totalPoints != problemData.getTotalPoints()) {
-				problemGrade.setText(Autograder.formatGrade(problemData.getEarnedPoints(), problemData.getTotalPoints(), decimalPrecision));
+			if (this.earnedPoints != problemData.getPointsEarned()
+			        || this.totalPoints != problemData.getPointsPossible()) {
+				problemGrade.setText(Autograder.formatGrade(problemData.getPointsEarned(),
+				        problemData.getPointsPossible(), decimalPrecision));
+				earnedPoints = problemData.getPointsEarned();
+				totalPoints = problemData.getPointsPossible();
 			}
 		}
 
@@ -145,7 +149,15 @@ public class ProblemView extends Composite {
 	 * obtaining their current value.
 	 */
 	private interface Answer {
+
 		String getAnswer();
+
+		/**
+		 * @param value
+		 *            answer to put in field
+		 * @return whether operation succeeded
+		 */
+		boolean setAnswer(String value);
 	}
 
 	private Widget createPreviousAnswersContent(final int answerNumber) {
@@ -192,6 +204,17 @@ public class ProblemView extends Composite {
 				public String getAnswer() {
 					return getValue();
 				}
+
+				@Override
+				public boolean setAnswer(String value) {
+					boolean successful = true;
+					try {
+						setValue(value);
+					} catch (RuntimeException e) {
+						successful = false;
+					}
+					return successful;
+				}
 			}
 
 			private final class CustomList extends ListBox implements Answer {
@@ -207,6 +230,19 @@ public class ProblemView extends Composite {
 				@Override
 				public String getAnswer() {
 					return getSelectedItemText();
+				}
+
+				@Override
+				public boolean setAnswer(String value) {
+					boolean found = false;
+					for (int index = 0; index < getItemCount(); index++) {
+						if (value.equals(getItemText(index))) {
+							setSelectedIndex(index);
+							found = true;
+							break;
+						}
+					}
+					return found;
 				}
 			}
 
@@ -298,6 +334,10 @@ public class ProblemView extends Composite {
 				return ((Answer) ANSWER_WIDGET).getAnswer();
 			}
 
+			private boolean setAnswer(String value) {
+				return ((Answer) ANSWER_WIDGET).setAnswer(value);
+			}
+
 			private void setGradeFlag(final Image gradeFlag) {
 				// Possibly remove current flag
 				if (this.gradeFlag != null) {
@@ -345,10 +385,28 @@ public class ProblemView extends Composite {
 					questions = new QuestionWidget[10];
 				}
 				for (int i = 0; i < questions.length; ++i) {
-					questions[0] = null;
+					questions[i] = null;
 				}
 				renderMarkup();
 			}
+
+			// populate question widgets with answers from user work
+			final String[] answers = problemData.getUserAnswers();
+			if (answers == null) {
+				reportErrorParsingBody("Error loading problem body: previous work corrupt (Error 5)",
+				        "Error loading problem body: previous work corrupt (Error 5)");
+			}
+			for (int i = 0; i < body.questions.length; i++) {
+
+				if (body.questions[i] != null && answers[i] != null) {
+					boolean success = body.questions[i].setAnswer(answers[i]);
+					if (!success) {
+						reportErrorParsingBody("Error loading problem body: previous work corrupt (Error 6)",
+						        "Error loading problem body: previous work corrupt (Error 6)");
+					}
+				}
+			}
+
 		}
 
 		private void renderMarkup() {
@@ -449,6 +507,8 @@ public class ProblemView extends Composite {
 
 		private InlineLabel attemptsRemaining;
 		private Button submit;
+		
+		private Element loadingIcon;
 
 		private Footer() {
 			toplevel = new FlowPanel();
@@ -460,6 +520,10 @@ public class ProblemView extends Composite {
 		 * Instantiate top-level widget.
 		 */
 		private void create() {
+
+			loadingIcon = new Image(AutograderResources.INSTANCE.loading()).getElement();
+			loadingIcon.getStyle().setPaddingLeft(3, Unit.PX);
+			loadingIcon.getStyle().setPaddingRight(3, Unit.PX);
 
 			toplevel.setStylePrimaryName(STYLE_TOP_LEVEL);
 
@@ -496,8 +560,29 @@ public class ProblemView extends Composite {
 		}
 
 		private void update() {
-			resetsRemaining.setText(TEXT_RESETS_REMAINING + problemData.getResets());
-			attemptsRemaining.setText(TEXT_ATTEMPTS_REMAINING + problemData.getAttempts());
+			resetsRemaining
+			        .setText(TEXT_RESETS_REMAINING + (problemData.getResetsAllowed() - problemData.getResetsUsed()));
+			attemptsRemaining.setText(
+			        TEXT_ATTEMPTS_REMAINING + (problemData.getAttemptsAllowed() - problemData.getAttemptsUsed()));
+		}
+
+		/**
+		 * Set the enable state of buttons in the footer
+		 */
+		private void setEnabled(boolean enabled) {
+			submit.setEnabled(enabled);
+			newProblem.setEnabled(enabled);
+		}
+		
+		/**
+		 * Whether to add loading icon to submit button
+		 */
+		private void setSubmitButtonLoading(boolean loading) {
+			if (loading) {
+				submit.getElement().appendChild(loadingIcon);
+			} else {
+				submit.getElement().removeChild(loadingIcon);
+			}
 		}
 	}
 	
@@ -508,30 +593,47 @@ public class ProblemView extends Composite {
 			Window.alert("Nothing to submit...");
 			return;
 		}
-		String[] answers = new String[problemData.getNumAnswers()];
-		for (int i = 0; i < answers.length; ++i) {
-			answers[i] = body.questions[i].getAnswer();
+
+		// poll answers from QuestionWidgets
+		String[] answers = new String[10];
+		boolean somethingToSubmit = false;
+		for (int i = 0; i < body.questions.length; i++) {
+
+			if (body.questions[i] != null && !body.questions[i].getAnswer().isEmpty()) {
+				answers[i] = body.questions[i].getAnswer();
+			}
+
+			LOG.publish(new LogRecord(Level.INFO,
+			        "ANSWER " + i + " =\"" + answers[i] + "\" isEmpty? "
+			                + (answers[i] != null ? answers[i].isEmpty() : "null")));
+
+			// calculate if there is at least one answer to submit
+			if (!somethingToSubmit && answers[i] != null && !answers[i].isEmpty()) {
+				somethingToSubmit = true;
+			}
 		}
-		requestSubmitAnswersAsync(answers);
-	}
-	
-	private void requestSubmitAnswersAsync(final String[] answers) {
-		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - begin"));
+		// pad answers to length 10 with null
+		for (int i = body.questions.length; i < 10; i++) {
+			answers[i] = null;
+		}
 
-		SubmitAnswersServiceAsync submitAnswersService = GWT.create(SubmitAnswersService.class);
-		submitAnswersService.submitAnswers(problemData.getPermId(), answers, new AsyncCallback<ProblemData>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
-			}
+		// do not submit if all answer fields were empty
+		if (!somethingToSubmit) {
+			Window.alert("Nothing to submit...");
+			return;
+		}
+		
+		// prepare footer for longer server response times
+		footer.setEnabled(false);
+		footer.setSubmitButtonLoading(true);
+		
+		// Create userWork object
+		UserWork userWork = new UserWork(problemData.getUserWorkId(), problemData.getProblemId(),
+		        problemData.getPermutationId(), problemData.getResetsUsed(), problemData.getAttemptsUsed(),
+		        problemData.getPointsEarned(), answers);
 
-			@Override
-			public void onSuccess(ProblemData problemData) {
-				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onSuccess"));
-				update(problemData);
-			}
-		});
-		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
+		// push to server
+		requestSubmitAnswersAsync(userWork);
 	}
 
 	private void actionNewProblem() {
@@ -574,7 +676,7 @@ public class ProblemView extends Composite {
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - begin"));
 
 		PreviousAnswersServiceAsync requestPreviousAnswers = GWT.create(PreviousAnswersService.class);
-		requestPreviousAnswers.fetchPreviousAnswers(problemData.getPermId(), answerNumber,
+		requestPreviousAnswers.fetchPreviousAnswers(problemData.getPermutationId(), answerNumber,
 		        new AsyncCallback<List<PreviousAnswersRow>>() {
 			        @Override
 			        public void onFailure(Throwable caught) {
@@ -620,13 +722,17 @@ public class ProblemView extends Composite {
 						        return object.getPreviousCorrectAnswer();
 					        }
 				        };
-				        // This only applies to instructors, otherwise the
-				        // correctAnswer field will be null.
-				        if (previousAnswers.get(0) != null) {
-					        table.addColumn(correctAnswerColumn, "Key");
+				        // Only display the "Key" column if at least one cell
+				        // contains data
+				        for (PreviousAnswersRow row : previousAnswers) {
+					        if (row.getPreviousCorrectAnswer() != null && !row.getPreviousCorrectAnswer().isEmpty()) {
+						        table.addColumn(correctAnswerColumn, "Key");
+						        break;
+					        }
 				        }
 
 				        table.setRowCount(previousAnswers.size(), true);
+				        table.setVisibleRange(0, previousAnswers.size());
 				        table.setRowData(0, previousAnswers);
 				        layout.add(table);
 			        }
@@ -638,6 +744,41 @@ public class ProblemView extends Composite {
 			        }
 		        });
 		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestPreviousAnswersAsync - end"));
+	}
+
+	private void requestSubmitAnswersAsync(UserWork userWork) {
+		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - begin"));
+
+		SubmitAnswersServiceAsync submitAnswersService = GWT.create(SubmitAnswersService.class);
+		submitAnswersService.submitAnswers(userWork, new AsyncCallback<ProblemData>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
+				onError();
+			}
+
+			@Override
+			public void onSuccess(ProblemData problemData) {
+				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onSuccess"));
+				if (problemData == null) {
+					onError();
+					return;
+				}
+				update(problemData);
+				restoreState();
+			}
+
+			private void onError() {
+				Window.alert("Unable to submit problem. Error 10." + problemData.getPermutationId());
+				restoreState();
+			}
+
+			private void restoreState() {
+				footer.setEnabled(true);
+				footer.setSubmitButtonLoading(false);
+			}
+		});
+		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
 	}
 
 	private class ProblemPopup extends DialogBox {

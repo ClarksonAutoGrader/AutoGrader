@@ -9,7 +9,7 @@ public class UsernameServiceImpl extends RemoteServiceServlet implements Usernam
 
 	@Override
 	public String getCurrentUsername() {
-		return Database.getUsername();
+		return ServerUtils.getUsername();
 	}
 
 }

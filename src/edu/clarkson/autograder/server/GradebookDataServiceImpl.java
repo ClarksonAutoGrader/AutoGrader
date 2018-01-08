@@ -26,6 +26,7 @@ public class GradebookDataServiceImpl extends RemoteServiceServlet implements Gr
 
 		Database db = new Database();
 		GradebookData data = db.query(processResultSetcallback, Database.gradebookDataSql, courseId);
+		db.closeConnection();
 
 		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - end"));
 		return data;
