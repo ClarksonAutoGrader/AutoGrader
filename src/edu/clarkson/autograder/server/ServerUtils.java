@@ -41,12 +41,12 @@ public class ServerUtils {
 
 	static ProblemData createProblemData(Database db, int problemId, int defaultResetsUsed) {
 
-		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed,
-		        getUsername(),
-		        problemId);
+		String username = getUsername();
+		
+		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed, username, username, problemId);
 
 		if (data.getUserWorkId() != 0) {
-			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), getUsername(),
+			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), username,
 			        data.getPermutationId());
 		}
 
