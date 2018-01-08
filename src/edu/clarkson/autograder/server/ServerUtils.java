@@ -46,10 +46,11 @@ public class ServerUtils {
 		
 		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed, username, username, problemId);
 
-		if (data.getUserWorkId() != 0) {
+		//TODO: insert user work for all fields here instead of this one-time check: enables correct New Problem behavior
+		// if (data.getUserWorkId() != 0) {
 			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), username,
 			        data.getPermutationId());
-		}
+		// }
 
 		return data;
 	}
