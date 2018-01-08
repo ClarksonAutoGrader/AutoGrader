@@ -25,7 +25,6 @@ public class NewProblemServiceImpl extends RemoteServiceServlet implements NewPr
 		Database db = new Database();
 
 		// check if user has any resets remaining
-		// TODO: implement lookup resets remaining
 		ProcessResultSetCallback<Integer> processResetsRemainingCallback = new ProcessResultSetCallback<Integer>() {
 			@Override
 			public Integer process(ResultSet rs) throws SQLException {
@@ -33,8 +32,8 @@ public class NewProblemServiceImpl extends RemoteServiceServlet implements NewPr
 				return rs.getInt("num_new_questions_remaining");
 			}
 		};
-//		int resetsRemaining = db.query(processResetsRemainingCallback, Database.selectResetsRemaining);
-		int resetsRemaining = 5;
+		int resetsRemaining = db.query(processResetsRemainingCallback, Database.selectResetsRemaining,
+		        ServerUtils.getUsername(), userWork.getProblemId());
 		if (resetsRemaining <= 0) {
 			// force return of empty ProblemData
 			return null;

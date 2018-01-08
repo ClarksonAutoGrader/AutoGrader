@@ -150,7 +150,9 @@ public class Database {
 	/**
 	 * Returns the number of resets remaining for a user and permutation ID.
 	 */
-	final static String selectResetsRemaining = "SELECT stuff";
+	final static String selectResetsRemaining = "SELECT prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'num_new_questions_remaining' "
+	        + "FROM problems prob LEFT JOIN user_work uw ON IF(uw.soln_username = '%s' AND prob.problem_id = uw.soln_prob_id, TRUE, FALSE) "
+	        + "WHERE prob.problem_id = %s;";
 
 	/**
 	 * Returns data needed to create
