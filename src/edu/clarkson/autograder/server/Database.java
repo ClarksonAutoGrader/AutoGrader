@@ -215,9 +215,10 @@ public class Database {
 	final static String deleteUserWorkRecord = "DELETE FROM user_work WHERE soln_username = '%s' AND soln_perm_id = %s;";
 
 	/**
-	 * Requires parameters for all columns being inserted
+	 * Inserts user work record for submit action. Requires parameters for all
+	 * columns being inserted
 	 */
-	final static String insertUserWork = "INSERT INTO user_work (soln_id, soln_prob_id, "
+	final static String insertSubmittedUserWork = "INSERT INTO user_work (soln_id, soln_prob_id, "
 	        + "soln_username, soln_perm_id, num_new_questions_used, num_check_used, "
 	        + "user_answer_1, user_answer_2, user_answer_3, user_answer_4, user_answer_5, "
 	        + "user_answer_6, user_answer_7, user_answer_8, user_answer_9, user_answer_10) "
@@ -227,6 +228,16 @@ public class Database {
 	        + "user_answer_2 = %s, user_answer_3 = %s, user_answer_4 = %s, "
 	        + "user_answer_5 = %s, user_answer_6 = %s, user_answer_7 = %s, "
 	        + "user_answer_8 = %s, user_answer_9 = null, user_answer_10 = null;";
+
+	/**
+	 * Inserts user work record upon loading initial problem data. Requires
+	 * parameters for all columns being inserted
+	 */
+	final static String insertInitialUserWork = "INSERT INTO user_work (soln_prob_id, "
+	        + "soln_username, soln_perm_id, num_new_questions_used, num_check_used, "
+	        + "user_answer_1, user_answer_2, user_answer_3, user_answer_4, user_answer_5, "
+	        + "user_answer_6, user_answer_7, user_answer_8, user_answer_9, user_answer_10) "
+	        + "VALUES (%s, '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);";
 
 	/*
 	 * Methods for package use

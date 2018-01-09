@@ -32,11 +32,11 @@ public class ServerUtils {
 			username = AssertionHolder.getAssertion().getPrincipal().getName().toLowerCase();
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO,
-			        "Database#getUsername - failed to retrieve username from CAS: " + exception));
+			        "ServerUtils#getUsername - failed to retrieve username from CAS: " + exception));
 
 			username = DEFAULT_USERNAME;
 		}
-		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user=" + username));
+		LOG.publish(new LogRecord(Level.INFO, "ServerUtils#getUsername - user=" + username));
 		return username;
 	}
 
@@ -46,11 +46,29 @@ public class ServerUtils {
 		
 		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed, username, username, problemId);
 
-		//TODO: insert user work for all fields here instead of this one-time check: enables correct New Problem behavior
-		// if (data.getUserWorkId() != 0) {
-			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), username,
-			        data.getPermutationId());
-		// }
+		/*
+		 * Insert new user work record and trigger insertion of previous answers
+		 * record: [0]<-soln_prob_id, [1]<-soln_username, [2]<-soln_perm_id,
+		 * [3]<-num_new_questions_used, [4]<-num_check_used, [5]<-user_answer_1,
+		 * [6]<-user_answer_2, [7]<-user_answer_3, [8]<-user_answer_4,
+		 * [9]<-user_answer_5, [10]<-user_answer_6, [11]<-user_answer_7,
+		 * [12]<-user_answer_8, [13]<-user_answer_9, [14]<-user_answer_10
+		 */
+		int result = -1;
+		Object[] params = new Object[31];
+		final String str = "";
+		final String tick = "'";
+		params[0] = str + data.getProblemId();
+		params[1] = ServerUtils.getUsername();
+		params[2] = str + data.getPermutationId();
+		params[3] = str + data.getResetsUsed();
+		params[4] = str + data.getAttemptsUsed();
+		for (int index = 5; index <= 14; index++) {
+			String param = data.getUserAnswers()[index - 6];
+			params[index] = param != null ? tick + param + tick : param;
+		}
+		result = db.update(Database.insertInitialUserWork, params);
+		LOG.publish(new LogRecord(Level.INFO, "ServerUtils#createProblemData - records inserted: " + result));
 
 		return data;
 	}
@@ -70,7 +88,7 @@ public class ServerUtils {
 
 		@Override
 		public ProblemData process(ResultSet rs) throws SQLException {
-			LOG.publish(new LogRecord(Level.INFO, "createProblemData->process - begin"));
+			LOG.publish(new LogRecord(Level.INFO, "ServerUtils#createProblemData->process - begin"));
 
 			ProblemData problemData = null;
 
@@ -222,7 +240,7 @@ public class ServerUtils {
 				throw new RuntimeException("ProblemData in internally inconsistent");
 			}
 
-			LOG.publish(new LogRecord(Level.INFO, "createProblemData->process - end"));
+			LOG.publish(new LogRecord(Level.INFO, "ServerUtils#createProblemData->process - end"));
 			return problemData;
 		}
 	};

@@ -56,7 +56,7 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 		for (int index = 16; index <= 30; index++) {
 			params[index] = params[index - 15];
 		}
-		result = db.update(Database.insertUserWork, params);
+		result = db.update(Database.insertSubmittedUserWork, params);
 		LOG.publish(new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - records inserted: " + result));
 
 		// assume zero resets used if no user work is present
