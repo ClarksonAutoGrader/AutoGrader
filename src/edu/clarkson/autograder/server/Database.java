@@ -97,8 +97,10 @@ public class Database {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "updated " + rowsUpdated + " rows"));
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + " " + exception));
+			throw new RuntimeException(exception);
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "unexpected exception " + exception));
+			throw new RuntimeException(exception);
 		}
 
 		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
@@ -127,8 +129,10 @@ public class Database {
 			resultSet.beforeFirst();
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "failed to return RS " + exception));
+			throw new RuntimeException(exception);
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "unexpected exception " + exception));
+			throw new RuntimeException(exception);
 		}
 
 		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
@@ -138,6 +142,13 @@ public class Database {
 	/*
 	 * SQL queries
 	 */
+
+	/**
+	 * Returns the number of resets remaining for a user and permutation ID.
+	 */
+	final static String selectResetsRemaining = "SELECT prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'num_new_questions_remaining' "
+	        + "FROM problems prob LEFT JOIN user_work uw ON IF(uw.soln_username = '%s' AND prob.problem_id = uw.soln_prob_id, TRUE, FALSE) "
+	        + "WHERE prob.problem_id = %s;";
 
 	/**
 	 * Returns data needed to create
@@ -159,7 +170,7 @@ public class Database {
 	 */
 	final static String selectProblemDataSql = "SELECT prob.problem_id, prob.problem_aid, prob.problem_title, prob.points_possible, "
 	        + "prob.num_check_allowed, COALESCE(uw.num_check_used, 0) AS 'uw.num_check_used', "
-	        + "prob.num_new_questions_allowed, COALESCE(uw.num_new_questions_used, 0) AS 'uw.num_new_questions_used', "
+	        + "prob.num_new_questions_allowed, COALESCE(uw.num_new_questions_used, %s) AS 'uw.num_new_questions_used', "
 	        + "b.body_text, COALESCE(uw.points, 0) AS 'uw.points', COALESCE(uw.soln_perm_id, perm.perm_id) AS 'perm.perm_id', perm.perm_prob_id, perm.num_inputs, perm.num_answers, perm.input_1, perm.input_2, "
 	        + "perm.input_3, perm.input_4, perm.input_5, perm.input_6, perm.input_7, perm.input_8, perm.input_9, perm.input_10, perm.answer_1, perm.answer_2, perm.answer_3, perm.answer_4, "
 	        + "perm.answer_5, perm.answer_6, perm.answer_7, perm.answer_8, perm.answer_9, perm.answer_10, COALESCE(uw.soln_id, 0) AS 'uw.soln_id', uw.soln_prob_id, uw.soln_perm_id, uw.user_answer_1, uw.user_answer_2, uw.user_answer_3, uw.user_answer_4, "
@@ -221,9 +232,10 @@ public class Database {
 	final static String deleteUserWorkRecord = "DELETE FROM user_work WHERE soln_username = '%s' AND soln_perm_id = %s;";
 
 	/**
-	 * Requires parameters for all columns being inserted
+	 * Inserts user work record for submit action. Requires parameters for all
+	 * columns being inserted
 	 */
-	final static String insertUserWork = "INSERT INTO user_work (soln_id, soln_prob_id, "
+	final static String insertSubmittedUserWork = "INSERT INTO user_work (soln_id, soln_prob_id, "
 	        + "soln_username, soln_perm_id, num_new_questions_used, num_check_used, "
 	        + "user_answer_1, user_answer_2, user_answer_3, user_answer_4, user_answer_5, "
 	        + "user_answer_6, user_answer_7, user_answer_8, user_answer_9, user_answer_10) "
@@ -233,6 +245,22 @@ public class Database {
 	        + "user_answer_2 = %s, user_answer_3 = %s, user_answer_4 = %s, "
 	        + "user_answer_5 = %s, user_answer_6 = %s, user_answer_7 = %s, "
 	        + "user_answer_8 = %s, user_answer_9 = null, user_answer_10 = null;";
+
+	/**
+	 * Inserts user work record upon loading initial problem data. Requires
+	 * parameters for all columns being inserted
+	 */
+	final static String insertInitialUserWork = "INSERT INTO user_work (soln_prob_id, "
+	        + "soln_username, soln_perm_id, num_new_questions_used, num_check_used, "
+	        + "user_answer_1, user_answer_2, user_answer_3, user_answer_4, user_answer_5, "
+	        + "user_answer_6, user_answer_7, user_answer_8, user_answer_9, user_answer_10) "
+	        + "VALUES (%s, '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);";
+
+	/**
+	 * Returns user work key for a given username and problem ID. This is used
+	 * to verify a record exists as a separate query.
+	 */
+	final static String selectUserWorkId = "SELECT soln_id FROM user_work WHERE soln_username = '%s' AND soln_prob_id = %s";
 
 	/*
 	 * Methods for package use

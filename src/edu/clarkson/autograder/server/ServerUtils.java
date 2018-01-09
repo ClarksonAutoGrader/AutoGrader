@@ -31,20 +31,19 @@ public class ServerUtils {
 			username = AssertionHolder.getAssertion().getPrincipal().getName().toLowerCase();
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO,
-			        "Database#getUsername - failed to retrieve username from CAS: " + exception));
+			        "ServerUtils#getUsername - failed to retrieve username from CAS: " + exception));
 
 			username = DEFAULT_USERNAME;
 		}
-		LOG.publish(new LogRecord(Level.INFO, "Database#getUsername - user=" + username));
+		LOG.publish(new LogRecord(Level.INFO, "ServerUtils#getUsername - user=" + username));
 		return username;
 	}
 
-	static ProblemData createProblemData(Database db, int problemId) {
+	static ProblemData createProblemData(Database db, int problemId, int defaultResetsUsed) {
 
 		String username = getUsername();
 		
-		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, username, username,
-		        problemId);
+		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed, username, username, problemId);
 
 		if (data.getUserWorkId() != 0) {
 			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), username,
@@ -71,7 +70,7 @@ public class ServerUtils {
 
 		@Override
 		public ProblemData process(ResultSet rs) throws SQLException {
-			LOG.publish(new LogRecord(Level.INFO, "createProblemData->process - begin"));
+			LOG.publish(new LogRecord(Level.INFO, "ServerUtils#createProblemData->process - begin"));
 
 			ProblemData problemData = null;
 
@@ -223,7 +222,7 @@ public class ServerUtils {
 				throw new RuntimeException("ProblemData in internally inconsistent");
 			}
 
-			LOG.publish(new LogRecord(Level.INFO, "createProblemData->process - end"));
+			LOG.publish(new LogRecord(Level.INFO, "ServerUtils#createProblemData->process - end"));
 			return problemData;
 		}
 	};

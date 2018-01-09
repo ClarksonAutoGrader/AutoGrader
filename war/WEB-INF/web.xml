@@ -1,6 +1,6 @@
 <!DOCTYPE ivy-module [
     <!ENTITY production.url "https://autograder.clarkson.edu">
-    <!ENTITY cas.url "https://cas.clarkson.edu/cas">
+    <!ENTITY cas.url "https://cas0.clarkson.edu/cas">
 ]>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
@@ -196,6 +196,15 @@
   <servlet-mapping>
       <servlet-name>gradebookData</servlet-name>
       <url-pattern>/autograder/gradebook_data</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>newProblem</servlet-name>
+    <servlet-class>edu.clarkson.autograder.server.NewProblemServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>newProblem</servlet-name>
+      <url-pattern>/autograder/new_problem</url-pattern>
   </servlet-mapping>
   
   <servlet>

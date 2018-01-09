@@ -56,12 +56,15 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 		for (int index = 16; index <= 30; index++) {
 			params[index] = params[index - 15];
 		}
-		result = db.update(Database.insertUserWork, params);
+		result = db.update(Database.insertSubmittedUserWork, params);
 		LOG.publish(new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - records inserted: " + result));
+
+		// assume zero resets used if no user work is present
+		final int defaultResetsUsed = 0;
 
 		// query for Problem Data, evaluate answers based on existing user work,
 		// update user work points
-		ProblemData data = ServerUtils.createProblemData(db, userWork.getProblemId());
+		ProblemData data = ServerUtils.createProblemData(db, userWork.getProblemId(), defaultResetsUsed);
 
 		db.closeConnection();
 
