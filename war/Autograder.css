@@ -54,6 +54,10 @@ div#header span {
     font-size: 1.2vw;
 }
 
+div#header span.gwt-InlineLabel {
+	padding: 0.3vw 0;
+}
+
 div#header button {
 	display: inline-block;
 	float: right;
