@@ -46,29 +46,8 @@ public class ServerUtils {
 		
 		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed, username, username, problemId);
 
-		/*
-		 * Insert new user work record and trigger insertion of previous answers
-		 * record: [0]<-soln_prob_id, [1]<-soln_username, [2]<-soln_perm_id,
-		 * [3]<-num_new_questions_used, [4]<-num_check_used, [5]<-user_answer_1,
-		 * [6]<-user_answer_2, [7]<-user_answer_3, [8]<-user_answer_4,
-		 * [9]<-user_answer_5, [10]<-user_answer_6, [11]<-user_answer_7,
-		 * [12]<-user_answer_8, [13]<-user_answer_9, [14]<-user_answer_10
-		 */
-		int result = -1;
-		Object[] params = new Object[31];
-		final String str = "";
-		final String tick = "'";
-		params[0] = str + data.getProblemId();
-		params[1] = ServerUtils.getUsername();
-		params[2] = str + data.getPermutationId();
-		params[3] = str + data.getResetsUsed();
-		params[4] = str + data.getAttemptsUsed();
-		for (int index = 5; index <= 14; index++) {
-			String param = data.getUserAnswers()[index - 6];
-			params[index] = param != null ? tick + param + tick : param;
-		}
-		result = db.update(Database.insertInitialUserWork, params);
-		LOG.publish(new LogRecord(Level.INFO, "ServerUtils#createProblemData - records inserted: " + result));
+		// TODO put this method back how it used to be (how that is exactly,
+		// something about updating user work points)
 
 		return data;
 	}

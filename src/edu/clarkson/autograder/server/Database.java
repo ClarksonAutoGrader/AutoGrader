@@ -239,6 +239,12 @@ public class Database {
 	        + "user_answer_6, user_answer_7, user_answer_8, user_answer_9, user_answer_10) "
 	        + "VALUES (%s, '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);";
 
+	/**
+	 * Returns user work key for a given username and problem ID. This is used
+	 * to verify a record exists as a separate query.
+	 */
+	final static String selectUserWorkId = "SELECT soln_id FROM user_work WHERE soln_username = '%s' AND soln_prob_id = %s";
+
 	/*
 	 * Methods for package use
 	 */

@@ -24,6 +24,22 @@ public class NewProblemServiceImpl extends RemoteServiceServlet implements NewPr
 
 		Database db = new Database();
 
+		// ensure at least one user work submission has been made before
+		// allowing a new problem permutation
+		ProcessResultSetCallback<Boolean> processUserWorkExistsCallback = new ProcessResultSetCallback<Boolean>() {
+			@Override
+			public Boolean process(ResultSet rs) throws SQLException {
+				rs.first();
+				return rs.getString("soln_id") != null;
+			}
+		};
+		boolean userWorkExists = db.query(processUserWorkExistsCallback, Database.selectUserWorkId,
+		        ServerUtils.getUsername(), userWork.getProblemId());
+		if (!userWorkExists) {
+			// force return of empty ProblemData
+			return null;
+		}
+
 		// check if user has any resets remaining
 		ProcessResultSetCallback<Integer> processResetsRemainingCallback = new ProcessResultSetCallback<Integer>() {
 			@Override

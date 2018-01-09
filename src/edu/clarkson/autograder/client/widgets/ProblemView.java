@@ -811,6 +811,8 @@ public class ProblemView extends Composite {
 					// failure, and even then it's only a guess, in case client
 					// had previous spoofed the number of resets
 					errorText = "Unable to load new problem: No resets remaining.";
+				} else if (problemData.getAttemptsUsed() == 0) {
+					errorText = "Please make at least one submission before requesting a new problem.";
 				} else {
 					errorText = "Unable to load new problem. Error 11." + problemData.getPermutationId();
 				}
