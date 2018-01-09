@@ -45,7 +45,12 @@ public class ServerUtils {
 		
 		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed, username, username, problemId);
 
-		if (data.getUserWorkId() != 0) {
+		if (data.getUserWorkId() == 0) {
+			// problem ID, username, permutation ID, num_new_questions_used,
+			// points, username, permutation ID
+			db.update(Database.insertInitialUserWork, data.getProblemId(), username, data.getPermutationId(),
+			        data.getResetsUsed(), data.getPointsEarned(), username, data.getPermutationId());
+		} else {
 			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), username,
 			        data.getPermutationId());
 		}
