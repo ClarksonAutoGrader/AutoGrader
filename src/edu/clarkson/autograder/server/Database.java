@@ -5,11 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.IllegalFormatException;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -17,10 +13,6 @@ import java.util.logging.LogRecord;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
-
-import edu.clarkson.autograder.client.objects.Assignment;
-import edu.clarkson.autograder.client.objects.Course;
-import edu.clarkson.autograder.client.objects.Problem;
 
 /**
  * JDBC database class. Each instance of this class manages one active
@@ -160,6 +152,18 @@ public class Database {
 
 	/**
 	 * Returns data needed to create
+	 * {@link edu.clarkson.autograder.client.objects.Assignment} object <br>
+	 * and {@link edu.clarkson.autograder.client.objects.Problem} object. <br>
+	 * Required inputs are username, username, and course ID (in that order)
+	 */
+	final static String selectAssignmentTreeDataSql = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, prob.num_new_questions_allowed, "
+			+ "prob.num_check_allowed, IF(uw.soln_username = '%s', uw.points, 0) AS 'uw.points' "
+			+ "FROM assignments a, problems prob LEFT JOIN user_work uw ON IF(uw.soln_username = '%s', uw.soln_prob_id = prob.problem_id, FALSE) "
+			+ "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = %s"
+			+ " ORDER BY a.due_date , prob.problem_num;";
+
+	/**
+	 * Returns data needed to create
 	 * {@link edu.clarkson.autograder.client.objects.ProblemData} object.<br>
 	 * <br>
 	 * Required inputs are username and problem ID (in that order).
@@ -181,6 +185,19 @@ public class Database {
 	 * Returns the user role as String given a username. 
 	 */
 	final static String userRoleSql = "SELECT user_role FROM users WHERE username = '%s';";
+
+	/**
+	 * Returns the course given a username and course ID
+	 */
+	final static String selectCourseFromIdSql = "SELECT c.course_id, c.course_title "
+			+ "FROM enrollment e LEFT JOIN courses c "
+			+ "ON e.enr_cid = c.course_id WHERE e.enr_username = '%s' AND c.course_id = %s LIMIT 1;";
+
+	/**
+	 * Returns the courses a user is enrolled in given a username
+	 */
+	final static String selectCoursesSql = "SELECT c.course_id, c.course_title "
+			+ "FROM enrollment e LEFT JOIN courses c " + "ON e.enr_cid = c.course_id WHERE e.enr_username = '%s';";
 
 	/**
 	 * Returns previous answers as a
@@ -322,221 +339,4 @@ public class Database {
 		DbUtils.closeQuietly(conn);
 	}
 
-	/*
-	 * Old methods waiting to be updated
-	 */
-
-	/**
-	 * @deprecated
-	 */
-	private void closeConnection(ResultSet rs) {
-
-		DbUtils.closeQuietly(rs);
-		DbUtils.closeQuietly(stmt);
-		DbUtils.closeQuietly(conn);
-
-		LOG.publish(new LogRecord(Level.INFO, "ResultSet, Statement, Connection closed"));
-	}
-
-	/**
-	 * @deprecated use
-	 *             {@link #query(ProcessResultSetCallback, String, Object...)}
-	 */
-	SortedMap<Assignment, List<Problem>> queryAssignmentProblemTreeData(int courseId) {
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - begin: courseId=" + courseId));
-
-		SortedMap<Assignment, List<Problem>> map = new TreeMap<Assignment, List<Problem>>();
-
-		/*
-		 * SELECT 
-		    a.assignment_id,
-		    a.assignment_title,
-		    a.due_date,
-		    prob.problem_id,
-		    prob.problem_title,
-		    prob.points_possible,
-		    prob.num_new_questions_allowed,
-    		prob.num_check_allowed,
-		    IF(uw.soln_username = 'clappdj',
-		        uw.points,
-		        0) AS 'uw.points'
-		FROM
-		    assignments a,
-		    problems prob
-		        LEFT JOIN
-		    user_work uw ON IF(uw.soln_username = 'clappdj', uw.soln_prob_id = prob.problem_id, FALSE)
-		WHERE
-		    a.assignment_id = prob.problem_aid
-		        AND a.a_cid = 1
-		ORDER BY a.due_date , prob.problem_num;
-		 */
-		final String SQL = "SELECT a.assignment_id, a.assignment_title, a.due_date, prob.problem_id, prob.problem_title, prob.points_possible, prob.num_new_questions_allowed, "
-				+ "prob.num_check_allowed, IF(uw.soln_username = '" + ServerUtils.getUsername() + "', uw.points, 0) AS 'uw.points' "
-		        + "FROM assignments a, problems prob LEFT JOIN user_work uw ON IF(uw.soln_username = '"
-		        + ServerUtils.getUsername() + "', uw.soln_prob_id = prob.problem_id, FALSE) "
-		        + "WHERE a.assignment_id = prob.problem_aid AND a.a_cid = " + courseId
-		        + " ORDER BY a.due_date , prob.problem_num;";
-				
-		final ResultSet rs = executeQuery(SQL);
-		try {
-			if (!rs.next()) {
-				return map;
-			}
-			rs.beforeFirst();
-
-			// put resultSet into map
-			Assignment assign = null;
-			double assignmentPointsPossible = 0;
-			double assignmentPointsEarned = 0;
-			List<Problem> problemSet = new ArrayList<Problem>();
-			int currentAssignId = -1;
-			int previousAssignId = -1;
-			while (rs.next()) {
-				currentAssignId = rs.getInt("a.assignment_id");
-				final Problem currentProb = new Problem(rs.getInt("prob.problem_id"),
-				        currentAssignId, rs.getString("prob.problem_title"),
-				        rs.getDouble("prob.points_possible"), rs.getDouble("uw.points"),
-				        rs.getInt("prob.num_new_questions_allowed"), rs.getInt("prob.num_check_allowed"));
-
-				if (currentAssignId == previousAssignId) {
-					// add problem to the problem set for the assignment currently being processed
-					problemSet.add(currentProb);
-
-					assignmentPointsPossible += currentProb.getPointsPossible();
-					assignmentPointsEarned += currentProb.getPointsEarned();
-
-				} else {
-					// this must be a new assignment-problem set
-
-					// commit previous set to map, unless its the first assignment processed
-					if (!rs.isFirst()) {
-						// update assignment with point totals
-						assign = new Assignment(assign.getId(), assign.getcId(), assign.getTitle(), assign.getDueDate(),
-						        assignmentPointsPossible, assignmentPointsEarned);
-						map.put(assign, problemSet);
-					}
-
-					assignmentPointsPossible = currentProb.getPointsPossible();
-					assignmentPointsEarned = currentProb.getPointsEarned();
-
-					// create the new assignment with placeholder points
-					assign = new Assignment(currentAssignId, courseId, rs.getString("a.assignment_title"),
-					        rs.getDate("a.due_date"), 0.0, 0.0);
-					previousAssignId = currentAssignId;
-
-					// create the new problemSet
-					problemSet = new ArrayList<Problem>();
-					problemSet.add(currentProb);
-				}
-			}
-			map.put(assign, problemSet);
-
-		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - SQLException " + exception));
-		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - unexpected exception " + exception));
-			throw new RuntimeException(exception);
-		}
-
-		closeConnection(rs);
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - end"));
-		return map;
-	}
-
-	/**
-	 * @deprecated use
-	 *             {@link #query(ProcessResultSetCallback, String, Object...)}
-	 */
-	List<Course> queryCourses() {
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - begin"));
-
-		List<Course> courseList = new ArrayList<Course>();
-
-		final String SQL = "SELECT c.course_id, c.course_title " + "FROM enrollment e LEFT JOIN courses c "
-		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + ServerUtils.getUsername() + "\";";
-		ResultSet rs = null;
-		try {
-			rs = executeQuery(SQL);
-			while (rs.next()) {
-				courseList.add(new Course(Integer.parseInt(rs.getString("course_id")), rs.getString("course_title")));
-				LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
-			}
-		} catch (NumberFormatException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - course_id NaN"));
-		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - SQLException " + exception));
-		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - unexpected exception " + exception));
-			throw new RuntimeException(exception);
-		}
-
-		closeConnection(rs);
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourses - end"));
-		return courseList;
-	}
-
-	/**
-	 * @deprecated use
-	 *             {@link #query(ProcessResultSetCallback, String, Object...)}
-	 */
-	Course queryCourseFromId(int courseId) {
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - begin"));
-
-		Course course = null;
-
-		final String SQL = "SELECT c.course_id, c.course_title " + "FROM enrollment e LEFT JOIN courses c "
-		        + "ON e.enr_cid = c.course_id WHERE e.enr_username = \"" + ServerUtils.getUsername()
-		        + "\" AND c.course_id = "
-		        + courseId + " LIMIT 1;";
-		ResultSet rs;
-		
-		try {
-			rs = executeQuery(SQL);
-			rs.next();
-			course = new Course(rs.getInt("course_id"), rs.getString("course_title"));
-			LOG.publish(new LogRecord(Level.INFO, "Course: " + rs.getString("course_title")));
-		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - SQLException " + exception));
-			throw new RuntimeException(exception);
-		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - unexpected exception " + exception));
-			throw new RuntimeException(exception);
-		}
-
-		closeConnection(rs);
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryCourseFromId - end"));
-		return course;
-	}
-
-	/**
-	 * @deprecated use
-	 *             {@link #query(ProcessResultSetCallback, String, Object...)}
-	 */
-	String[] queryAnswers(int permutationId) {
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - begin"));
-
-		String[] answers = new String[10];
-
-		final String SQL = "SELECT answer_1, answer_2, answer_3, answer_4, answer_5, answer_6, answer_7, answer_8, answer_9, answer_10 "
-		        + "FROM permutations WHERE perm_id = " + permutationId + ";";
-		final ResultSet rs = executeQuery(SQL);
-		try {
-			rs.next();
-			
-			for (int col = 0; col < 10; ++col) {
-				answers[col] = rs.getString("answer_" + (col + 1));
-			}
-
-		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - SQLException " + exception));
-			throw new RuntimeException(exception);
-		} catch (Exception exception) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - unexpected exception " + exception));
-			throw new RuntimeException(exception);
-		}
-
-		closeConnection(rs);
-		LOG.publish(new LogRecord(Level.INFO, "Database#queryAnswers - end"));
-		return answers;
-	}
 }

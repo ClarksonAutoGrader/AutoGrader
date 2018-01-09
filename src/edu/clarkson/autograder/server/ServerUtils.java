@@ -19,8 +19,7 @@ public class ServerUtils {
 
 	private static ConsoleHandler LOG = new ConsoleHandler();
 
-	// private static final String DEFAULT_USERNAME = "null";
-	private static final String DEFAULT_USERNAME = "murphycd";
+	private static final String DEFAULT_USERNAME = "null";
 
 	/**
 	 * Returns user's username (lowercase) from the authentication server, or
@@ -46,8 +45,12 @@ public class ServerUtils {
 		
 		ProblemData data = db.query(processResultSetForProblemData, Database.selectProblemDataSql, defaultResetsUsed, username, username, problemId);
 
-		// TODO put this method back how it used to be (how that is exactly,
-		// something about updating user work points)
+		if (data.getUserWorkId() != 0) {
+			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), username,
+			        data.getPermutationId());
+		}
+		
+		db.closeConnection();
 
 		return data;
 	}
