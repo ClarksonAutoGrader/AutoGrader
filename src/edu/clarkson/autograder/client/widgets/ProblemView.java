@@ -150,7 +150,7 @@ public class ProblemView extends Composite {
 	 * Abstracts question input widget type which may have various methods for
 	 * obtaining their current value.
 	 */
-	private interface Answer {
+	private interface AnswerField {
 
 		String getAnswer();
 
@@ -160,6 +160,8 @@ public class ProblemView extends Composite {
 		 * @return whether operation succeeded
 		 */
 		boolean setAnswer(String value);
+
+		void setDisabled(boolean disabled);
 	}
 
 	private Widget createPreviousAnswersContent(final int answerNumber) {
@@ -194,7 +196,7 @@ public class ProblemView extends Composite {
 
 			private final Widget ANSWER_WIDGET;
 
-			private final class CustomField extends TextBox implements Answer {
+			private final class CustomField extends TextBox implements AnswerField {
 
 				private CustomField() {
 					super();
@@ -215,9 +217,14 @@ public class ProblemView extends Composite {
 					}
 					return successful;
 				}
+
+				@Override
+				public void setDisabled(boolean disabled) {
+					setReadOnly(disabled);
+				}
 			}
 
-			private final class CustomList extends ListBox implements Answer {
+			private final class CustomList extends ListBox implements AnswerField {
 
 				private CustomList(String... items) {
 					super();
@@ -243,6 +250,11 @@ public class ProblemView extends Composite {
 						}
 					}
 					return found;
+				}
+
+				@Override
+				public void setDisabled(boolean disabled) {
+					this.setEnabled(!disabled);
 				}
 			}
 
@@ -330,11 +342,15 @@ public class ProblemView extends Composite {
 			}
 
 			private String getAnswer() {
-				return ((Answer) ANSWER_WIDGET).getAnswer();
+				return ((AnswerField) ANSWER_WIDGET).getAnswer();
 			}
 
 			private boolean setAnswer(String value) {
-				return ((Answer) ANSWER_WIDGET).setAnswer(value);
+				return ((AnswerField) ANSWER_WIDGET).setAnswer(value);
+			}
+
+			private void setDisabled(boolean disabled) {
+				((AnswerField) ANSWER_WIDGET).setDisabled(disabled);
 			}
 		}
 
@@ -444,8 +460,16 @@ public class ProblemView extends Composite {
 
 					// create QuestionWidget to house each answer field
 					final QuestionWidget widget = new QuestionWidget(ansNum, type, content, gradeFlag);
+					// lock questionWidgets
+					if ((problemData.getAttemptsAllowed() - problemData.getAttemptsUsed()) <= 0
+					        || flag.equals("correct")) {
+						widget.setDisabled(true);
+					}
+
+					// add widget to page
 					panel.addAndReplaceElement(widget, id);
 					questions[ansNum - 1] = widget;
+
 				} else {
 					reportErrorParsingBody(
 					        "Error parsing problem body: " + id + " has unknown inner text \"" + innerText + "\"",
