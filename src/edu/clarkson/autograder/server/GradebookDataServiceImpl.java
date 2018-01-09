@@ -25,14 +25,14 @@ public class GradebookDataServiceImpl extends RemoteServiceServlet implements Gr
 		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - begin"));
 
 		Database db = new Database();
-		GradebookData data = db.query(processResultSetcallback, Database.gradebookDataSql, courseId);
+		GradebookData data = db.query(processResultSetCallback, Database.gradebookDataSql, courseId);
 		db.closeConnection();
 
 		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - end"));
 		return data;
 	}
 
-	private ProcessResultSetCallback<GradebookData> processResultSetcallback = new ProcessResultSetCallback<GradebookData>() {
+	private ProcessResultSetCallback<GradebookData> processResultSetCallback = new ProcessResultSetCallback<GradebookData>() {
 
 		@Override
 		public GradebookData process(ResultSet rs) throws SQLException {
