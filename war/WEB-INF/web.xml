@@ -1,6 +1,6 @@
 <!DOCTYPE ivy-module [
     <!ENTITY production.url "https://autograder.clarkson.edu">
-    <!ENTITY cas.url "https://cas0.clarkson.edu/cas">
+    <!ENTITY cas.url "https://cas.clarkson.edu/cas">
 ]>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
@@ -87,7 +87,7 @@
     <filter-name>CAS Authentication Filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
- 
+
   <filter-mapping>
     <filter-name>CAS HttpServletRequest Wrapper Filter</filter-name>
     <url-pattern>/*</url-pattern>
@@ -178,6 +178,15 @@
   <servlet-mapping>
       <servlet-name>userRole</servlet-name>
       <url-pattern>/autograder/user_role</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+      <servlet-name>sessionLogOut</servlet-name>
+      <servlet-class>edu.clarkson.autograder.server.AppSessionLogOutServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>sessionLogOut</servlet-name>
+      <url-pattern>/autograder/app_session_log_out</url-pattern>
   </servlet-mapping>
   
   <servlet>

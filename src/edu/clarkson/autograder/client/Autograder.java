@@ -12,6 +12,8 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import edu.clarkson.autograder.client.services.AppSessionLogOutService;
+import edu.clarkson.autograder.client.services.AppSessionLogOutServiceAsync;
 import edu.clarkson.autograder.client.services.UsernameService;
 import edu.clarkson.autograder.client.services.UsernameServiceAsync;
 
@@ -87,15 +89,15 @@ public class Autograder implements EntryPoint {
 		
 		requestUserAsync();
 		
-		//logout button (INOP)
-//		RootPanel.get("info").add(new Button("Log Out", new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				Window.Location.assign("https://cas.clarkson.edu/cas/logout");
-//				}	
-//    		}));
+		// Logout button
+		RootPanel.get("info").add(new Button("Log Out", new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				requestLogOut();
+				}	
+    		}));
 		
-		//Home button
+		// Home button
 		RootPanel.get("info").add(new Button("Course Selection", new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
@@ -131,4 +133,20 @@ public class Autograder implements EntryPoint {
     	};
     	userService.getCurrentUsername(callback);
     }
+    
+    private void requestLogOut() {
+    	AppSessionLogOutServiceAsync logOutService = GWT.create(AppSessionLogOutService.class);
+    	AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
+    		public void onFailure(Throwable caught) {
+    			Window.alert("Logout failed. Please try again.");
+    		}
+    		
+    		public void onSuccess(Boolean success) {
+    			Window.Location.assign("https://cas.clarkson.edu/cas/logout");
+    		}
+    	};
+    	
+    	logOutService.appSessionLogOut(callback);
+    }
+    	
 }

@@ -50,6 +50,8 @@ public class ServerUtils {
 			db.update(Database.updateUserWorkPointsEarned, data.getPointsEarned(), username,
 			        data.getPermutationId());
 		}
+		
+		db.closeConnection();
 
 		return data;
 	}

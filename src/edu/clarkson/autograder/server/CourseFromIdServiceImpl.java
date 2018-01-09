@@ -28,7 +28,9 @@ public class CourseFromIdServiceImpl extends RemoteServiceServlet implements Cou
 		if (course == null) {
 			throw new RuntimeException("Course was null");
 		}
-
+		
+		db.closeConnection();
+		
 		LOG.publish(new LogRecord(Level.INFO, "#fetchCourseFromId - end"));
 
 		return course;
