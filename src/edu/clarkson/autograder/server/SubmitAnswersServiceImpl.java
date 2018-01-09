@@ -1,5 +1,7 @@
 package edu.clarkson.autograder.server;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -22,6 +24,21 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 
 		Database db = new Database();
 		int result = -1;
+
+		// check if user has any resets remaining
+		ProcessResultSetCallback<Integer> processAttemptsRemainingCallback = new ProcessResultSetCallback<Integer>() {
+			@Override
+			public Integer process(ResultSet rs) throws SQLException {
+				rs.next();
+				return rs.getInt("num_check_remaining");
+			}
+		};
+		int resetsRemaining = db.query(processAttemptsRemainingCallback, Database.selectAttemptsRemaining,
+		        ServerUtils.getUsername(), userWork.getProblemId());
+		if (resetsRemaining <= 0) {
+			// force return of empty ProblemData
+			return null;
+		}
 
 		// Delete user work record if exists
 		result = db.update(Database.deleteUserWorkRecord, ServerUtils.getUsername(), userWork.getPermutationId());
