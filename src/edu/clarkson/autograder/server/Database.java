@@ -247,14 +247,13 @@ public class Database {
 	        + "user_answer_8 = %s, user_answer_9 = null, user_answer_10 = null;";
 
 	/**
-	 * Inserts user work record upon loading initial problem data. Requires
-	 * parameters for all columns being inserted
+	 * Inserts user work record upon loading initial problem data. Required
+	 * fields problem ID, username, permutation ID, num_new_questions_used,
+	 * points, username, permutation ID
 	 */
-	final static String insertInitialUserWork = "INSERT INTO user_work (soln_prob_id, "
-	        + "soln_username, soln_perm_id, num_new_questions_used, num_check_used, "
-	        + "user_answer_1, user_answer_2, user_answer_3, user_answer_4, user_answer_5, "
-	        + "user_answer_6, user_answer_7, user_answer_8, user_answer_9, user_answer_10) "
-	        + "VALUES (%s, '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);";
+	final static String insertInitialUserWork = "INSERT INTO user_work(soln_prob_id, soln_username, soln_perm_id, num_new_questions_used, points) "
+	        + "SELECT %s, '%s', %s, %s, %s FROM dual WHERE NOT EXISTS ("
+	        + "SELECT * FROM user_work WHERE user_work.soln_username = '%s' AND user_work.soln_perm_id = %s);";
 
 	/**
 	 * Returns user work key for a given username and problem ID. This is used
