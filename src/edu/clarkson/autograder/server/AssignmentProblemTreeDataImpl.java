@@ -30,21 +30,22 @@ public class AssignmentProblemTreeDataImpl extends RemoteServiceServlet implemen
 		this.courseId = courseId;
 		
 		Database db = new Database();
-		SortedMap<Assignment, List<Problem>> data = db.query(processResultSetCallback,
+		TreeMap<Assignment, List<Problem>> data = db.query(processResultSetCallback,
 				Database.selectAssignmentTreeDataSql, username, username, courseId);
-
 		db.closeConnection();
+		
 		LOG.publish(new LogRecord(Level.INFO, "AssignmentProblemTreeDataImpl#fetchTreeData - end"));
+		
 		return data;
 	}
 	
-	private ProcessResultSetCallback<SortedMap<Assignment, List<Problem>>> processResultSetCallback = new ProcessResultSetCallback<SortedMap<Assignment, List<Problem>>>() {
+	private ProcessResultSetCallback<TreeMap<Assignment, List<Problem>>> processResultSetCallback = new ProcessResultSetCallback<TreeMap<Assignment, List<Problem>>>() {
 
 		
 		@Override
-		public SortedMap<Assignment, List<Problem>> process(ResultSet rs) throws SQLException {
+		public TreeMap<Assignment, List<Problem>> process(ResultSet rs) throws SQLException {
 
-			SortedMap<Assignment, List<Problem>> map = new TreeMap<Assignment, List<Problem>>();
+			TreeMap<Assignment, List<Problem>> map = new TreeMap<Assignment, List<Problem>>();
 
 			if (!rs.next()) {
 				return map;

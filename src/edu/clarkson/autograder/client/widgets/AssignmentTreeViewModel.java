@@ -67,13 +67,25 @@ public final class AssignmentTreeViewModel implements TreeViewModel {
 	private final class CategoryNode extends SideBarNode<AssignmentNode> {
 
 		private final String name;
+		private int size;
 
 		CategoryNode(String name) {
 			this.name = name;
+			size = 0;
+		}
+
+		@Override
+		void addChild(AssignmentNode childNode) {
+			super.addChild(childNode);
+			size++;
 		}
 
 		String getName() {
 			return name;
+		}
+
+		int getSize() {
+			return size;
 		}
 
 		/**
@@ -159,16 +171,7 @@ public final class AssignmentTreeViewModel implements TreeViewModel {
 		@Override
 		public void render(Context context, CategoryNode value, SafeHtmlBuilder sb) {
 			if (value != null) {
-				sb.appendEscaped(value.getName());
-
-				// TODO get number of assignments in this category.
-				int numberOfChildren = 0;
-				if (value.getName() == "Current Assignments")
-					numberOfChildren = 2;
-				else
-					numberOfChildren = 5;
-
-				sb.appendEscaped(" (" + numberOfChildren + ")");
+				sb.appendEscaped(value.getName() + " (" + value.getSize() + ")");
 			}
 		}
 	}
