@@ -20,10 +20,24 @@ public class SelectedProblemDataServiceImpl extends RemoteServiceServlet impleme
 
 		// assume zero resets used if no user work is present
 		final int defaultResetsUsed = 0;
+		Database db = null;
+		ProblemData data = null;
 
-		Database db = new Database();
-		ProblemData data = ServerUtils.createProblemData(db, problemId, defaultResetsUsed);
-		db.closeConnection();
+		try {
+
+			db = new Database();
+			db.beginTransaction();
+
+			data = ServerUtils.createProblemData(db, problemId, defaultResetsUsed);
+
+			// Commit transaction
+			db.commitTransaction();
+		} catch (Throwable exception) {
+			db.rollBackTransaction();
+			LOG.publish(new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - Transaction rolled back"));
+		} finally {
+			db.closeConnection();
+		}
 
 		LOG.publish(new LogRecord(Level.INFO, "SelectedProblemDataServiceImpl#fetchProblemData - end"));
 		return data;
