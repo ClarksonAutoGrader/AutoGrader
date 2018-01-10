@@ -48,10 +48,13 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 			}
 
 			// Delete user work record if exists
-			int result = -1;
-			result = db.update(Database.deleteUserWorkRecord, ServerUtils.getUsername(), userWork.getPermutationId());
+			int userWorkResult = -1;
+			int prevAnsResult = -1;
+			userWorkResult = db.update(Database.deleteUserWorkRecord, ServerUtils.getUsername(),
+					userWork.getPermutationId());
 			LOG.publish(
-			        new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - records deleted: " + result));
+					new LogRecord(Level.INFO,
+							"SubmitAnswersServiceImpl#submitAnswers - records deleted: " + userWorkResult));
 
 			/*
 			 * Insert new user work record and trigger insertion of previous
@@ -67,26 +70,45 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 			 * [29]<-[14], [30]<-[15]
 			 * 
 			 */
-			Object[] params = new Object[31];
+			Object[] userWorkParams = new Object[31];
 			final String str = "";
 			final String tick = "'";
-			params[0] = str + userWork.getId();
-			params[1] = str + userWork.getProblemId();
-			params[2] = ServerUtils.getUsername();
-			params[3] = str + userWork.getPermutationId();
-			params[4] = str + userWork.getResetsUsed();
-			params[5] = str + (userWork.getAttemptsUsed() + 1);
+			userWorkParams[0] = str + userWork.getId();
+			userWorkParams[1] = str + userWork.getProblemId();
+			userWorkParams[2] = ServerUtils.getUsername();
+			userWorkParams[3] = str + userWork.getPermutationId();
+			userWorkParams[4] = str + userWork.getResetsUsed();
+			userWorkParams[5] = str + (userWork.getAttemptsUsed() + 1);
 			for (int index = 6; index <= 15; index++) {
 				String param = userWork.getUserAnswers()[index - 6];
-				params[index] = param != null ? tick + param + tick : param;
+				userWorkParams[index] = param != null ? tick + param + tick : param;
 			}
 			for (int index = 16; index <= 30; index++) {
-				params[index] = params[index - 15];
+				userWorkParams[index] = userWorkParams[index - 15];
 			}
-			result = -1;
-			result = db.update(Database.insertSubmittedUserWork, params);
+
+			// inserting into user work
+			userWorkResult = -1;
+			userWorkResult = db.update(Database.insertSubmittedUserWork, userWorkParams);
 			LOG.publish(
-			        new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - records inserted: " + result));
+					new LogRecord(Level.INFO,
+							"SubmitAnswersServiceImpl#submitAnswers - records inserted into user_work: "
+									+ userWorkResult));
+
+			Object[] prevAnsParams = new Object[13];
+			prevAnsParams[0] = str + userWork.getProblemId();
+			prevAnsParams[1] = ServerUtils.getUsername();
+			prevAnsParams[2] = str + userWork.getPermutationId();
+			for (int index = 3; index < prevAnsParams.length; index++) {
+				String param = userWork.getUserAnswers()[index - 3];
+				prevAnsParams[index] = param != null ? tick + param + tick : param;
+			}
+			// inserting into previous answers
+			prevAnsResult = -1;
+			prevAnsResult = db.update(Database.insertIntoPreviousAnswers, prevAnsParams);
+			LOG.publish(new LogRecord(Level.INFO,
+					"SubmitAnswersServiceImpl#submitAnswers - records inserted into previous_answers: "
+							+ prevAnsResult));
 
 			// assume zero resets used if no user work is present
 			final int defaultResetsUsed = 0;
