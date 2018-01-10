@@ -794,7 +794,19 @@ public class ProblemView extends Composite {
 			}
 
 			private void onError() {
-				Window.alert("Unable to submit problem. Error 10." + problemData.getPermutationId());
+				String errorText = "";
+				if ((problemData.getAttemptsAllowed() - problemData.getAttemptsUsed()) <= 0) {
+					// guess at cause of failure: this check is performed after
+					// failure, and even then it's only a guess, in case client
+					// had previous spoofed the number of attempts
+					errorText = "Unable to submit: No attempts remaining.";
+					if ((problemData.getResetsAllowed() - problemData.getResetsUsed()) > 0) {
+						errorText += " Press \"New Problem\" to reset your grade and receive a new problem.";
+					}
+				} else {
+					errorText = "Unable to submit problem. Error 10." + problemData.getPermutationId();
+				}
+				Window.alert(errorText);
 				restoreState();
 			}
 
