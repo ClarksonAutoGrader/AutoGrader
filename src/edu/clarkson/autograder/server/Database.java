@@ -264,6 +264,15 @@ public class Database {
 	        + "SELECT * FROM user_work WHERE user_work.soln_username = '%s' AND user_work.soln_perm_id = %s);";
 
 	/**
+	 * Inserts previous answers record for submit action. Requires parameters
+	 * for all columns being inserted. Required fields (in order): problem ID,
+	 * username, permutation ID, answers 1-10
+	 */
+	final static String insertIntoPreviousAnswers = "INSERT INTO previous_answers (prev_ans_prob_id, prev_ans_username, prev_ans_perm_id, "
+			+ "prev_ans_1, prev_ans_2, prev_ans_3, prev_ans_4, prev_ans_5, prev_ans_6, prev_ans_7, prev_ans_8, prev_ans_9, prev_ans_10) "
+			+ "VALUES (%s, '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);";
+
+	/**
 	 * Returns user work key for a given username and problem ID. This is used
 	 * to verify a record exists as a separate query.
 	 */
