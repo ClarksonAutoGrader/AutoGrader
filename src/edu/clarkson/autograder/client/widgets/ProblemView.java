@@ -572,14 +572,25 @@ public class ProblemView extends Composite {
 			        .setText(TEXT_RESETS_REMAINING + (problemData.getResetsAllowed() - problemData.getResetsUsed()));
 			attemptsRemaining.setText(
 			        TEXT_ATTEMPTS_REMAINING + (problemData.getAttemptsAllowed() - problemData.getAttemptsUsed()));
+
+			footer.setEnabled(true);
 		}
 
 		/**
 		 * Set the enable state of buttons in the footer
 		 */
 		private void setEnabled(boolean enabled) {
-			submit.setEnabled(enabled);
-			newProblem.setEnabled(enabled);
+			if (problemData.getAttemptsAllowed() - problemData.getAttemptsUsed() <= 0) {
+				submit.setEnabled(false);
+			} else {
+				submit.setEnabled(enabled);
+			}
+
+			if (problemData.getResetsAllowed() - problemData.getResetsUsed() <= 0) {
+				newProblem.setEnabled(false);
+			} else {
+				newProblem.setEnabled(enabled);
+			}
 		}
 		
 		/**
@@ -780,6 +791,7 @@ public class ProblemView extends Composite {
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
 				onError();
+				footer.setSubmitButtonLoading(false);
 			}
 
 			@Override
@@ -787,10 +799,11 @@ public class ProblemView extends Composite {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onSuccess"));
 				if (problemData == null) {
 					onError();
-					return;
+				} else {
+					// load new data
+					update(problemData);
 				}
-				update(problemData);
-				restoreState();
+				footer.setSubmitButtonLoading(false);
 			}
 
 			private void onError() {
@@ -807,12 +820,9 @@ public class ProblemView extends Composite {
 					errorText = "Unable to submit problem. Error 10." + problemData.getPermutationId();
 				}
 				Window.alert(errorText);
-				restoreState();
-			}
 
-			private void restoreState() {
-				footer.setEnabled(true);
-				footer.setSubmitButtonLoading(false);
+				// force refresh
+				update(problemData);
 			}
 		});
 		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
@@ -827,6 +837,7 @@ public class ProblemView extends Composite {
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - onFailure"));
 				onError();
+				footer.setNewProblemButtonLoading(false);
 			}
 
 			@Override
@@ -834,10 +845,11 @@ public class ProblemView extends Composite {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - onSuccess"));
 				if (problemData == null) {
 					onError();
-					return;
+				} else {
+					// load new data
+					update(problemData);
 				}
-				update(problemData);
-				restoreState();
+				footer.setNewProblemButtonLoading(false);
 			}
 
 			private void onError() {
@@ -853,12 +865,9 @@ public class ProblemView extends Composite {
 					errorText = "Unable to load new problem. Error 11." + problemData.getPermutationId();
 				}
 				Window.alert(errorText);
-				restoreState();
-			}
 
-			private void restoreState() {
-				footer.setEnabled(true);
-				footer.setNewProblemButtonLoading(false);
+				// force refresh
+				update(problemData);
 			}
 		});
 		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - end"));
