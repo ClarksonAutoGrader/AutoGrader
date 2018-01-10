@@ -43,6 +43,8 @@ public class NewProblemServiceImpl extends RemoteServiceServlet implements NewPr
 					ServerUtils.getUsername(), userWork.getProblemId());
 			if (!userWorkExists) {
 				// force return of empty ProblemData
+				db.commitTransaction();
+				db.closeConnection();
 				return null;
 			}
 
@@ -72,8 +74,7 @@ public class NewProblemServiceImpl extends RemoteServiceServlet implements NewPr
 			final int defaultResetsUsed = userWork.getResetsUsed() + 1;
 
 			// query for Problem Data, evaluate answers based on existing user
-			// work,
-			// update user work points
+			// work, update user work points
 			data = ServerUtils.createProblemData(db, userWork.getProblemId(), defaultResetsUsed);
 
 			// Commit transaction

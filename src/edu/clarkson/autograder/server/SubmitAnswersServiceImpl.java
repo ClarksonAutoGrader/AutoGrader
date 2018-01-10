@@ -1,5 +1,7 @@
 package edu.clarkson.autograder.server;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -18,20 +20,38 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 	@Override
 	public ProblemData submitAnswers(UserWork userWork) {
 
+		LOG.publish(new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - begin"));
+
 		Database db = null;
 		ProblemData data = null;
 
-		LOG.publish(new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - begin"));
 		try {
 			// Establish connection to database and begin transaction
 			db = new Database();
 			db.beginTransaction();
 
+			// check if user has any resets remaining
+			ProcessResultSetCallback<Integer> processAttemptsRemainingCallback = new ProcessResultSetCallback<Integer>() {
+				@Override
+				public Integer process(ResultSet rs) throws SQLException {
+					rs.next();
+					return rs.getInt("num_check_remaining");
+				}
+			};
+			int resetsRemaining = db.query(processAttemptsRemainingCallback, Database.selectAttemptsRemaining,
+			        ServerUtils.getUsername(), userWork.getProblemId());
+			if (resetsRemaining <= 0) {
+				// force return of empty ProblemData
+				db.commitTransaction();
+				db.closeConnection();
+				return null;
+			}
+
 			// Delete user work record if exists
 			int result = -1;
 			result = db.update(Database.deleteUserWorkRecord, ServerUtils.getUsername(), userWork.getPermutationId());
 			LOG.publish(
-					new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - records deleted: " + result));
+			        new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - records deleted: " + result));
 
 			/*
 			 * Insert new user work record and trigger insertion of previous
@@ -63,26 +83,24 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 			for (int index = 16; index <= 30; index++) {
 				params[index] = params[index - 15];
 			}
+			result = -1;
 			result = db.update(Database.insertSubmittedUserWork, params);
 			LOG.publish(
-					new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - records inserted: " + result));
+			        new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - records inserted: " + result));
 
 			// assume zero resets used if no user work is present
 			final int defaultResetsUsed = 0;
 
 			// query for Problem Data, evaluate answers based on existing user
-			// work,
-			// update user work points
+			// work, update user work points
 			data = ServerUtils.createProblemData(db, userWork.getProblemId(), defaultResetsUsed);
 
 			// Commit transaction
 			db.commitTransaction();
-		}
-		catch (Throwable exception) {
+		} catch (Throwable exception) {
 			db.rollBackTransaction();
 			LOG.publish(new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - Transaction rolled back"));
-		}
-		finally {
+		} finally {
 			db.closeConnection();
 		}
 

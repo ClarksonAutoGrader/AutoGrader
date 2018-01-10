@@ -150,7 +150,7 @@ public class ProblemView extends Composite {
 	 * Abstracts question input widget type which may have various methods for
 	 * obtaining their current value.
 	 */
-	private interface Answer {
+	private interface AnswerField {
 
 		String getAnswer();
 
@@ -160,6 +160,8 @@ public class ProblemView extends Composite {
 		 * @return whether operation succeeded
 		 */
 		boolean setAnswer(String value);
+
+		void setDisabled(boolean disabled);
 	}
 
 	private Widget createPreviousAnswersContent(final int answerNumber) {
@@ -194,7 +196,7 @@ public class ProblemView extends Composite {
 
 			private final Widget ANSWER_WIDGET;
 
-			private final class CustomField extends TextBox implements Answer {
+			private final class CustomField extends TextBox implements AnswerField {
 
 				private CustomField() {
 					super();
@@ -215,9 +217,14 @@ public class ProblemView extends Composite {
 					}
 					return successful;
 				}
+
+				@Override
+				public void setDisabled(boolean disabled) {
+					setReadOnly(disabled);
+				}
 			}
 
-			private final class CustomList extends ListBox implements Answer {
+			private final class CustomList extends ListBox implements AnswerField {
 
 				private CustomList(String... items) {
 					super();
@@ -243,6 +250,11 @@ public class ProblemView extends Composite {
 						}
 					}
 					return found;
+				}
+
+				@Override
+				public void setDisabled(boolean disabled) {
+					this.setEnabled(!disabled);
 				}
 			}
 
@@ -330,11 +342,15 @@ public class ProblemView extends Composite {
 			}
 
 			private String getAnswer() {
-				return ((Answer) ANSWER_WIDGET).getAnswer();
+				return ((AnswerField) ANSWER_WIDGET).getAnswer();
 			}
 
 			private boolean setAnswer(String value) {
-				return ((Answer) ANSWER_WIDGET).setAnswer(value);
+				return ((AnswerField) ANSWER_WIDGET).setAnswer(value);
+			}
+
+			private void setDisabled(boolean disabled) {
+				((AnswerField) ANSWER_WIDGET).setDisabled(disabled);
 			}
 		}
 
@@ -444,8 +460,16 @@ public class ProblemView extends Composite {
 
 					// create QuestionWidget to house each answer field
 					final QuestionWidget widget = new QuestionWidget(ansNum, type, content, gradeFlag);
+					// lock questionWidgets
+					if ((problemData.getAttemptsAllowed() - problemData.getAttemptsUsed()) <= 0
+					        || flag.equals("correct")) {
+						widget.setDisabled(true);
+					}
+
+					// add widget to page
 					panel.addAndReplaceElement(widget, id);
 					questions[ansNum - 1] = widget;
+
 				} else {
 					reportErrorParsingBody(
 					        "Error parsing problem body: " + id + " has unknown inner text \"" + innerText + "\"",
@@ -548,14 +572,25 @@ public class ProblemView extends Composite {
 			        .setText(TEXT_RESETS_REMAINING + (problemData.getResetsAllowed() - problemData.getResetsUsed()));
 			attemptsRemaining.setText(
 			        TEXT_ATTEMPTS_REMAINING + (problemData.getAttemptsAllowed() - problemData.getAttemptsUsed()));
+
+			footer.setEnabled(true);
 		}
 
 		/**
 		 * Set the enable state of buttons in the footer
 		 */
 		private void setEnabled(boolean enabled) {
-			submit.setEnabled(enabled);
-			newProblem.setEnabled(enabled);
+			if (problemData.getAttemptsAllowed() - problemData.getAttemptsUsed() <= 0) {
+				submit.setEnabled(false);
+			} else {
+				submit.setEnabled(enabled);
+			}
+
+			if (problemData.getResetsAllowed() - problemData.getResetsUsed() <= 0) {
+				newProblem.setEnabled(false);
+			} else {
+				newProblem.setEnabled(enabled);
+			}
 		}
 		
 		/**
@@ -756,6 +791,7 @@ public class ProblemView extends Composite {
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onFailure"));
 				onError();
+				footer.setSubmitButtonLoading(false);
 			}
 
 			@Override
@@ -763,20 +799,30 @@ public class ProblemView extends Composite {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - onSuccess"));
 				if (problemData == null) {
 					onError();
-					return;
+				} else {
+					// load new data
+					update(problemData);
 				}
-				update(problemData);
-				restoreState();
+				footer.setSubmitButtonLoading(false);
 			}
 
 			private void onError() {
-				Window.alert("Unable to submit problem. Error 10." + problemData.getPermutationId());
-				restoreState();
-			}
+				String errorText = "";
+				if ((problemData.getAttemptsAllowed() - problemData.getAttemptsUsed()) <= 0) {
+					// guess at cause of failure: this check is performed after
+					// failure, and even then it's only a guess, in case client
+					// had previous spoofed the number of attempts
+					errorText = "Unable to submit: No attempts remaining.";
+					if ((problemData.getResetsAllowed() - problemData.getResetsUsed()) > 0) {
+						errorText += " Press \"New Problem\" to reset your grade and receive a new problem.";
+					}
+				} else {
+					errorText = "Unable to submit problem. Error 10." + problemData.getPermutationId();
+				}
+				Window.alert(errorText);
 
-			private void restoreState() {
-				footer.setEnabled(true);
-				footer.setSubmitButtonLoading(false);
+				// force refresh
+				update(problemData);
 			}
 		});
 		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestSubmitAnswersAsync - end"));
@@ -791,6 +837,7 @@ public class ProblemView extends Composite {
 			public void onFailure(Throwable caught) {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - onFailure"));
 				onError();
+				footer.setNewProblemButtonLoading(false);
 			}
 
 			@Override
@@ -798,10 +845,11 @@ public class ProblemView extends Composite {
 				LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - onSuccess"));
 				if (problemData == null) {
 					onError();
-					return;
+				} else {
+					// load new data
+					update(problemData);
 				}
-				update(problemData);
-				restoreState();
+				footer.setNewProblemButtonLoading(false);
 			}
 
 			private void onError() {
@@ -817,12 +865,9 @@ public class ProblemView extends Composite {
 					errorText = "Unable to load new problem. Error 11." + problemData.getPermutationId();
 				}
 				Window.alert(errorText);
-				restoreState();
-			}
 
-			private void restoreState() {
-				footer.setEnabled(true);
-				footer.setNewProblemButtonLoading(false);
+				// force refresh
+				update(problemData);
 			}
 		});
 		LOG.publish(new LogRecord(Level.INFO, "ProblemView#requestNewProblemAsync - end"));
