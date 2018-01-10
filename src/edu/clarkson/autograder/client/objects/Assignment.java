@@ -73,6 +73,11 @@ public class Assignment implements Serializable, Comparable<Assignment> {
 	 */
 	@Override
 	public int compareTo(Assignment other) {
-		return getDueDate().compareTo(other.getDueDate());
+		Date now = new Date();
+		if (getDueDate().compareTo(now) > 0) {
+			return getDueDate().compareTo(other.getDueDate());
+		} else {
+			return other.getDueDate().compareTo(getDueDate());
+		}
 	}
 }
