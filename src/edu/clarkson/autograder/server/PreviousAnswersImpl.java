@@ -23,7 +23,7 @@ public class PreviousAnswersImpl extends RemoteServiceServlet implements Previou
 		LOG.publish(new LogRecord(Level.INFO, "PreviousAnswersImpl#fetchPreviousAnswers - begin"));
 
 		Database db = new Database();
-		List<PreviousAnswersRow> previousAnswers = db.query(processResultSetcallback, Database.previousAnswersSql,
+		List<PreviousAnswersRow> previousAnswers = db.query(processResultSetcallback, Database.selectPreviousAnswersSql,
 		        answerNumber, ServerUtils.getUsername(), permutationId);
 		db.closeConnection();
 

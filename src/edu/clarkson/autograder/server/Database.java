@@ -56,9 +56,11 @@ public class Database {
 		try {
 			if (conn != null && !conn.isClosed()) {
 				LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - connection already active"));
+				conn.close();
 			}
 		} catch (SQLException e1) {
 			LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - existing connection corrupt"));
+			conn = null;
 		}
 
 		LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - attempting to connect"));
@@ -93,7 +95,6 @@ public class Database {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "statement created"));
 
 			rowsUpdated = stmt.executeUpdate(SQL);
-
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "updated " + rowsUpdated + " rows"));
 		} catch (SQLException exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + " " + exception));
@@ -191,7 +192,7 @@ public class Database {
 	/**
 	 * Returns the user role as String given a username. 
 	 */
-	final static String userRoleSql = "SELECT user_role FROM users WHERE username = '%s';";
+	final static String selectUserRoleSql = "SELECT user_role FROM users WHERE username = '%s';";
 
 	/**
 	 * Returns the course given a username and course ID
@@ -214,7 +215,7 @@ public class Database {
 	 * Required inputs are answer number, username and permutation ID (in that
 	 * order).
 	 */
-	final static String previousAnswersSql = "SELECT prev_ans_%s FROM previous_answers WHERE prev_ans_username = '%s' AND prev_ans_perm_id = %s;";
+	final static String selectPreviousAnswersSql = "SELECT prev_ans_%s FROM previous_answers WHERE prev_ans_username = '%s' AND prev_ans_perm_id = %s;";
 	
 	/**
 	 * Returns data needed to create
@@ -222,7 +223,7 @@ public class Database {
 	 * <br>
 	 * Required input is the course ID.
 	 */
-	final static String gradebookDataSql = "SELECT c.course_title, e.enr_username, a.assignment_title, SUM(COALESCE(uw.points, 0)) AS 'uw.points', "
+	final static String selectGradebookDataSql = "SELECT c.course_title, e.enr_username, a.assignment_title, SUM(COALESCE(uw.points, 0)) AS 'uw.points', "
 		    + "SUM(COALESCE(prob.points_possible, 0)) AS 'prob.points_possible' FROM enrollment e RIGHT JOIN courses c ON e.enr_cid = c.course_id "
 		    + "RIGHT JOIN assignments a ON c.course_id = a.a_cid LEFT JOIN problems prob ON prob.problem_aid = a.assignment_id "
 		    + "LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id AND e.enr_username = uw.soln_username "
@@ -345,4 +346,28 @@ public class Database {
 		DbUtils.closeQuietly(conn);
 	}
 
+	public void beginTransaction() throws SQLException {
+		if (conn != null) {
+			conn.setAutoCommit(false);
+		}
+	}
+
+	public void commitTransaction() throws SQLException {
+		if (conn != null) {
+			if (!conn.isClosed()) {
+				conn.commit();
+			}
+			conn.setAutoCommit(true);
+		}
+	}
+
+	public void rollBackTransaction() {
+		if (conn != null) {
+			try {
+				conn.rollback();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

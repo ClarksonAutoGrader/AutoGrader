@@ -55,8 +55,6 @@ public class ServerUtils {
 			        data.getPermutationId());
 		}
 		
-		db.closeConnection();
-
 		return data;
 	}
 
