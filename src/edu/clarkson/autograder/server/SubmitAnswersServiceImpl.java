@@ -30,6 +30,15 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 			db = new Database();
 			db.beginTransaction();
 
+			// check if assignment is open
+			boolean assignmentOpen = ServerUtils.problemIsOpen(db, userWork.getProblemId());
+			if (!assignmentOpen) {
+				// force return of empty ProblemData
+				db.commitTransaction();
+				db.closeConnection();
+				return null;
+			}
+
 			// check if user has any resets remaining
 			ProcessResultSetCallback<Integer> processAttemptsRemainingCallback = new ProcessResultSetCallback<Integer>() {
 				@Override

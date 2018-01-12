@@ -145,6 +145,11 @@ public class Database {
 	 */
 
 	/**
+	 * Returns the due date of the parent assignment given a specific problem ID.
+	 */
+	final static String selectAssignmentDates = "SELECT a.due_date FROM assignments a JOIN problems prob ON a.assignment_id = prob.problem_aid WHERE prob.problem_id = %s;";
+
+	/**
 	 * Returns the number of resets remaining for a user and permutation ID.
 	 */
 	final static String selectResetsRemaining = "SELECT prob.num_new_questions_allowed - COALESCE(uw.num_new_questions_used, 0) AS 'num_new_questions_remaining' "

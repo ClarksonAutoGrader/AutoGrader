@@ -2,6 +2,7 @@ package edu.clarkson.autograder.server;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -37,6 +38,20 @@ public class ServerUtils {
 		}
 		LOG.publish(new LogRecord(Level.INFO, "ServerUtils#getUsername - user=" + username));
 		return username;
+	}
+	
+	static boolean problemIsOpen(Database db, int problemId) {
+		// check if assignment is open for submission
+		ProcessResultSetCallback<Boolean> processAssignmentStatusCallback = new ProcessResultSetCallback<Boolean>() {
+			@Override
+			public Boolean process(ResultSet rs) throws SQLException {
+				rs.next();
+				Date now = new Date();
+				return now.before(rs.getDate("a.due_date"));
+			}
+		};
+		return db.query(processAssignmentStatusCallback, Database.selectAssignmentDates, problemId);
+
 	}
 
 	static ProblemData createProblemData(Database db, int problemId, int defaultResetsUsed) {
