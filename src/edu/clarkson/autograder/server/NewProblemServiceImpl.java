@@ -30,6 +30,15 @@ public class NewProblemServiceImpl extends RemoteServiceServlet implements NewPr
 			db = new Database();
 			db.beginTransaction();
 
+			// check if assignment is open
+			boolean assignmentOpen = ServerUtils.problemIsOpen(db, userWork.getProblemId());
+			if (!assignmentOpen) {
+				// force return of empty ProblemData
+				db.commitTransaction();
+				db.closeConnection();
+				return null;
+			}
+
 			// ensure at least one user work submission has been made before
 			// allowing a new problem permutation
 			ProcessResultSetCallback<Boolean> processUserWorkExistsCallback = new ProcessResultSetCallback<Boolean>() {
