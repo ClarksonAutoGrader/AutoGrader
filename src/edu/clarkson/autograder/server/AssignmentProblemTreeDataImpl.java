@@ -99,6 +99,9 @@ public class AssignmentProblemTreeDataImpl extends RemoteServiceServlet implemen
 					problemSet.add(currentProb);
 				}
 			}
+			// update assignment with point totals
+			assign = new Assignment(assign.getId(), assign.getcId(), assign.getTitle(), assign.getDueDate(),
+			        assignmentPointsPossible, assignmentPointsEarned);
 			map.put(assign, problemSet);
 
 			LOG.publish(new LogRecord(Level.INFO, "Database#queryAssignmentProblemTreeData - end"));
