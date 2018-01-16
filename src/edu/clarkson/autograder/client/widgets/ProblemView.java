@@ -421,7 +421,7 @@ public class ProblemView extends Composite {
 				final String id = "ans_" + ansNum;
 				final Element divElement = panel.getElementById(id);
 				if (divElement == null) {
-					reportErrorParsingBody("Error parsing problem body: cannot find element " + id,
+					reportErrorParsingBody("Error parsing problem body: Error 76 cannot find element " + id,
 					        "Error loading problem body (Error 76)");
 					return;
 				}
