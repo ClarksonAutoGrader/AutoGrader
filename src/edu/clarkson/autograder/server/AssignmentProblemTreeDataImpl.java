@@ -91,7 +91,7 @@ public class AssignmentProblemTreeDataImpl extends RemoteServiceServlet implemen
 
 					// create the new assignment with placeholder points
 					assign = new Assignment(currentAssignId, courseId, rs.getString("a.assignment_title"),
-							rs.getDate("a.due_date"), 0.0, 0.0);
+					        rs.getTimestamp("a.due_date"), 0.0, 0.0);
 					previousAssignId = currentAssignId;
 
 					// create the new problemSet

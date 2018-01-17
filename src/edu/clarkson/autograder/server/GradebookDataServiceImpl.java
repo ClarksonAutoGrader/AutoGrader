@@ -22,13 +22,13 @@ public class GradebookDataServiceImpl extends RemoteServiceServlet implements Gr
 	@Override
 	public GradebookData fetchGradebookData(int courseId) throws IllegalArgumentException {
 
-		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - begin"));
+		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#fetchGradebookData - begin"));
 
 		Database db = new Database();
 		GradebookData data = db.query(processResultSetCallback, Database.selectGradebookDataSql, courseId);
 		db.closeConnection();
 
-		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - end"));
+		LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#fetchGradebookData - end"));
 		return data;
 	}
 
@@ -50,12 +50,13 @@ public class GradebookDataServiceImpl extends RemoteServiceServlet implements Gr
 			// iterate on rows
 			while (rs.next()) {
 				
-				LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - row iteration"));
-				
-				currentUsername = rs.getString("enr_username");
+				currentUsername = rs.getString("e.enr_username");
+				final String userRole = rs.getString("u.user_role");
+				if (!userRole.equals("student")) {
+					currentUsername += " (" + userRole + ")";
+				}
+
 				currentUserPoints = rs.getDouble("uw.points");
-				
-				LOG.publish(new LogRecord(Level.INFO, "GradebookDataServiceImpl#getGradebookData - processing user: " + currentUsername));
 				
 				// test if a new user
 				if (currentUsername.equals(lastUsername)) {
