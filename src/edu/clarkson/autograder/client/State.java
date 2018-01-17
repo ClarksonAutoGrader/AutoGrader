@@ -8,7 +8,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import edu.clarkson.autograder.client.objects.Course;
@@ -17,6 +16,8 @@ import edu.clarkson.autograder.client.pages.CourseSelectionPage;
 import edu.clarkson.autograder.client.pages.GradebookPage;
 import edu.clarkson.autograder.client.services.UserRoleService;
 import edu.clarkson.autograder.client.services.UserRoleServiceAsync;
+import edu.clarkson.autograder.client.widgets.dialogbox.ConfirmDialogCallback;
+import edu.clarkson.autograder.client.widgets.dialogbox.DialogBoxWidget;
 
 public final class State implements ValueChangeHandler<String> {
 
@@ -81,18 +82,22 @@ public final class State implements ValueChangeHandler<String> {
 			@Override
 			public void onSuccess(String role) {
 				LOG.publish(new LogRecord(Level.INFO, "requestUserRoleService#onSuccess - role=" + role));
-				if (role.equals("instructor")) {
-					ContentContainer.setContent(new GradebookPage(courseId));
-				} else if (role.equals("student")) {
+				if (role.equals("student")) {
 					ContentContainer.setContent(new CoursePage(courseId));
-				} else if (role.equals("developer")) {
-					// developer preference :)
-					boolean choice = Window.confirm("Welcome, admin. Press \"OK\" to proceed to student view, \"CANCEL\" to load the instructor view instead.");
-					if (choice) {
-						ContentContainer.setContent(new CoursePage(courseId));
-					} else {
-						ContentContainer.setContent(new GradebookPage(courseId));
-					}
+				} else if (role.equals("instructor") || role.equals("developer")) {
+					DialogBoxWidget.confirm("Welcome, Instructor",
+					        "As an instructor, you may continue to course gradebook or view course as student. Please select an option below.",
+					        "Continue to Gradebook", "Continue as Student", new ConfirmDialogCallback() {
+						        @Override
+						        public void onAffirmative() {
+							        ContentContainer.setContent(new CoursePage(courseId));
+						        }
+
+						        @Override
+						        public void onCancel() {
+							        ContentContainer.setContent(new GradebookPage(courseId));
+						        }
+					        });
 				}
 			}
 		});
