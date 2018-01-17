@@ -4,7 +4,7 @@
     <!ENTITY gwtmodule "edu.clarkson.autograder.Autograder">
     <!ENTITY ivyversion "2.4.0">
 ]>
-<project name="&appname;" default="build" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="&appname;" default="clean-and-war" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
 
   <!-- Convert appname to lowercase -->
   <scriptdef language="javascript" name="lower">
@@ -63,6 +63,8 @@
     <javac srcdir="src" includes="**" encoding="utf-8"
         destdir="war/WEB-INF/classes"
         source="1.7" target="1.7" nowarn="true"
+    	fork="yes"
+    	includeantruntime="false"
         debug="true" debuglevel="lines,vars,source">
       <classpath refid="project.class.path"/>
     </javac>
@@ -84,24 +86,49 @@
       <arg value="&gwtmodule;"/>
     </java>
   </target>
+	
+  <target name="custom-package" depends="gwtc" description="Custom library and jar packaging (final build step)">
+    <jar jarfile="war/WEB-INF/lib/gwt-cache-filter.jar">
+      <fileset dir="war/WEB-INF/classes/edu/clarkson/autograder/client/validator">
+        <include name="GWTCacheControlFilter.class"/>
+      </fileset>
+    </jar>
+  </target>
 
-  <target name="build" depends="gwtc" description="Build this project" />
+  <target name="build" depends="custom-package" description="Build this project" />
 
   <target name="war" depends="build" description="Create a war file">
-    <zip destfile="${lowerappname}.war" basedir="war"/>
+	<!-- GWT Eclipse Plugin requires gwt-servlet.jar, but the app will never need it -->
+  	<!-- (if the app needs the jar Ivy can download it, but it will be under a different name) -->
+  	<zip destfile="${lowerappname}.war">
+    	<zipfileset dir="war">
+    		<exclude name="WEB-INF/lib/gwt-servlet.jar"/>
+    	</zipfileset>
+	</zip>
   </target>
   
   <target name="clean" description="Cleans this project">
-    <delete dir="war/WEB-INF/classes" failonerror="false" />    
-    <delete dir="war/WEB-INF/lib" failonerror="false" />    
+    <delete dir="war/WEB-INF/classes" failonerror="false" />
+    <delete dir="war/WEB-INF/deploy" failonerror="false" includeemptydirs="true" />
+    <delete>
+    	<!-- GWT Eclipse Plugin requires gwt-servlet.jar -->
+    	<fileset dir="war/WEB-INF/lib/">
+    		<exclude name="gwt-servlet.jar"/>
+    	</fileset>
+    </delete>
     <delete dir="war/${lowerappname}" failonerror="false" />
-    <delete dir="lib" failonerror="false" />
   </target>
   
   <target name="clean-ivy" description="clean the ivy installation">
-    <delete dir="${ivy.dir}"/>
+    <delete includeemptydirs="true" failonerror="false">
+    	<fileset dir="${ivy.dir}">
+    		<exclude name="ivy.jar"/>
+    	</fileset>
+    </delete>
   </target>
   
   <target name="clean-all" depends="clean,clean-ivy"/>
+	
+  <target name="clean-and-war" depends="clean-all,war"/>
 
 </project>

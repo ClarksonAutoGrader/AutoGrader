@@ -1,107 +1,83 @@
 package edu.clarkson.autograder.client.objects;
 
+import java.io.Serializable;
 import java.util.Date;
 
-import edu.clarkson.autograder.client.Data;
-import edu.clarkson.autograder.client.widgets.Listable;
+@SuppressWarnings("serial")
+public class Assignment implements Serializable, Comparable<Assignment> {
+	private int id;
+	private int cId;
+	private String title;
+	private Date dueDate;
+	private double totalPoints;
+	private double earnedPoints;
 
-public class Assignment implements Listable {
-    private int id;
-    private int cId;
-    private boolean visible;
-    private String title;
-    private Date openTime;
-    private Date closeTime;
+	/**
+	 * Constructor
+	 * 
+	 * @param id
+	 *            unique assignment id
+	 * @param cId
+	 *            parent course
+	 * @param title
+	 *            course title
+	 * @param dueDate
+	 *            assignments after due date cannot be worked on for a grade
+	 * @param totalPoints
+	 *            cumulative total points across all problems in this assignment
+	 * @param earnedPoints
+	 *            cumulative earned points across all problems in this
+	 *            assignment
+	 */
+	public Assignment(int id, int cId, String title, Date dueDate, double totalPoints, double earnedPoints) {
+		this.id = id;
+		this.cId = cId;
+		this.title = title;
+		this.dueDate = dueDate;
+		this.totalPoints = totalPoints;
+		this.earnedPoints = earnedPoints;
+	}
 
-    /**
-     * No argument constructor
-     */
-    public Assignment() {
-    }
+	/**
+	 * Default constructor required for serialization
+	 */
+	public Assignment() {
+	}
 
-    /**
-     * Convenience constructor (temporary)
-     * 
-     * @param id
-     * @param cId
-     * @param visible
-     * @param title
-     * @param openTime
-     * @param closeTime
-     */
-    public Assignment(int id, int cId, boolean visible, String title, Date openTime, Date closeTime) {
-        super();
-        this.id = id;
-        this.cId = cId;
-        this.visible = visible;
-        this.title = title;
-        this.openTime = openTime;
-        this.closeTime = closeTime;
-    }
+	public int getId() {
+		return id;
+	}
 
-    public int getId() {
-        return id;
-    }
+	public int getcId() {
+		return cId;
+	}
 
-    public void setId(int id) {
-        this.id = id;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public int getcId() {
-        return cId;
-    }
+	public Date getDueDate() {
+		return dueDate;
+	}
 
-    public void setcId(int cId) {
-        this.cId = cId;
-    }
+	public double getTotalPoints() {
+		return totalPoints;
+	}
 
-    public boolean isVisible() {
-        return visible;
-    }
+	public double getEarnedPoints() {
+		return earnedPoints;
+	}
 
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Date getOpenTime() {
-        return openTime;
-    }
-
-    public void setOpenTime(Date openTime) {
-        this.openTime = openTime;
-    }
-
-    public Date getCloseTime() {
-        return closeTime;
-    }
-
-    public void setCloseTime(Date closeTime) {
-        this.closeTime = closeTime;
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public String getDescription() {
-        StringBuilder builder = new StringBuilder(60);
-        builder.append("Due: ");
-        // builder.append(closeTime.getDay()).append(", ");
-        builder.append(closeTime.getMonth() + 1).append("/");
-        builder.append(closeTime.getDate()).append("/");
-        builder.append(closeTime.getYear() % 100);
-
-        return builder.toString();
-    }
-
-    @Override
-    public String getToken() {
-        return Data.formatIdToken(cId) + Data.formatIdToken(id);
-    }
+	/**
+	 * Sort assignments by due date, future to past
+	 */
+	@Override
+	public int compareTo(Assignment other) {
+		Date now = new Date();
+		if (getDueDate().compareTo(now) > 0) {
+			return getDueDate().compareTo(other.getDueDate());
+		} else {
+			return other.getDueDate().compareTo(getDueDate());
+		}
+	}
 }

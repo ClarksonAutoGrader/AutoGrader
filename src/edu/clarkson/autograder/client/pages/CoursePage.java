@@ -1,181 +1,79 @@
 package edu.clarkson.autograder.client.pages;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HTMLTable.Cell;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.logging.client.SimpleRemoteLogHandler;
+import com.google.gwt.user.cellview.client.CellTree;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
-import edu.clarkson.autograder.client.Data;
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
+import edu.clarkson.autograder.client.objects.Problem;
+import edu.clarkson.autograder.client.objects.ProblemData;
+import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataService;
+import edu.clarkson.autograder.client.services.AssignmentProblemTreeDataServiceAsync;
+import edu.clarkson.autograder.client.services.CourseFromIdService;
+import edu.clarkson.autograder.client.services.CourseFromIdServiceAsync;
+import edu.clarkson.autograder.client.services.SelectedProblemDataService;
+import edu.clarkson.autograder.client.services.SelectedProblemDataServiceAsync;
+import edu.clarkson.autograder.client.widgets.AssignmentTreeViewModel;
 import edu.clarkson.autograder.client.widgets.Content;
-import edu.clarkson.autograder.client.widgets.Listing;
+import edu.clarkson.autograder.client.widgets.ProblemView;
 
 /**
  * Generate a page listing all assignments in the specified course.
  */
 public class CoursePage extends Content {
 
-	private Course course;
-	private List<Assignment> assignments = null;
+	private static SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 
-	private FlexTable assignmentsTable = new FlexTable();
-	private Listing activeAssignmentListing;
+	private int courseId;
+
+	private VerticalPanel topLevel;
+
+	private Label pageTitle;
+
+	private HorizontalPanel sideBarAndContent;
+
+	private ProblemView problemView;
+
+	private Label errorLabel;
 
 	/**
-	 * Load CoursePage with specified assignment selection.
+	 * Attempt to create CoursePage with specified course ID. The course ID
+	 * possibly does not exist, or the user cannot access it.
 	 */
-	public CoursePage(Course course, int preselectedAssignmentId) {
+	public CoursePage(int courseId) {
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#<init> - courseId=" + courseId));
+		this.courseId = courseId;
 
-		this.course = course;
-		loadAssignments();
+		// Page title
+		pageTitle = new Label();
+		pageTitle.addStyleName("coursePageHeader");
+		requestCourseFromIdAsync();
 
-		// create assignment listings and highlight one
-		List<Listing> currentListings = new ArrayList<>();
-		List<Listing> pastListings = new ArrayList<>();
-		Date date = new Date();
-		for (Assignment assignment : assignments) {
-			Listing listing = new Listing(assignment);
-			// set selected assignment
-			if (assignment.getId() == preselectedAssignmentId) {
-				activeAssignmentListing = listing;
-				activeAssignmentListing.setSelected(true);
-			}
-			// add listing to either "current" or "past" list
-			if (date.before(assignment.getCloseTime())) {
-				currentListings.add(listing);
-			} else {
-				pastListings.add(listing);
-			}
-		}
-		if (!currentListings.isEmpty()) {
-			// reorder currentListings chronologically by reversing order
-			Listing temp;
-			int start = 0, end = currentListings.size() - 1;
-			while (start < end) {
-				temp = currentListings.get(start);
-				currentListings.set(start, currentListings.get(end));
-				currentListings.set(end, temp);
-				start++;
-				end--;
-			}
+		// Assemble the course page elements
+		sideBarAndContent = new HorizontalPanel();
+		sideBarAndContent.addStyleName("sideBarAndContent");
+		errorLabel = new Label();
+		errorLabel.addStyleName("errorLabel");
+		topLevel = new VerticalPanel();
+		topLevel.add(pageTitle);
+		topLevel.add(sideBarAndContent);
 
-			// select assignment with closest future due date, if none selected
-			if (activeAssignmentListing == null) {
-				// in chronological order, first listing is closest to present
-				activeAssignmentListing = currentListings.get(0);
-				activeAssignmentListing.setSelected(true);
-			}
-		}
-
-		// Create page header
-		Label pageTitle = new Label(course.getTitle());
-		pageTitle.addStyleName("pageTitle");
-		Label subTitle = new Label(course.getDescription());
-		subTitle.addStyleName("pageSubTitle");
-		VerticalPanel pageHeader = new VerticalPanel();
-		pageHeader.add(pageTitle);
-		pageHeader.add(subTitle);
-		// TODO center page header
-		pageHeader.addStyleName("coursePageHeader");
-
-		// Create assignments table
-		// TODO: collapse assignment table to the left (using nifty chevrons)
-		assignmentsTable.setCellSpacing(6);
-		// current assignments
-		assignmentsTable.setHTML(0, 0, "Current Assignments:   (" + currentListings.size() + ")");
-		assignmentsTable.getCellFormatter().setStyleName(0, 0, "assignmentsTableHeader");
-		if (currentListings.isEmpty()) {
-			assignmentsTable.setHTML(1, 0, "<div style=\"line-height:2;padding:6px;\">No assignments</div>");
-		} else {
-			for (Listing listing : currentListings) {
-				assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
-			}
-		}
-		// past assignments (if any)
-		if (!pastListings.isEmpty()) {
-			int labelRow = assignmentsTable.getRowCount();
-			assignmentsTable.setHTML(labelRow, 0, "Past Assignments:   (" + pastListings.size() + ")");
-			assignmentsTable.getCellFormatter().addStyleName(labelRow, 0, "assignmentsTableHeader");
-			for (Listing listing : pastListings) {
-				assignmentsTable.setWidget(assignmentsTable.getRowCount(), 0, listing);
-			}
-		}
-
-		assignmentsTable.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				Cell c = assignmentsTable.getCellForEvent(event);
-				if (c != null) {
-					Widget widget = assignmentsTable.getWidget(c.getRowIndex(), 0);
-					if (widget instanceof Listing) {
-						setSelectedAssignment((Listing) widget);
-					}
-				}
-			}
-		});
-
-		assignmentsTable.addStyleName("assignmentsTable");
-
-		// TODO put assignment view template in question layout pane
-		// TODO populate assignment view template with question data from DB
-		// Question layout pane
-		String contentString = "";
-		if (activeAssignmentListing != null) {
-			contentString += "<p>";
-			for (int i = 0; i < 20 * course.getId(); ++i) {
-				contentString += "line " + (i + 1) + " Assignment ID=" + activeAssignmentListing.getContent().getId()
-				        + " Content<br>";
-				if (i == 20)
-					for (int j = 0; j < 50; ++j)
-						contentString += "Assignment Content ";
-			}
-			contentString += "</p>";
-		} else {
-			contentString = "<div style=\"padding:6px;\">There are no open assignments to display. Past assignments may be viewed from the panel on the left.</div>";
-		}
-		HTML assignmentContent = new HTML(contentString);
-
-		// arrange assignments table and assignment content
-		HorizontalPanel pageContentPane = new HorizontalPanel();
-		pageContentPane.add(assignmentsTable);
-		pageContentPane.add(assignmentContent);
-		assignmentContent.addStyleName("assignmentContent");
-		pageContentPane.addStyleName("assignmentPageContentPane");
-
-		// arrange page header and page content
-		VerticalPanel pageTopLayout = new VerticalPanel();
-		pageTopLayout.add(pageHeader);
-		pageTopLayout.add(pageContentPane);
+		// request data to finish loading sideBarAndContent
+		requestAssignmentProblemTreeDataAsync();
 
 		// Add page to app
-		initWidget(pageTopLayout);
-	}
-
-	public void setSelectedAssignment(Listing selection) {
-		// ignore selecting same listing twice in a row
-		if (selection == activeAssignmentListing) {
-
-			// remove previous selection
-			activeAssignmentListing.setSelected(false);
-
-			// set current selection
-			activeAssignmentListing = selection;
-			activeAssignmentListing.setSelected(true);
-
-			// TODO update assignment content
-		}
+		initWidget(topLevel);
 	}
 
 	@Override
@@ -183,18 +81,123 @@ public class CoursePage extends Content {
 		return "coursePage";
 	}
 
-	/**
-	 * Load a reverse-chronologically sorted copy of course assignments
-	 */
-	private void loadAssignments() {
-		assignments = Data.getAssignmentsFor(course.getId());
+	private void requestCourseFromIdAsync() {
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestCourseFromIdAsync - begin"));
 
-		// sort assignments by date, future to past
-		Collections.sort(assignments, new Comparator<Assignment>() {
+		CourseFromIdServiceAsync courseFromIdService = GWT.create(CourseFromIdService.class);
+		courseFromIdService.fetchCourseFromId(courseId, new AsyncCallback<Course>() {
 			@Override
-			public int compare(Assignment a1, Assignment a2) {
-				return a2.getCloseTime().compareTo(a1.getCloseTime());
+			public void onFailure(Throwable caught) {
+				final String failureToLoadCourse = "Failed to load course.";
+				LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestCourseFromIdAsync - onFailure"));
+				topLevel.clear();
+				errorLabel.setText(failureToLoadCourse);
+				topLevel.add(errorLabel);
+			}
+
+			@Override
+			public void onSuccess(Course course) {
+				LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestCourseFromIdAsync - onSuccess"));
+				pageTitle.setText(course.getTitle());
 			}
 		});
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestCourseFromIdAsync - end"));
+	}
+
+	private void requestAssignmentProblemTreeDataAsync() {
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - begin"));
+
+		AssignmentProblemTreeDataServiceAsync treeDataService = GWT.create(AssignmentProblemTreeDataService.class);
+		treeDataService.fetchTreeData(courseId, new AsyncCallback<SortedMap<Assignment, List<Problem>>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				final String failureToLoadAssignments = "Failed to load course assignments.";
+				LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - onFailure"));
+				sideBarAndContent.remove(errorLabel);
+				errorLabel.setText(failureToLoadAssignments);
+				sideBarAndContent.add(errorLabel);
+			}
+
+			@Override
+			public void onSuccess(SortedMap<Assignment, List<Problem>> treeData) {
+				LOG.publish(new LogRecord(Level.INFO,
+				        "CoursePage#requestAssignmentProblemTreeDataAsync - onSuccess"));
+				if (treeData.isEmpty()) {
+					sideBarAndContent.remove(errorLabel);
+					errorLabel.setText("The instructor has not added any assignments to the course.");
+					sideBarAndContent.add(errorLabel);
+				} else {
+					errorLabel.setText("");
+					sideBarAndContent.remove(errorLabel);
+					loadSideBar(treeData);
+				}
+
+			}
+		});
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#requestAssignmentProblemTreeDataAsync - end"));
+	}
+
+	private void loadSideBar(SortedMap<Assignment, List<Problem>> treeData) {
+
+		// Create a side bar for assignment selection.
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadSideBar"));
+		CellTree sideBar = new CellTree(new AssignmentTreeViewModel(treeData, new ProblemSelectionCallback()), null);
+		sideBar.setAnimationEnabled(true);
+		sideBar.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		sideBar.addStyleName("assignmentSideBar");
+		sideBar.getRootTreeNode().setChildOpen(0, true);
+
+		sideBarAndContent.add(sideBar);
+	}
+
+	public final class ProblemSelectionCallback {
+
+		private ProblemSelectionCallback() {
+		}
+
+		public void requestSelectedProblemDataAsync(int problemId) {
+
+			LOG.publish(new LogRecord(Level.INFO, "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - begin"));
+
+			SelectedProblemDataServiceAsync problemDataService = GWT.create(SelectedProblemDataService.class);
+			problemDataService.fetchProblemData(problemId, new AsyncCallback<ProblemData>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					LOG.publish(new LogRecord(Level.INFO,
+					        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - onFailure"));
+					sideBarAndContent.remove(errorLabel);
+					if (problemView != null) {
+						sideBarAndContent.remove(problemView);
+						problemView = null;
+					}
+					errorLabel.setText("Failed to load the selected problem.");
+					sideBarAndContent.add(errorLabel);
+				}
+
+				@Override
+				public void onSuccess(ProblemData data) {
+					LOG.publish(new LogRecord(Level.INFO,
+					        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - onSuccess"));
+					errorLabel.setText("");
+					sideBarAndContent.remove(errorLabel);
+					loadProblemView(data);
+
+				}
+			});
+			LOG.publish(new LogRecord(Level.INFO,
+			        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - end"));
+		}
+
+	}
+
+	private void loadProblemView(ProblemData data) {
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadProblemView - begin"));
+		if (problemView == null) {
+			problemView = new ProblemView(data);
+			problemView.addStyleName("problemView");
+			sideBarAndContent.add(problemView);
+		} else {
+			problemView.update(data);
+		}
 	}
 }

@@ -1,69 +1,42 @@
 package edu.clarkson.autograder.client.objects;
 
-import edu.clarkson.autograder.client.Data;
-import edu.clarkson.autograder.client.widgets.Listable;
+import java.io.Serializable;
 
-public class Course implements Listable {
-    private int id;
-    private String title;
-    private String description;
-    private boolean visible;
+import edu.clarkson.autograder.client.Autograder;
 
-    /**
-     * No argument constructor
-     */
-    public Course() {
-    }
+@SuppressWarnings("serial")
+public class Course implements Serializable {
+	private int id;
+	private String title;
 
-    /**
-     * Convenience constructor (temporary)
-     * 
-     * @param id
-     * @param title
-     * @param description
-     * @param visible
-     */
-    public Course(int id, String title, String description, boolean visible) {
-        this.setId(id);
-        this.title = title;
-        this.description = description;
-        this.visible = visible;
-    }
+	/**
+	 * Constructor
+	 * 
+	 * @param id
+	 *            unique course id
+	 * @param title
+	 *            course title (any String)
+	 */
+	public Course(int id, String title) {
+		this.id = id;
+		this.title = title;
+	}
 
-    public int getId() {
-        return id;
-    }
+	/**
+	 * Default constructor required for serialization
+	 */
+	public Course() {
+	}
 
-    public void setId(int id) {
-        this.id = id;
-    }
+	public int getId() {
+		return id;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
-
-    @Override
-    public String getToken() {
-        return Data.formatIdToken(id);
-    }
+	public String getToken() {
+		return Autograder.formatIdToken(id);
+	}
 }
