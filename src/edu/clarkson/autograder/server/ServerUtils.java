@@ -226,7 +226,7 @@ public class ServerUtils {
 			}
 			final Problem prob = new Problem(rs.getInt("prob.problem_id"), rs.getInt("prob.problem_aid"),
 			        rs.getString("prob.problem_title"), pointsPossible, pointsEarned,
-			        rs.getInt("prob.num_check_allowed"), rs.getInt("prob.num_new_questions_allowed"));
+			        rs.getInt("prob.num_new_questions_allowed"), rs.getInt("prob.num_check_allowed"));
 
 			final UserWork userWork = new UserWork(rs.getInt("uw.soln_id"), rs.getInt("uw.soln_prob_id"),
 			        rs.getInt("uw.soln_perm_id"), rs.getInt("uw.num_new_questions_used"),
