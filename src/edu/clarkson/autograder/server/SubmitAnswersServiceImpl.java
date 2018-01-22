@@ -33,6 +33,8 @@ public class SubmitAnswersServiceImpl extends RemoteServiceServlet implements Su
 			// check if assignment is open
 			boolean assignmentOpen = ServerUtils.problemIsOpen(db, userWork.getProblemId());
 			if (!assignmentOpen) {
+				LOG.publish(
+				        new LogRecord(Level.INFO, "SubmitAnswersServiceImpl#submitAnswers - assignment is not open"));
 				// force return of empty ProblemData
 				db.commitTransaction();
 				db.closeConnection();

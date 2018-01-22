@@ -1,5 +1,6 @@
 package edu.clarkson.autograder.client.widgets;
 
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -816,8 +817,13 @@ public class ProblemView extends Composite {
 					if ((problemData.getResetsAllowed() - problemData.getResetsUsed()) > 0) {
 						errorText += " Press \"New Problem\" to reset your grade and receive a new problem.";
 					}
+					// TODO: notify if due date has passed
+//				} else if (new Date().after(problemData.getDueDate())) {
+//					errorText = "Unable to submit problem. Assignment due date has passed.";
 				} else {
-					errorText = "Unable to submit problem. Error 10." + problemData.getPermutationId();
+					errorText = "Unable to submit problem. Try refreshing the browser and ensure the due date has not passed. "
+					        + "If you believe this is in error, contact the website administrator and supply the following information: "
+					        + "Error 10." + problemData.getPermutationId() + " " + (new Date());
 				}
 				Window.alert(errorText);
 
