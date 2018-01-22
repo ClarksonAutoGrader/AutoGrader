@@ -47,7 +47,7 @@ public class ServerUtils {
 			public Boolean process(ResultSet rs) throws SQLException {
 				rs.next();
 				Date now = new Date();
-				return now.before(rs.getDate("a.due_date"));
+				return now.before(rs.getTimestamp("a.due_date"));
 			}
 		};
 		return db.query(processAssignmentStatusCallback, Database.selectAssignmentDates, problemId);
