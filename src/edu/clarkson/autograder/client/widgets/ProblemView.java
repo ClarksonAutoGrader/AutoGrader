@@ -822,8 +822,8 @@ public class ProblemView extends Composite {
 //					errorText = "Unable to submit problem. Assignment due date has passed.";
 				} else {
 					errorText = "Unable to submit problem. Try refreshing the browser and ensure the due date has not passed. "
-					        + "If you believe this is in error, contact the website administrator and supply the following code: Error 10."
-					        + problemData.getPermutationId() + "." + (new Date());
+					        + "If you believe this is in error, contact the website administrator and supply the following information: "
+					        + "Error 10." + problemData.getPermutationId() + " " + (new Date());
 				}
 				Window.alert(errorText);
 
