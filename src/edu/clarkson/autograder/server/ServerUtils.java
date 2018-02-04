@@ -189,7 +189,7 @@ public class ServerUtils {
 						}
 
 						// check against tolerance
-						if (Math.abs(correctAnswer - userAnswer) <= (correctAnswer * tolerance)) {
+						if (Math.abs(correctAnswer - userAnswer) <= Math.abs(correctAnswer * tolerance)) {
 							gradeFlag = "correct";
 						} else {
 							gradeFlag = "incorrect";
