@@ -234,7 +234,7 @@ public class Database {
 		    + "LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id AND e.enr_username = uw.soln_username "
 	        + "INNER JOIN users u ON e.enr_username = u.username "
 	        + "WHERE c.course_id = %s GROUP BY e.enr_username, a.assignment_id "
-	        + "ORDER BY a.assignment_id, u.user_role DESC , e.enr_username ASC;";
+	        + "ORDER BY u.user_role DESC, e.enr_username, a.assignment_id;";
 
 	/**
 	 * Update user_work table
