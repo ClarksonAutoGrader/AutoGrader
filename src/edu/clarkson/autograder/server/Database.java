@@ -233,7 +233,8 @@ public class Database {
 		    + "RIGHT JOIN assignments a ON c.course_id = a.a_cid LEFT JOIN problems prob ON prob.problem_aid = a.assignment_id "
 		    + "LEFT JOIN user_work uw ON prob.problem_id = uw.soln_prob_id AND e.enr_username = uw.soln_username "
 	        + "INNER JOIN users u ON e.enr_username = u.username "
-	        + "WHERE c.course_id = %s GROUP BY e.enr_username, a.assignment_id ORDER BY u.user_role DESC, e.enr_username ASC;";
+	        + "WHERE c.course_id = %s GROUP BY e.enr_username, a.assignment_id "
+	        + "ORDER BY u.user_role DESC, e.enr_username, a.assignment_id;";
 
 	/**
 	 * Update user_work table
