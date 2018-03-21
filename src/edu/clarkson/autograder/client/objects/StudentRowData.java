@@ -1,7 +1,7 @@
 /*
 	Autograder is an online homework tool used by Clarkson University.
 	
-	Copyright ©2017-2018 Clarkson University.
+	Copyright 2017-2018 Clarkson University.
 	
 	This file is part of Autograder.
 	
