@@ -30,7 +30,6 @@ public class Database {
 	// Database parameters
 	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
 	private static final String user = "autograder_dev";
-	private static final String password = "292.2K16";
 
 	// Instanced database connection
 	private Connection conn;
@@ -66,6 +65,7 @@ public class Database {
 		LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - attempting to connect"));
 
 		try {
+			String password = System.getenv("AUTOGRADER_DB_ACCESS");
 			Class.forName("com.mysql.jdbc.Driver");
 			// create connection to database
 			conn = DriverManager.getConnection(url, user, password);
