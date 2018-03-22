@@ -1,8 +1,20 @@
 ### autograder-gwt
 
-Autograder is an online homework tool used by Clarkson University.
+Copyright ©2017-2018 Clarkson University.
 
----
+Autograder is a customizable online homework utility.
+This program is licensed under GNU General Purpose License version 3. See the file "COPYING" or visit <https://www.gnu.org/licenses> for
+more information about GPLv3.
+
+Authors: 
+Christopher Murphy  murphycd@clarkson.edu
+Dillon Clapp        clappdj@clarkson.edu
+Ryan Wood           woodrj@clarkson.edu
+
+Source code is available at <https://gitlab.com/ClarksonUniversity/autograder/autograder-gwt>.
+
+Please contact Christopher Murphy (murphycd@clarkson.edu) or Ryan Wood (woodrj@clarkson.edu) with any questions.
+
 
 ### Setting up the Development Environment
 

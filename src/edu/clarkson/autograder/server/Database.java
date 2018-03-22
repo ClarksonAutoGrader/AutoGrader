@@ -1,3 +1,26 @@
+/*
+	Autograder is an online homework tool used by Clarkson University.
+	
+	Copyright 2017-2018 Clarkson University.
+	
+	This file is part of Autograder.
+	
+	This program is licensed under the GNU General Purpose License version 3.
+	
+	Autograder is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	Autograder is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with Autograder. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package edu.clarkson.autograder.server;
 
 import java.sql.Connection;
@@ -30,7 +53,6 @@ public class Database {
 	// Database parameters
 	private static final String url = "jdbc:mysql://autograder.clarkson.edu:3306/autograder_db";
 	private static final String user = "autograder_dev";
-	private static final String password = "292.2K16";
 
 	// Instanced database connection
 	private Connection conn;
@@ -66,6 +88,7 @@ public class Database {
 		LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - attempting to connect"));
 
 		try {
+			String password = System.getenv("AUTOGRADER_DB_ACCESS");
 			Class.forName("com.mysql.jdbc.Driver");
 			// create connection to database
 			conn = DriverManager.getConnection(url, user, password);
