@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivysettings>
+ 	<settings defaultResolver="repos" />
+  	<resolvers>
+  		<chain name="repos">
+  			<ibiblio name="main" m2compatible="true" root="https://maven.sencha.com/repo/repo"/>
+        	<ibiblio name="central" m2compatible="true"/> 
+    	</chain>
+  	</resolvers>
+</ivysettings>

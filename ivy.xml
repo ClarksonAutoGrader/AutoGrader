@@ -33,6 +33,14 @@
         <!-- https://mvnrepository.com/artifact/com.google.gwt/gwt-dev/ -->
 		<dependency org="com.google.gwt" name="gwt-dev" rev="&gwt.version;" conf="sdk->default"/>
 		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.2" conf="sdk,runtime->default"/>
+		<!-- https://maven.sencha.com/repo/webapp/browserepo.html?27 -->
+		<dependency org="com.sencha.gxt" name="gxt" rev="4.0.0" conf="sdk->master">
+    		<artifact name="gxt" ext="jar"/>
+		</dependency>
+		<dependency org="com.sencha.gxt" name="gxt-chart" rev="4.0.0" conf="sdk->master">
+    		<artifact name="gxt-chart" ext="jar"/>
+		</dependency>
+		
     	
     	<!-- 
     	     runtime configuration
