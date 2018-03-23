@@ -12,7 +12,8 @@
   <inherits name="com.google.gwt.logging.Logging"/>
   
   <!-- Other module inherits                                      -->
-
+  <inherits name='com.sencha.gxt.ui.GXT'/>
+  
   <!-- Specify the app entry point class.                         -->
   <entry-point class='edu.clarkson.autograder.client.Autograder'/>
 
@@ -26,6 +27,7 @@
   <set-property name="gwt.logging.enabled" value="TRUE"/>
   <set-property name="gwt.logging.consoleHandler" value="ENABLED" />
 
+  <set-configuration-property name="CssResource.conversionMode"    value="strict" />
 
   <!-- allow Super Dev Mode -->
   <add-linker name="xsiframe"/>

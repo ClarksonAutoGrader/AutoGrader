@@ -47,6 +47,7 @@
   </target>
   
   <target name="resolve" depends="init-ivy" description="retreive dependencies with ivy">
+  	<ivy:settings file="ivysettings.xml"/>
 	<ivy:resolve />
 	<ivy:retrieve pattern="${ivy.dir}/[conf]/[artifact]-[revision](-[classifier]).[ext]" />
   </target>
