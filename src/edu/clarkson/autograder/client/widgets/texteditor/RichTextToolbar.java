@@ -55,58 +55,40 @@ public class RichTextToolbar extends Composite {
 	 */
 	public interface Images extends ClientBundle {
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/bold.gif")
 		ImageResource bold();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/createLink.gif")
 		ImageResource createLink();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/hr.gif")
 		ImageResource hr();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/indent.gif")
 		ImageResource indent();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/insertImage.gif")
 		ImageResource insertImage();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/italic.gif")
 		ImageResource italic();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/justifyCenter.gif")
 		ImageResource justifyCenter();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/justifyLeft.gif")
 		ImageResource justifyLeft();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/justifyRight.gif")
 		ImageResource justifyRight();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/ol.gif")
 		ImageResource ol();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/outdent.gif")
 		ImageResource outdent();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/removeFormat.gif")
 		ImageResource removeFormat();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/removeLink.gif")
 		ImageResource removeLink();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/strikeThrough.gif")
 		ImageResource strikeThrough();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/subscript.gif")
 		ImageResource subscript();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/superscript.gif")
 		ImageResource superscript();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/ul.gif")
 		ImageResource ul();
 
-		@Source("edu/clarkson/autograder/client/widgets/texteditor/icon/underline.gif")
 		ImageResource underline();
 	}
 
