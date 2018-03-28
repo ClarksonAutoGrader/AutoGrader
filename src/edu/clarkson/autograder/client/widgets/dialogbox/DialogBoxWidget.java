@@ -44,6 +44,16 @@ public class DialogBoxWidget {
 
 		return presenter;
 	}
+	
+	public static DialogBoxPresenter confirm(String header, String dialogText, String cancelButtonText,
+	        String affirmativeButtonText, String thirdButtonText, ThreeOptionDialogCallback callback) {
+		view = new DialogBoxView();
+		presenter = new DialogBoxPresenter(view, header, dialogText, cancelButtonText, affirmativeButtonText, thirdButtonText, callback);
+
+		presenter.init();
+
+		return presenter;
+	}
 
 	public static DialogBoxPresenter confirm(String header, String dialogText, ConfirmDialogCallback callback) {
 		return DialogBoxWidget.confirm(header, dialogText, Constants.cancelButton, Constants.okButton, callback);

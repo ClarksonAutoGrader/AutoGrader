@@ -47,6 +47,8 @@ public class DialogBoxPresenter {
 		public void hide();
 
 		public void setHeader(String text);
+
+		Button getThirdButton();
 	}
 
 	private Display display;
@@ -54,8 +56,10 @@ public class DialogBoxPresenter {
 	private String dialogText;
 	private String cancelButtonText;
 	private String affirmativeButtonText;
+	private String thirdButtonText;
 	private ConfirmDialogCallback confirmCallback;
 	private AlertDialogCallback alertCallback;
+	private ThreeOptionDialogCallback threeOptionCallback;
 
 	protected DialogBoxPresenter() {
 	}
@@ -68,6 +72,19 @@ public class DialogBoxPresenter {
 		this.cancelButtonText = cancelButtonText;
 		this.affirmativeButtonText = affirmativeButtonText;
 		this.confirmCallback = callback;
+
+		bind();
+	}
+	
+	public DialogBoxPresenter(Display display, String header, String dialogText, String cancelButtonText,
+	        String affirmativeButtonText, String thirdButtonText, ThreeOptionDialogCallback callback) {
+		this.display = display;
+		this.header = header;
+		this.dialogText = dialogText;
+		this.cancelButtonText = cancelButtonText;
+		this.affirmativeButtonText = affirmativeButtonText;
+		this.thirdButtonText = thirdButtonText;
+		this.threeOptionCallback = callback;
 
 		bind();
 	}
@@ -90,7 +107,9 @@ public class DialogBoxPresenter {
 		this.display.getDialogText().setText(dialogText);
 		this.display.getAffirmativeButton().setText(affirmativeButtonText);
 		this.display.getCancelButton().setText(cancelButtonText);
+		this.display.getThirdButton().setText(thirdButtonText);
 		this.display.setHeader(header);
+		
 
 		addClickHandlers();
 
@@ -112,11 +131,17 @@ public class DialogBoxPresenter {
 				doCancel();
 			}
 		});
+		
+		this.display.getThirdButton().addClickHandler(e -> {
+			doThirdOption();
+		});
 	}
 
 	private void doAffirmative() {
 		if (confirmCallback != null) {
 			confirmCallback.onAffirmative();
+		} else if (threeOptionCallback != null){
+			threeOptionCallback.onAffirmative();
 		} else {
 			alertCallback.onAffirmative();
 		}
@@ -125,6 +150,11 @@ public class DialogBoxPresenter {
 
 	private void doCancel() {
 		confirmCallback.onCancel();
+		display.hide();
+	}
+	
+	private void doThirdOption() {
+		threeOptionCallback.onThirdOption();
 		display.hide();
 	}
 

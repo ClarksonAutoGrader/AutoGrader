@@ -36,6 +36,7 @@ public class DialogBoxView extends DialogBox implements DialogBoxPresenter.Displ
 	private Label dialogText;
 	private Button affirmativeButton;
 	private Button cancelButton;
+	private Button thirdOptionButton;
 	private VerticalPanel container;
 
 	public DialogBoxView() {
@@ -64,6 +65,7 @@ public class DialogBoxView extends DialogBox implements DialogBoxPresenter.Displ
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.add(affirmativeButton);
 		hp.add(cancelButton);
+		hp.add(thirdOptionButton);
 
 		container.add(hp);
 		this.add(container);
@@ -88,10 +90,16 @@ public class DialogBoxView extends DialogBox implements DialogBoxPresenter.Displ
 	public Button getCancelButton() {
 		return cancelButton;
 	}
+	
+	@Override
+	public Button getThirdButton() {
+		return thirdOptionButton;
+	}
 
 	@Override
 	public void setHeader(String text) {
 		this.setText(text);
 	}
+
 	
 }
