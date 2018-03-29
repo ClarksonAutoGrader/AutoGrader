@@ -37,10 +37,11 @@ import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.pages.CoursePage;
 import edu.clarkson.autograder.client.pages.CourseSelectionPage;
 import edu.clarkson.autograder.client.pages.GradebookPage;
+import edu.clarkson.autograder.client.pages.ProblemBuilderPage;
 import edu.clarkson.autograder.client.services.UserRoleService;
 import edu.clarkson.autograder.client.services.UserRoleServiceAsync;
-import edu.clarkson.autograder.client.widgets.dialogbox.ConfirmDialogCallback;
 import edu.clarkson.autograder.client.widgets.dialogbox.DialogBoxWidget;
+import edu.clarkson.autograder.client.widgets.dialogbox.ThreeOptionDialogCallback;
 
 public final class State implements ValueChangeHandler<String> {
 
@@ -108,9 +109,9 @@ public final class State implements ValueChangeHandler<String> {
 				if (role.equals("student")) {
 					ContentContainer.setContent(new CoursePage(courseId));
 				} else if (role.equals("instructor") || role.equals("developer")) {
-					DialogBoxWidget.confirm("Welcome, Instructor",
+					DialogBoxWidget.threeButton("Welcome, Instructor",
 					        "As an instructor, you may continue to course gradebook or view course as student. Please select an option below.",
-					        "Continue to Gradebook", "Continue as Student", new ConfirmDialogCallback() {
+					        "Continue to Gradebook", "Continue as Student", "Continue to Problem Builder",  new ThreeOptionDialogCallback() {
 						        @Override
 						        public void onAffirmative() {
 							        ContentContainer.setContent(new CoursePage(courseId));
@@ -120,6 +121,11 @@ public final class State implements ValueChangeHandler<String> {
 						        public void onCancel() {
 							        ContentContainer.setContent(new GradebookPage(courseId));
 						        }
+
+								@Override
+								public void onThirdOption() {
+									ContentContainer.setContent(new ProblemBuilderPage());
+								}
 					        });
 				}
 			}

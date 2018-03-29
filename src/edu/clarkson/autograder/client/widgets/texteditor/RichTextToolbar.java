@@ -43,6 +43,9 @@
  */
 package edu.clarkson.autograder.client.widgets.texteditor;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Target;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -52,6 +55,7 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.i18n.client.Constants;
 import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.ClientBundle.Source;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
@@ -77,42 +81,61 @@ public class RichTextToolbar extends Composite {
 	 * saves a lot of HTTP requests, drastically improving startup time.
 	 */
 	public interface Images extends ClientBundle {
-
+		
+		@Source("icon/bold.gif")
 		ImageResource bold();
-
+		
+		@Source("icon/createLink.gif")
 		ImageResource createLink();
-
+		
+		@Source("icon/hr.gif")
 		ImageResource hr();
-
+		
+		@Source("icon/indent.gif")
 		ImageResource indent();
 
+		@Source("icon/insertImage.gif")
 		ImageResource insertImage();
-
+		
+		@Source("icon/italic.gif")
 		ImageResource italic();
 
+		@Source("icon/justifyCenter.gif")
 		ImageResource justifyCenter();
 
+		@Source("icon/justifyLeft.gif")
 		ImageResource justifyLeft();
 
+		@Source("icon/justifyRight.gif")
 		ImageResource justifyRight();
 
+		@Source("icon/ol.gif")
 		ImageResource ol();
 
+		@Source("icon/outdent.gif")
 		ImageResource outdent();
 
+		@Source("icon/removeFormat.gif")
 		ImageResource removeFormat();
 
+		@Source("icon/removeLink.gif")
 		ImageResource removeLink();
 
+		@Source("icon/strikeThrough.gif")
 		ImageResource strikeThrough();
 
+		@Source("icon/subscript.gif")
 		ImageResource subscript();
 
+		@Source("icon/superscript.gif")
 		ImageResource superscript();
 
+		@Source("icon/ul.gif")
 		ImageResource ul();
 
+		@Source("icon/underline.gif")
 		ImageResource underline();
+		
 	}
 
 	/**
@@ -120,7 +143,8 @@ public class RichTextToolbar extends Composite {
 	 * internationalizable.
 	 */
 	public interface Strings extends Constants {
-
+		
+		
 		String black();
 
 		String blue();

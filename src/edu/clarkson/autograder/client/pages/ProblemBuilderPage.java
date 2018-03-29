@@ -37,9 +37,10 @@ import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.container.CenterLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 
+import edu.clarkson.autograder.client.widgets.Content;
 import edu.clarkson.autograder.client.widgets.texteditor.RichTextEditor;
 
-public class ProblemBuilderPage extends Composite {
+public class ProblemBuilderPage extends Content {
 
 	private SimpleContainer container;
 	private FramedPanel panel;
@@ -57,6 +58,11 @@ public class ProblemBuilderPage extends Composite {
 		container.add(panel);
 		initWidget(container);
 		
+	}
+
+	@Override
+	public String getPrimaryStyleName() {
+		return "problemBuilderPage";
 	}
 	
 //	

@@ -73,6 +73,8 @@ public class DialogBoxPresenter {
 		this.affirmativeButtonText = affirmativeButtonText;
 		this.confirmCallback = callback;
 
+		this.display.getThirdButton().setVisible(false);
+
 		bind();
 	}
 	
@@ -98,6 +100,7 @@ public class DialogBoxPresenter {
 		this.alertCallback = callback;
 
 		this.display.getCancelButton().setVisible(false);
+		this.display.getThirdButton().setVisible(false);
 
 		bind();
 	}
@@ -132,8 +135,11 @@ public class DialogBoxPresenter {
 			}
 		});
 		
-		this.display.getThirdButton().addClickHandler(e -> {
+		this.display.getThirdButton().addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
 			doThirdOption();
+			}
 		});
 	}
 
@@ -149,7 +155,12 @@ public class DialogBoxPresenter {
 	}
 
 	private void doCancel() {
-		confirmCallback.onCancel();
+		if (confirmCallback != null) {
+			confirmCallback.onCancel();
+		} 
+		else {
+			threeOptionCallback.onCancel();
+		}
 		display.hide();
 	}
 	

@@ -48,6 +48,8 @@ public class DialogBoxView extends DialogBox implements DialogBoxPresenter.Displ
 		affirmativeButton.getElement().getStyle().setMargin(0.5, Unit.EM);
 		cancelButton = new Button();
 		cancelButton.getElement().getStyle().setMargin(0.5, Unit.EM);
+		thirdOptionButton = new Button();
+		thirdOptionButton.getElement().getStyle().setMargin(0.5,  Unit.EM);
 
 		container = new VerticalPanel();
 
