@@ -111,7 +111,7 @@ public class ServerUtils {
 
 		@Override
 		public ProblemData process(ResultSet rs) throws SQLException {
-			LOG.publish(new LogRecord(Level.INFO, "ServerUtils#createProblemData->process - begin"));
+			LOG.publish(new LogRecord(Level.FINE, "ServerUtils#createProblemData->process - begin"));
 
 			ProblemData problemData = null;
 
@@ -207,7 +207,7 @@ public class ServerUtils {
 
 						// abort on failure
 						if (!errorText.isEmpty()) {
-							LOG.publish(new LogRecord(Level.INFO, "createProblemData->process - " + errorText));
+							LOG.publish(new LogRecord(Level.FINE, "createProblemData->process - " + errorText));
 							throw new NumberFormatException(errorText);
 						}
 
@@ -263,7 +263,7 @@ public class ServerUtils {
 				throw new RuntimeException("ProblemData in internally inconsistent");
 			}
 
-			LOG.publish(new LogRecord(Level.INFO, "ServerUtils#createProblemData->process - end"));
+			LOG.publish(new LogRecord(Level.FINE, "ServerUtils#createProblemData->process - end"));
 			return problemData;
 		}
 	};

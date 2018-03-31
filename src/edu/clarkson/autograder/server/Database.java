@@ -73,26 +73,26 @@ public class Database {
 	 * any errors.
 	 */
 	private void establishConnection() {
-		LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - begin"));
+		LOG.publish(new LogRecord(Level.FINE, "Database#establishConn - begin"));
 
 		try {
 			if (conn != null && !conn.isClosed()) {
-				LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - connection already active"));
+				LOG.publish(new LogRecord(Level.FINE, "Database#establishConn - connection already active"));
 				conn.close();
 			}
 		} catch (SQLException e1) {
-			LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - existing connection corrupt"));
+			LOG.publish(new LogRecord(Level.FINE, "Database#establishConn - existing connection corrupt"));
 			conn = null;
 		}
 
-		LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - attempting to connect"));
+		LOG.publish(new LogRecord(Level.FINE, "Database#establishConn - attempting to connect"));
 
 		try {
 			String password = System.getenv("AUTOGRADER_DB_ACCESS");
 			Class.forName("com.mysql.jdbc.Driver");
 			// create connection to database
 			conn = DriverManager.getConnection(url, user, password);
-			LOG.publish(new LogRecord(Level.INFO, "Database#establishConnection - DB Connection Successful"));
+			LOG.publish(new LogRecord(Level.FINE, "Database#establishConnection - DB Connection Successful"));
 		} catch (CommunicationsException e) {
 			LOG.publish(new LogRecord(Level.INFO,
 			        "Database#establishConnection Failed (do you need a VPN?)- " + e.toString()));
@@ -100,7 +100,7 @@ public class Database {
 			LOG.publish(new LogRecord(Level.INFO, "Database#establishConnection Failed - " + e.toString()));
 		}
 
-		LOG.publish(new LogRecord(Level.INFO, "Database#establishConn - end"));
+		LOG.publish(new LogRecord(Level.FINE, "Database#establishConn - end"));
 	}
 
 	/**
@@ -110,24 +110,24 @@ public class Database {
 	private final int executeUpdate(final String SQL) {
 		// uniquely identify separate calls to Database#query in the log.
 		final String LOG_LOCATION = "Database#evaluate" + SQL.hashCode() + " ";
-		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin: " + SQL));
+		LOG.publish(new LogRecord(Level.FINE, LOG_LOCATION + "- begin: " + SQL));
 
 		int rowsUpdated = 0;
 		try {
 			stmt = conn.createStatement();
-			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "statement created"));
+			LOG.publish(new LogRecord(Level.FINE, LOG_LOCATION + "statement created"));
 
 			rowsUpdated = stmt.executeUpdate(SQL);
-			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "updated " + rowsUpdated + " rows"));
+			LOG.publish(new LogRecord(Level.FINE, LOG_LOCATION + "updated " + rowsUpdated + " rows"));
 		} catch (SQLException exception) {
-			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + " " + exception));
+			LOG.publish(new LogRecord(Level.FINE, LOG_LOCATION + " " + exception));
 			throw new RuntimeException(exception);
 		} catch (Exception exception) {
 			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "unexpected exception " + exception));
 			throw new RuntimeException(exception);
 		}
 
-		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
+		LOG.publish(new LogRecord(Level.FINE, LOG_LOCATION + "- end"));
 		return rowsUpdated;
 	}
 
@@ -141,14 +141,14 @@ public class Database {
 	private final ResultSet executeQuery(final String SQL) {
 		// uniquely identify separate calls to Database#query in the log.
 		final String LOG_LOCATION = "Database#executeQuery" + SQL.hashCode() + " ";
-		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- begin: " + SQL));
+		LOG.publish(new LogRecord(Level.FINE, LOG_LOCATION + "- begin: " + SQL));
 
 		ResultSet resultSet = null;
 		try {
 			stmt = conn.createStatement();
-			LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "statement created"));
+			LOG.publish(new LogRecord(Level.FINE, LOG_LOCATION + "statement created"));
 			resultSet = stmt.executeQuery(SQL);
-			LOG.publish(new LogRecord(Level.INFO,
+			LOG.publish(new LogRecord(Level.FINE,
 			        LOG_LOCATION + "RS returned " + (resultSet.next() ? "not empty" : "empty")));
 			resultSet.beforeFirst();
 		} catch (SQLException exception) {
@@ -159,7 +159,7 @@ public class Database {
 			throw new RuntimeException(exception);
 		}
 
-		LOG.publish(new LogRecord(Level.INFO, LOG_LOCATION + "- end"));
+		LOG.publish(new LogRecord(Level.FINE, LOG_LOCATION + "- end"));
 		return resultSet;
 	}
 
@@ -323,7 +323,7 @@ public class Database {
 	 * @return number of rows updated
 	 */
 	int update(final String parameterizedSql, final Object... sqlParameters) {
-		LOG.publish(new LogRecord(Level.INFO, "Database#update - begin"));
+		LOG.publish(new LogRecord(Level.FINE, "Database#update - begin"));
 
 		int rowsUpdated = -1;
 		try {
@@ -336,7 +336,7 @@ public class Database {
 
 		DbUtils.closeQuietly(stmt);
 
-		LOG.publish(new LogRecord(Level.INFO, "Database#update - end"));
+		LOG.publish(new LogRecord(Level.FINE, "Database#update - end"));
 		return rowsUpdated;
 	}
 
@@ -353,7 +353,7 @@ public class Database {
 	 */
 	<T> T query(final ProcessResultSetCallback<T> callback, final String parameterizedSql,
 	        final Object... sqlParameters) {
-		LOG.publish(new LogRecord(Level.INFO, "Database#query - begin"));
+		LOG.publish(new LogRecord(Level.FINE, "Database#query - begin"));
 
 		ResultSet rs;
 		try {
@@ -377,7 +377,7 @@ public class Database {
 		DbUtils.closeQuietly(rs);
 		DbUtils.closeQuietly(stmt);
 
-		LOG.publish(new LogRecord(Level.INFO, "Database#query - end"));
+		LOG.publish(new LogRecord(Level.FINE, "Database#query - end"));
 		return data;
 	}
 
