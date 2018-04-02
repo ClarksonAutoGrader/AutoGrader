@@ -23,7 +23,11 @@
 
 package edu.clarkson.autograder.client.pages;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.logging.client.SimpleRemoteLogHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
@@ -33,30 +37,50 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.container.CenterLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer.CssFloatData;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
+import com.sencha.gxt.widget.core.client.form.FieldLabel;
+import com.sencha.gxt.widget.core.client.form.TextField;
 
 import edu.clarkson.autograder.client.widgets.Content;
 import edu.clarkson.autograder.client.widgets.texteditor.RichTextEditor;
 
 public class ProblemBuilderPage extends Content {
+	
+	private static SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
 
 	private SimpleContainer container;
 	private FramedPanel panel;
+	
+	private CssFloatLayoutContainer metadata;
+	
+	private TextField problemName;
+	private TextField points;
 
 	public ProblemBuilderPage() {
+		
+		LOG.publish(new LogRecord(Level.INFO, "ProblemBuilderPage#<init>"));
+		
 		panel = new FramedPanel();
 		container = new SimpleContainer();
 		container.setWidth(500);
 		
+		problemName = new TextField();
+		points = new TextField();
+		
+		metadata = new CssFloatLayoutContainer();
+		metadata.add(new FieldLabel(problemName, "Problem Name"), new CssFloatData(-1, new Margins(4, 0, 0, 0)));
+		metadata.add(new FieldLabel(points, "Problem Points"), new CssFloatData(-1, new Margins(4, 0, 0, 0)));
+		
 		panel.setHeaderVisible(false);
-		panel.setWidget(new RichTextEditor());
-		Label license = new Label(com.sencha.gxt.core.client.GXT.getVersion().getLicenseType());
-		panel.setWidget(license);
+		panel.setWidget(metadata);
 		
 		container.add(panel);
-		initWidget(container);
+		initWidget(panel);
 		
 	}
 
