@@ -26,20 +26,10 @@ package edu.clarkson.autograder.client.pages;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.widget.core.client.DatePicker;
 import com.sencha.gxt.widget.core.client.FramedPanel;
-import com.sencha.gxt.widget.core.client.container.CenterLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer.CssFloatData;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
@@ -60,6 +50,11 @@ public class ProblemBuilderPage extends Content {
 	
 	private TextField problemName;
 	private TextField points;
+	private TextField resets;
+	private TextField attempts;
+	private DatePicker dueDate;
+	
+	private RichTextEditor editor;
 
 	public ProblemBuilderPage() {
 		
@@ -71,10 +66,14 @@ public class ProblemBuilderPage extends Content {
 		
 		problemName = new TextField();
 		points = new TextField();
+		resets = new TextField();
+		attempts = new TextField();
 		
 		metadata = new CssFloatLayoutContainer();
 		metadata.add(new FieldLabel(problemName, "Problem Name"), new CssFloatData(-1, new Margins(4, 0, 0, 0)));
-		metadata.add(new FieldLabel(points, "Problem Points"), new CssFloatData(-1, new Margins(4, 0, 0, 0)));
+		metadata.add(new FieldLabel(attempts, "Attempts"), new CssFloatData(-1, new Margins(4, 7, 0, 0)));
+		metadata.add(new FieldLabel(resets, "Resets"), new CssFloatData(-1, new Margins(4, 0, 0, 0)));
+		metadata.add(new FieldLabel(points, "Total Points"), new CssFloatData(-1, new Margins(4, 0, 0, 0)));
 		
 		panel.setHeaderVisible(false);
 		panel.setWidget(metadata);
