@@ -35,6 +35,7 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import edu.clarkson.autograder.client.pages.CourseSelectionPage;
 import edu.clarkson.autograder.client.services.AppSessionLogOutService;
 import edu.clarkson.autograder.client.services.AppSessionLogOutServiceAsync;
 import edu.clarkson.autograder.client.services.UsernameService;
@@ -124,7 +125,7 @@ public class Autograder implements EntryPoint {
 		RootPanel.get("info").add(new Button("Course Selection", new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
-			Window.Location.replace("#courses");
+			Window.Location.replace("#" + CourseSelectionPage.TOKEN);
 			}	
 		}));
 		RootPanel.get("info").add(usernameLabel);

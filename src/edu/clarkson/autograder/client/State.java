@@ -37,7 +37,7 @@ import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.pages.CoursePage;
 import edu.clarkson.autograder.client.pages.CourseSelectionPage;
 import edu.clarkson.autograder.client.pages.GradebookPage;
-import edu.clarkson.autograder.client.pages.ProblemBuilderPage;
+import edu.clarkson.autograder.client.pages.RawProblemAdderPage;
 import edu.clarkson.autograder.client.services.UserRoleService;
 import edu.clarkson.autograder.client.services.UserRoleServiceAsync;
 import edu.clarkson.autograder.client.widgets.dialogbox.DialogBoxWidget;
@@ -76,7 +76,7 @@ public final class State implements ValueChangeHandler<String> {
 		String historyToken = event.getValue();
 
 		// Check for: course selection page
-		if (historyToken.equals("courses")) {
+		if (historyToken.equals(CourseSelectionPage.TOKEN)) {
 			loadDefault();
 			return;
 		}
@@ -86,7 +86,7 @@ public final class State implements ValueChangeHandler<String> {
 		try {
 			courseId = Integer.parseInt(historyToken.substring(0, Autograder.ID_TOKEN_WIDTH));
 		} catch (NumberFormatException e) {
-			History.replaceItem("courses");
+			History.replaceItem(CourseSelectionPage.TOKEN);
 			return;
 		}
 
@@ -124,7 +124,7 @@ public final class State implements ValueChangeHandler<String> {
 
 								@Override
 								public void onThirdOption() {
-									ContentContainer.setContent(new ProblemBuilderPage());
+									ContentContainer.setContent(new RawProblemAdderPage());
 								}
 					        });
 				}

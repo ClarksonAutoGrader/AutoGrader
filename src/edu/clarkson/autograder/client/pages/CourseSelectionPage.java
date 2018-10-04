@@ -28,74 +28,27 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.logging.client.SimpleRemoteLogHandler;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import edu.clarkson.autograder.client.Autograder;
 import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.services.CoursesService;
 import edu.clarkson.autograder.client.services.CoursesServiceAsync;
 import edu.clarkson.autograder.client.widgets.Content;
+import edu.clarkson.autograder.client.widgets.Listing;
 
 /**
  * Users select a course from among enrolled courses.
  */
 public class CourseSelectionPage extends Content {
+	
+	public static final String TOKEN = "courses";
 
 	public static final SimpleRemoteLogHandler LOG = new SimpleRemoteLogHandler();
-
-	public class Listing extends Composite {
-
-		private Course content;
-		private FocusPanel panel;
-
-		public Listing(Course content) {
-			this.content = content;
-
-			Label title = new Label(content.getTitle());
-			title.addStyleDependentName("listingTitle");
-
-			// Wrap to capture mouse over
-			panel = new FocusPanel();
-			panel.add(title);
-			panel.addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					panel.addStyleName("listingHighlight");
-				}
-			});
-			panel.addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(MouseOutEvent event) {
-					panel.removeStyleName("listingHighlight");
-				}
-			});
-			panel.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					History.newItem(getContent().getToken());
-				}
-			});
-			panel.setStyleName("listingStyle");
-
-			initWidget(panel);
-		}
-
-		private Course getContent() {
-			return content;
-		}
-	}
 
 	private FlexTable courseTable = new FlexTable();
 
@@ -142,7 +95,7 @@ public class CourseSelectionPage extends Content {
 
 					// populate table of course listings
 					for (Course course : courseList) {
-						courseTable.setWidget(courseTable.getRowCount(), 0, new Listing(course));
+						courseTable.setWidget(courseTable.getRowCount(), 0, new Listing(course.getTitle(), Autograder.formatIdToken(course.getId())));
 					}
 				}
 			}

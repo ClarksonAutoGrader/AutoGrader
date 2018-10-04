@@ -58,8 +58,4 @@ public class Course implements Serializable {
 	public String getTitle() {
 		return title;
 	}
-
-	public String getToken() {
-		return Autograder.formatIdToken(id);
-	}
 }
