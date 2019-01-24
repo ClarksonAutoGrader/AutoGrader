@@ -94,7 +94,7 @@ div#footer a:active { color: #F0CA0C; }
 
 /* Formatting for dynamic content */
 
-.courseSelectionPage {
+.courseSelectionPage, .courseManagementPage{
 	margin-top: 2vw;
 	/* center page content */
 	margin-left: auto;
@@ -125,7 +125,7 @@ div#footer a:active { color: #F0CA0C; }
 	font-weight: bold;
 }
 
-.courseSelectionPageTitle, .coursePageTitle {
+.courseSelectionPageTitle, .coursePageTitle, .courseManagementPageTitle {
 	margin-bottom: 1vw;
 	font-size: 200%;
 	text-align: center;

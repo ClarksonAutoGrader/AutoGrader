@@ -87,7 +87,6 @@ public class ProblemBuilderPage extends Content {
 	public String getPrimaryStyleName() {
 		return "problemBuilderPage";
 	}
-	
 //	
 //	public void buttons() {
 //

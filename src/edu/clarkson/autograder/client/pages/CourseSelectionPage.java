@@ -57,7 +57,7 @@ public class CourseSelectionPage extends Content {
 
 		// Create page title
 		Label pageTitle = new Label("Enrolled Courses");
-		pageTitle.addStyleName("courseSelectionPageTitle");
+		pageTitle.addStyleName(getPrimaryStyleName() + "Title");
 
 		// Configure empty course listing courseTable
 		courseTable.setCellSpacing(6);
