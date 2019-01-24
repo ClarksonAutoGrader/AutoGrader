@@ -34,9 +34,11 @@ import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import edu.clarkson.autograder.client.AutograderResources;
 import edu.clarkson.autograder.client.objects.Assignment;
 import edu.clarkson.autograder.client.objects.Course;
 import edu.clarkson.autograder.client.objects.Problem;
@@ -69,6 +71,8 @@ public class CoursePage extends Content {
 	private ProblemView problemView;
 
 	private Label errorLabel;
+	
+	private static final Image loadingIcon = new Image(AutograderResources.INSTANCE.loading());
 
 	/**
 	 * Attempt to create CoursePage with specified course ID. The course ID
@@ -181,6 +185,11 @@ public class CoursePage extends Content {
 		public void requestSelectedProblemDataAsync(int problemId) {
 
 			LOG.publish(new LogRecord(Level.INFO, "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - begin"));
+			
+			if (problemView != null) {
+				sideBarAndContent.remove(problemView);
+			}
+			sideBarAndContent.add(loadingIcon);
 
 			SelectedProblemDataServiceAsync problemDataService = GWT.create(SelectedProblemDataService.class);
 			problemDataService.fetchProblemData(problemId, new AsyncCallback<ProblemData>() {
@@ -189,6 +198,7 @@ public class CoursePage extends Content {
 					LOG.publish(new LogRecord(Level.INFO,
 					        "CoursePage.ProblemSelectionCallback#requestSelectedProblemDataAsync - onFailure"));
 					sideBarAndContent.remove(errorLabel);
+					sideBarAndContent.remove(loadingIcon);
 					if (problemView != null) {
 						sideBarAndContent.remove(problemView);
 						problemView = null;
@@ -218,9 +228,11 @@ public class CoursePage extends Content {
 		if (problemView == null) {
 			problemView = new ProblemView(data);
 			problemView.addStyleName("problemView");
-			sideBarAndContent.add(problemView);
 		} else {
 			problemView.update(data);
 		}
+		sideBarAndContent.remove(loadingIcon);
+		sideBarAndContent.add(problemView);
+		LOG.publish(new LogRecord(Level.INFO, "CoursePage#loadProblemView - end"));
 	}
 }
