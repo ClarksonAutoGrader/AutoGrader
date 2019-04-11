@@ -1,6 +1,6 @@
 ### autograder-gwt
 
-Copyright ©2017-2018 Clarkson University.
+Copyright 2017-2018 Clarkson University.
 
 Autograder is a customizable online homework utility.
 This program is licensed under GNU General Purpose License version 3. See the file "COPYING" or visit <https://www.gnu.org/licenses> for
@@ -32,4 +32,4 @@ We recommend following the [Getting Started with GWT Eclipse Tutorial](http://ww
 
 4. Clone this Git repository in Eclipse.
 
-5. Download GWT SDK 2.8.2 and point the GWT Plugin to it.
+5. Download [GWT SDK 2.8.2](http://www.gwtproject.org/download.html) and point the GWT Plugin to it.
